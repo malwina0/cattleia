@@ -1,6 +1,6 @@
 # cattleia: Complex Accessible Transparent Tool for Learning Ensemblers In AutoML
 
-<img src="misc/logo.png" align="right" width="250"/>
+<img src="misc/logo.png" align="right" width="150"/>
 
 ## Authors
 This project is created as a Bachelor thesis by:
