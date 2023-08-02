@@ -1,7 +1,10 @@
 import dash
-from dash import html, dcc, callback, Input, Output, State
+from dash import html, dcc, callback, Input, Output, State, dash_table
 import base64
+import datetime
 import io
+import dash_bootstrap_components as dbc
+import plotly.graph_objs as go
 import sys
 sys.path.append("..")
 import metrics
@@ -12,33 +15,38 @@ dash.register_page(__name__)
 
 
 layout = html.Div([
-    html.H5("Select data"),
-    dcc.Upload(
-        id='upload-data',
-        children=html.Div([
-            'Drag and Drop or ',
-            html.A('Select Files')
-        ]),
-        style={
-            'width': '100%',
-            'height': '60px',
-            'lineHeight': '60px',
-            'borderWidth': '1px',
-            'borderStyle': 'dashed',
-            'borderRadius': '5px',
-            'textAlign': 'center',
-            'margin': '10px'
-        },
-        multiple=True
-    ),
-    html.Div(id='output-data-upload1'),
+    dbc.Row([
+        dbc.Col([
+            html.H5("Select data"),
+            dcc.Upload(
+                id='upload-data',
+                children=html.Div([
+                    'Drag and Drop or ',
+                    html.A('Select Files')
+                ]),
+                style={
+                    'width': '100%',
+                    'height': '60px',
+                    'lineHeight': '60px',
+                    'borderWidth': '1px',
+                    'borderStyle': 'dashed',
+                    'borderRadius': '5px',
+                    'textAlign': 'center',
+                    'margin': '10px'
+                },
+                multiple=True
+            ),
+            html.Div(id='output-data-upload1'),
 
-    dcc.Store(id='store-data1', data=[], storage_type='memory'),
-    dcc.Store(id='column_name', data=[], storage_type='memory'),
+            dcc.Store(id='store-data1', data=[], storage_type='memory'),
+            dcc.Store(id='column_name', data=[], storage_type='memory'),
 
-    html.Div(id='output-data-upload2'),
-
-    html.Div(id='plots'),
+            html.Div(id='output-data-upload2'),
+        ], width=2),
+        dbc.Col([
+            html.Div(id='plots'),
+        ], width=10)
+    ])
 ])
 
 
@@ -179,30 +187,42 @@ def parse_data_model_flaml(contents, filename):
 )
 def update_model(contents, filename, df, column):
     children = []
+    print(column)
+    print(df)
     if contents:
         contents = contents[0]
         filename = filename[0]
         model = parse_data_model_flaml(contents, filename)
+        print(type(model))
+
+
         df = pd.DataFrame.from_dict(df)
         df = df.dropna()
+
+
         X = df.iloc[:, df.columns != column["name"]]
         y = df.iloc[:, df.columns == column["name"]]
         y = y.squeeze()
 
         print(X)
         print(y)
-        print(type(y))
-        print(y)
-        children = html.Div([
-            html.H5("sad"),
-            html.H5(column["name"]),
-            #regresja
+
+
+        plot_component = [
+            dcc.Graph(figure=metrics.mse_plot(model, X, y)),
             dcc.Graph(figure=metrics.mse_plot(model, X, y)),
             dcc.Graph(figure=metrics.mape_plot(model, X, y)),
             dcc.Graph(figure=metrics.mae_plot(model, X, y)),
             dcc.Graph(figure=metrics.correlation_plot(model, X, y, task="regression")),
             dcc.Graph(figure=metrics.prediction_compare_plot(model, X, y, "Flaml", "regression")),
+        ]
+        for plot in metrics.permutation_feature_importance_all(model, X, y, task="regression"):
+            plot_component.append(dcc.Graph(figure=plot))
 
-        ])
+        children = html.Div(plot_component)
+
+
 
     return children
+
+
