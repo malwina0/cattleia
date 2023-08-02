@@ -9,7 +9,7 @@ import plotly.graph_objs as go
 
 import sys
 sys.path.append("..")
-import wykresy
+import metrics
 
 
 

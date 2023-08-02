@@ -1,12 +1,10 @@
 import dash
-from dash import html, dcc, callback, Input, Output, State, dash_table
+from dash import html, dcc, callback, Input, Output, State
 import base64
-import datetime
 import io
-import plotly.graph_objs as go
 import sys
 sys.path.append("..")
-import wykresy
+import metrics
 import pandas as pd
 
 
@@ -181,37 +179,30 @@ def parse_data_model_flaml(contents, filename):
 )
 def update_model(contents, filename, df, column):
     children = []
-    print(column)
-    print(df)
     if contents:
         contents = contents[0]
         filename = filename[0]
         model = parse_data_model_flaml(contents, filename)
-        print(type(model))
-
-
         df = pd.DataFrame.from_dict(df)
         df = df.dropna()
-
-
         X = df.iloc[:, df.columns != column["name"]]
         y = df.iloc[:, df.columns == column["name"]]
-
+        y = y.squeeze()
 
         print(X)
         print(y)
-
-
+        print(type(y))
+        print(y)
         children = html.Div([
-             html.H5("sad"),
-             html.H5(column["name"]),
-             dcc.Graph(figure=wykresy.mse_plot(model, X, y)),
-             #dash_table.DataTable(
-             #   df.to_dict('records'),
-             #   [{'name': i, 'id': i} for i in df.columns]
-             #),
+            html.H5("sad"),
+            html.H5(column["name"]),
+            #regresja
+            dcc.Graph(figure=metrics.mse_plot(model, X, y)),
+            dcc.Graph(figure=metrics.mape_plot(model, X, y)),
+            dcc.Graph(figure=metrics.mae_plot(model, X, y)),
+            dcc.Graph(figure=metrics.correlation_plot(model, X, y, task="regression")),
+            dcc.Graph(figure=metrics.prediction_compare_plot(model, X, y, "Flaml", "regression")),
+
         ])
-
-
 
     return children
