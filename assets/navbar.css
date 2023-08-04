@@ -1,3 +1,45 @@
-.test {
-    font-size: 60px;
+.nav_bar_text {
+    font-size: 50px;
 }
+
+
+.spinxD{
+     position: absolute;
+     top: 200px;
+
+ }
+
+body {
+  background-color: rgba(30,30,30,255);
+}
+
+.custom_nav_bar{
+    background-color: rgba(44,47,56,255);
+    border-radius: 25px;
+    border: 10px solid;
+    border-color: rgba(44,47,56,255);
+    outline: 5px solid rgba(30,30,30,255);
+}
+
+.sidepanel{
+    background-color: rgba(240,240,240);
+    border-radius: 25px;
+    margin-top: 20px;
+    margin-bottom: 20px;
+    margin-left: 10px;
+    margin-right: 20px;
+
+}
+
+
+
+.plot{
+    margin-top: 20px;
+    margin-bottom: 20px;
+    margin-left: 5px;
+    margin-right: 10px;
+    border: 20px solid;
+    border-color: rgba(44,47,56,255);
+    border-radius: 25px;
+}
+

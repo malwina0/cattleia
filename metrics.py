@@ -1,4 +1,5 @@
 import pandas as pd
+from flaml import AutoML
 import plotly.express as px
 import plotly.graph_objects as go
 import numpy as np
@@ -11,6 +12,7 @@ from sklearn.metrics import recall_score
 from sklearn.metrics import f1_score
 from scipy.stats import chi2_contingency
 from sklearn.inspection import permutation_importance
+from sklearn.inspection import partial_dependence
 
 
 def empty_fig():
@@ -552,7 +554,7 @@ def correlation_plot(ensembled_model, X, y, library="Flaml", task="regression"):
 
     predict_data = pd.DataFrame(predict_data)
     if task == "regression":
-        corr_matrix = predict_data.corr()
+        corr_matrix = predict_data.corr().round(2)
     if task == "classification":
         variables = predict_data.columns
         n_variables = len(variables)
@@ -566,7 +568,7 @@ def correlation_plot(ensembled_model, X, y, library="Flaml", task="regression"):
                     chi2, _, _, _ = chi2_contingency(contingency_table)
                     n = np.sum(contingency_table.values)
                     phi_c = np.sqrt(chi2 / (n * min(contingency_table.shape) - 1))
-                    correlation_matrix[i, j] = phi_c
+                    correlation_matrix[i, j] = round(phi_c, 2)
         corr_matrix = pd.DataFrame(correlation_matrix, index=variables, columns=variables)
 
     custom_colors = ['rgba(242,26,155,255)',
@@ -577,8 +579,10 @@ def correlation_plot(ensembled_model, X, y, library="Flaml", task="regression"):
     fig = px.imshow(corr_matrix, text_auto=True, color_continuous_scale=custom_colors)
     fig.update_layout(
 
-        width=1000,
-        height=700,
+        #width=1500,
+        #height=700,
+        #margin=dict(l=50, r=50, t=50, b=50),  # Ustaw marginesy wykresu
+        #autosize=True,
         title="Predictions models correlation",
         plot_bgcolor='rgba(44,47,56,255)',
         paper_bgcolor='rgba(44,47,56,255)',
@@ -589,6 +593,8 @@ def correlation_plot(ensembled_model, X, y, library="Flaml", task="regression"):
         xaxis_title_standoff=300,
         yaxis_ticklen=39,
     )
+    fig.update_xaxes(tickangle=30)
+    fig.update_xaxes(tickfont_size=10)
     fig.update_traces(textfont_size=13, textfont_color="rgba(255, 255, 255, 255)")
 
     return fig
@@ -703,3 +709,61 @@ def prediction_compare_plot(ensembled_model, X, y, library="Flaml", task="regres
                                 bgcolor='rgb(242,26,155)'))
 
     return fig
+
+
+def partial_dependence_plots(ensembled_model, X, library="Flaml"):
+    if library == "Flaml":
+        ensemble_models = ensembled_model.model.estimators_
+        X_transform = ensembled_model._state.task.preprocess(X, ensembled_model._transformer)
+
+        model_name = {}
+        columns = []
+        values = {}
+
+        for i in range(X.shape[1]):
+            try:
+                values[X.columns[i]] = [partial_dependence(ensembled_model, X, [i])['average'][0]]
+                model_name[X.columns[i]] = ['Ensemble']
+                columns.append(X.columns[i])
+            except TypeError:
+                pass
+
+        for model in ensemble_models:
+            for i in range(X_transform.shape[1]):
+                try:
+                    values[X_transform.columns[i]].append(
+                        partial_dependence(model._model, model._preprocess(X_transform), [i])['average'][0])
+                    model_name[X_transform.columns[i]].append(type(model).__name__)
+                except Exception:
+                    pass
+
+    plots = []
+    for variable in columns:
+        plot_x_value = sorted(X[variable].unique())
+        plots.append(partial_dependence_line_plot(values[variable], plot_x_value, model_name[variable], variable))
+
+    # teraz na podstawie tych trzech wartości trzeba robić wykresy liniowe dla każdej kategorii
+    # każdy wykres po kolei dla columns, model_name to nazwy kolejnych modeli, a values to wartości y
+    # wartosci x bierze się sortujac kolumny z danych X. jak zrobić jest wyżej
+
+    return plots
+
+
+def partial_dependence_line_plot(y_values, x_values, model_names, name):
+    fig = empty_fig()
+    fig.update_layout(
+        title=f"{name} variable partial dependence plot",
+        plot_bgcolor='rgba(44,47,56,255)',
+        paper_bgcolor='rgba(44,47,56,255)',
+        font_color="rgba(225, 225, 225, 255)",
+        font_size=15,
+        title_font_color="rgba(225, 225, 225, 255)",
+        title_font_size=25,
+        xaxis_title_standoff=300,
+        yaxis_ticklen=39,
+    )
+
+    for line_value, model_name in zip(y_values, model_names):
+        fig.add_trace(go.Scatter(x=x_values, y=line_value, mode='lines', name=model_name))
+    return fig
+
