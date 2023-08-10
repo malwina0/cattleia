@@ -42,7 +42,7 @@ navbar = dbc.Navbar(
                         dbc.Row(
                             [
                                 dbc.Col(html.Img(src="assets/autosklearn_logo.png", height="40px"), width="auto"),
-                                dbc.Col(dbc.NavbarBrand("Flaml", className="nav_bar_text"), width="auto"),
+                                dbc.Col(dbc.NavbarBrand("AutoSklearn", className="nav_bar_text"), width="auto"),
                             ],
                             align="center",
                             className="g-0",

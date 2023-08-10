@@ -18,23 +18,14 @@ layout = html.Div([
     dbc.Row([
         dbc.Col([
             dbc.Container([
-                html.H5("Select data"),
+                html.H5("Upload csv data", className="sidepanel_text"),
                 dcc.Upload(
                     id='upload_csv_data',
                     children=html.Div([
                         'Drag and Drop or ',
                         html.A('Select Files')
                     ]),
-                    style={
-                        'width': '100%',
-                        'height': '60px',
-                        'lineHeight': '60px',
-                        'borderWidth': '1px',
-                        'borderStyle': 'dashed',
-                        'borderRadius': '5px',
-                        'textAlign': 'center',
-                        'margin': '10px'
-                    },
+                    className="upload_data",
                     multiple=True
                 ),
                 html.Div(id='select_y_label_column'),
@@ -56,13 +47,10 @@ def parse_data_model_flaml(contents, filename):
     decoded = base64.b64decode(content_string)
     try:
         if "csv" in filename:
-            # Assume that the user uploaded a CSV or TXT file
             df = pd.read_csv(io.StringIO(decoded.decode("utf-8")))
         elif "pkl" in filename:
-            # Assume that the user uploaded an excel file
             df = pd.read_pickle(io.BytesIO(decoded))
         elif "txt" or "tsv" in filename:
-            # Assume that the user upl, delimiter = r'\s+'oaded an excel file
             df = pd.read_csv(io.StringIO(decoded.decode("utf-8")), delimiter=r"\s+")
     except Exception as e:
         print(e)
@@ -88,8 +76,9 @@ def update_output(contents, filename):
         data = df.to_dict()
 
         children = html.Div([
-            html.H5(filename),
-            html.P("Inset X axis data"),
+            html.P(filename, className="sidepanel_text"),
+            html.Hr(),
+            html.H5("Select target colum", className="sidepanel_text"),
             dcc.Dropdown(id='column_select',
                          options=[{'label': x, 'value': x} for x in df.columns]),
             html.Hr(),
@@ -106,24 +95,14 @@ def update_output(contents, filename):
 )
 def select_kolumns(value):
     children = html.Div([
-        html.H5(value),
-        html.H5("Select model"),
+        html.H5("Upload FLAML model", className="sidepanel_text"),
         dcc.Upload(
             id='upload_model',
             children=html.Div([
                 'Drag and Drop or ',
                 html.A('Select Files')
             ]),
-            style={
-                'width': '100%',
-                'height': '60px',
-                'lineHeight': '60px',
-                'borderWidth': '1px',
-                'borderStyle': 'dashed',
-                'borderRadius': '5px',
-                'textAlign': 'center',
-                'margin': '10px'
-            },
+            className="upload_data",
             multiple=True
         ),
         html.Hr(),
@@ -161,19 +140,36 @@ def update_model(contents, filename, df, column):
         print(X)
         print(y)
 
-        plot_component = [
-            dbc.Row([
-                dbc.Col([dcc.Graph(figure=metrics.mse_plot(model, X, y), className="plot")], width=6),
-                dbc.Col([dcc.Graph(figure=metrics.mape_plot(model, X, y), className="plot")], width=6),
-            ]),
+        if isinstance(y[0], (int, float)):
+            task = "regression"
+        else:
+            task = "classification"
 
-            #dcc.Graph(figure=metrics.mse_plot(model, X, y), className="plot"),
-            #dcc.Graph(figure=metrics.mape_plot(model, X, y)),
-            dcc.Graph(figure=metrics.mae_plot(model, X, y), className="plot"),
-            dcc.Graph(figure=metrics.correlation_plot(model, X, y, task="regression"), className="plot"),
-            dcc.Graph(figure=metrics.prediction_compare_plot(model, X, y, "Flaml", "regression"), className="plot"),
-        ]
-        for plot in metrics.permutation_feature_importance_all(model, X, y, task="regression"):
+        if task == "regression":
+            plot_component = [
+                dbc.Row([
+                    dbc.Col([dcc.Graph(figure=metrics.mse_plot(model, X, y), className="plot")], width=6),
+                    dbc.Col([dcc.Graph(figure=metrics.mape_plot(model, X, y), className="plot")], width=6),
+                ]),
+                dcc.Graph(figure=metrics.mae_plot(model, X, y), className="plot"),
+                dcc.Graph(figure=metrics.correlation_plot(model, X, task=task), className="plot"),
+                dcc.Graph(figure=metrics.prediction_compare_plot(model, X, y, "Flaml", task), className="plot"),
+            ]
+        else:
+            plot_component = [
+                dbc.Row([
+                    dbc.Col([dcc.Graph(figure=metrics.accuracy_plot(model, X, y), className="plot")], width=6),
+                    dbc.Col([dcc.Graph(figure=metrics.precision_plot(model, X, y), className="plot")], width=6),
+                ]),
+                dbc.Row([
+                    dbc.Col([dcc.Graph(figure=metrics.recall_plot(model, X, y), className="plot")], width=6),
+                    dbc.Col([dcc.Graph(figure=metrics.f1_score_plot(model, X, y), className="plot")], width=6),
+                ]),
+                dcc.Graph(figure=metrics.correlation_plot(model, X, task=task), className="plot"),
+                dcc.Graph(figure=metrics.prediction_compare_plot(model, X, y, "Flaml", task), className="plot"),
+            ]
+
+        for plot in metrics.permutation_feature_importance_all(model, X, y, task=task):
             plot_component.append(dcc.Graph(figure=plot, className="plot"))
 
         for plot in metrics.partial_dependence_plots(model, X):

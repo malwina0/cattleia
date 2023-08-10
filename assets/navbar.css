@@ -9,9 +9,11 @@
 
  }
 
+
 body {
   background-color: rgba(30,30,30,255);
 }
+
 
 .custom_nav_bar{
     background-color: rgba(44,47,56,255);
@@ -21,8 +23,29 @@ body {
     outline: 5px solid rgba(30,30,30,255);
 }
 
+
+.upload_data{
+    width: 100%;
+    height: 60px;
+    border-width: 1px;
+    border-style: dashed;
+    border-radius: 5px;
+    text-align: center;
+    text-vertical-align: middle;
+    text-align-vertical: middle;
+    color: rgba(225, 225, 225, 255);
+
+}
+
+
+.sidepanel_text{
+    color: rgba(225, 225, 225, 255);
+    text-align: center;
+}
+
+
 .sidepanel{
-    background-color: rgba(240,240,240);
+    background-color: rgba(44, 47, 56, 255);
     border-radius: 25px;
     margin-top: 20px;
     margin-bottom: 20px;
@@ -30,7 +53,6 @@ body {
     margin-right: 20px;
 
 }
-
 
 
 .plot{
