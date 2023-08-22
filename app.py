@@ -83,3 +83,7 @@ app.layout = html.Div([
 
 if __name__ == '__main__':
     app.run(debug=True)
+
+
+import autosklearn.classification
+autosklearn_reg = autosklearn.classification.AutoSklearnClassifier(time_left_for_this_task=180, per_run_time_limit=30)

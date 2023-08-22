@@ -140,16 +140,15 @@ def parse_data_model(contents):
 )
 def update_model(contents, filename, df, column):
     children = []
-    print(column)
-    print(df)
     if contents:
         contents = contents[0]
 
         # usunięcie wrazie gdyby był już ten folder
-        shutil.rmtree('./uploaded_model')
-
+        try:
+            shutil.rmtree('./uploaded_model')
+        except FileNotFoundError:
+            pass
         model = parse_data_model(contents)
-        print(type(model))
 
         df = pd.DataFrame.from_dict(df)
         df = df.dropna()
@@ -158,11 +157,7 @@ def update_model(contents, filename, df, column):
         y = df.iloc[:, df.columns == column["name"]]
         y = y.squeeze()
 
-        print(model.predict(X))
-
-        print(X)
-        print(y)
-
+        # sprawdzenie czy klasyfikacja czy regresja
         if isinstance(y[0], (int, float)):
             task = "regression"
         else:

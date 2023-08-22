@@ -122,13 +122,10 @@ def select_kolumns(value):
 )
 def update_model(contents, filename, df, column):
     children = []
-    print(column)
-    print(df)
     if contents:
         contents = contents[0]
         filename = filename[0]
         model = parse_data_model_flaml(contents, filename)
-        print(type(model))
 
         df = pd.DataFrame.from_dict(df)
         df = df.dropna()
@@ -137,9 +134,7 @@ def update_model(contents, filename, df, column):
         y = df.iloc[:, df.columns == column["name"]]
         y = y.squeeze()
 
-        print(X)
-        print(y)
-
+        #sprawdzenie czy klasyfikacja czy regresja
         if isinstance(y[0], (int, float)):
             task = "regression"
         else:
