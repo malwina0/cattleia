@@ -167,16 +167,15 @@ def update_model(contents, filename, df, column):
                     dbc.Col([dcc.Graph(figure=metrics.recall_plot(model, X, y, library="AutoSklearn"), className="plot")], width=6),
                     dbc.Col([dcc.Graph(figure=metrics.f1_score_plot(model, X, y, library="AutoSklearn"), className="plot")], width=6),
                 ]),
-                dcc.Graph(figure=metrics.correlation_plot(model, X, library="AutoSklearn", task=task), className="plot"),
+                dcc.Graph(figure=metrics.correlation_plot(model, X, library="AutoSklearn", task=task, y=y), className="plot"),
                 dcc.Graph(figure=metrics.prediction_compare_plot(model, X, y, library="AutoSklearn", task=task), className="plot"),
             ]
 
         for plot in metrics.permutation_feature_importance_all(model, X, y, library="AutoSklearn", task=task):
             plot_component.append(dcc.Graph(figure=plot, className="plot"))
 
-        if task == "regression":
-            for plot in metrics.partial_dependence_plots(model, X, library="AutoSklearn", autogluon_task=task):
-                plot_component.append(dcc.Graph(figure=plot, className="plot"))
+        for plot in metrics.partial_dependence_plots(model, X, library="AutoSklearn", autogluon_task=task):
+            plot_component.append(dcc.Graph(figure=plot, className="plot"))
 
         children = html.Div(plot_component)
     return children
