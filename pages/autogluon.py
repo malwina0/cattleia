@@ -14,7 +14,7 @@ sys.path.append("..")
 
 dash.register_page(__name__)
 
-# wygląd strony
+# page layout
 layout = html.Div([
     dcc.Store(id='csv_data_ag', data=[], storage_type='memory'),
     dcc.Store(id='y_label_column_ag', data=[], storage_type='memory'),
@@ -36,13 +36,13 @@ layout = html.Div([
             ], className="px-3 sidepanel")
         ], width=2),
         dbc.Col([
-            dcc.Loading(id="loading-1_ag", type="default", children=html.Div(id="plots_ag"), className="spinxD")
+            dcc.Loading(id="loading-1_ag", type="default", children=html.Div(id="plots_ag"), className="spin")
         ], width=10)
     ])
 ])
 
 
-# funkcja odpowiedzialna za prawidlowe wczytanie danych
+# data loading function
 def parse_data(contents, filename):
     content_type, content_string = contents.split(",")
 
@@ -61,7 +61,7 @@ def parse_data(contents, filename):
     return df
 
 
-# czesc odpowiedzialna za dodanie pliku csv
+# part responsible for adding csv file
 @callback(
     [Output('csv_data_ag', 'data'),
         Output('select_y_label_column_ag', 'children')],
@@ -89,7 +89,7 @@ def update_output(contents, filename):
     return data, children
 
 
-# Wybranie kolumny
+# part responsible for choosing target column
 @callback(
     [Output('y_label_column_ag', 'data'),
         Output('upload_model_section_ag', 'children')],
@@ -114,23 +114,22 @@ def select_kolumns(value):
     return data, children
 
 
-# funkcja odpowiedzialna za prawidlowe wczytanie modelu z pliku zip
+#  part responsible for adding model from zip file
 def parse_data_model(contents):
     if contents is not None:
         content_type, content_string = contents.split(',')
         decoded = base64.b64decode(content_string)
 
-        # Rozpakowanie pliku ZIP
+        # unpack zip file
         with zipfile.ZipFile(io.BytesIO(decoded), 'r') as zip_ref:
             zip_ref.extractall('./uploaded_model')
 
         predictor = TabularPredictor.load('./uploaded_model')
-    # Usunięcie wczytanego folderu modelu po wczytaniu
 
     return predictor
 
 
-# wybranie modelu a nastepnie narysowanie wykresow
+# part responsible for adding model and showing plots
 @callback(
     Output('plots_ag', 'children'),
     Input('upload_model_ag', 'contents'),
@@ -143,7 +142,7 @@ def update_model(contents, filename, df, column):
     if contents:
         contents = contents[0]
 
-        # usunięcie wrazie gdyby był już ten folder
+        # delete folder if it already is
         try:
             shutil.rmtree('./uploaded_model')
         except FileNotFoundError:
@@ -152,12 +151,10 @@ def update_model(contents, filename, df, column):
 
         df = pd.DataFrame.from_dict(df)
         df = df.dropna()
-
         X = df.iloc[:, df.columns != column["name"]]
         y = df.iloc[:, df.columns == column["name"]]
         y = y.squeeze()
 
-        # sprawdzenie czy klasyfikacja czy regresja
         if isinstance(y[0], (int, float)):
             task = "regression"
         else:

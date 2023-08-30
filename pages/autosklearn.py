@@ -11,7 +11,7 @@ sys.path.append("..")
 
 dash.register_page(__name__)
 
-# wygląd strony
+# page layout
 layout = html.Div([
     dcc.Store(id='csv_data_as', data=[], storage_type='memory'),
     dcc.Store(id='y_label_column_as', data=[], storage_type='memory'),
@@ -33,14 +33,13 @@ layout = html.Div([
             ], className="px-3 sidepanel")
         ], width=2),
         dbc.Col([
-            dcc.Loading(id="loading-1_as",type="default",children=html.Div(id="plots_as"),className="spinxD")
-            #dbc.Spinner(html.Div(id='plots'), spinner_class_name="spinxD"),
+            dcc.Loading(id="loading-1_as", type="default", children=html.Div(id="plots_as"), className="spin")
         ], width=10)
     ])
 ])
 
 
-# funkcja odpowiedzialna za prawidlowe wczytanie danych
+# data loading function
 def parse_data_model_autosklearn(contents, filename):
     content_type, content_string = contents.split(",")
 
@@ -59,7 +58,7 @@ def parse_data_model_autosklearn(contents, filename):
     return df
 
 
-# czesc odpowiedzialna za dodanie pliku csv
+# part responsible for adding csv file
 @callback(
     [Output('csv_data_as', 'data'),
         Output('select_y_label_column_as', 'children')],
@@ -87,7 +86,7 @@ def update_output(contents, filename):
     return data, children
 
 
-# Wybranie kolumny
+# part responsible for choosing target column
 @callback(
     [Output('y_label_column_as', 'data'),
         Output('upload_model_section_as', 'children')],
@@ -112,7 +111,7 @@ def select_kolumns(value):
     return data, children
 
 
-# wybranie modelu a nastepnie narysowanie wykresow
+# part responsible for adding model and showing plots
 @callback(
     Output('plots_as', 'children'),
     Input('upload_model_as', 'contents'),
@@ -122,25 +121,16 @@ def select_kolumns(value):
 )
 def update_model(contents, filename, df, column):
     children = []
-    print(column)
-    print(df)
     if contents:
         contents = contents[0]
         filename = filename[0]
         model = parse_data_model_autosklearn(contents, filename)
-        print(type(model))
 
         df = pd.DataFrame.from_dict(df)
         df = df.dropna()
-
-
         X = df.iloc[:, df.columns != column["name"]]
         y = df.iloc[:, df.columns == column["name"]]
         y = y.squeeze()
-
-        print(model.predict(X))
-        print(X)
-        print(y)
 
         if isinstance(y[0], (int, float)):
             task = "regression"

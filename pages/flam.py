@@ -11,7 +11,7 @@ sys.path.append("..")
 
 dash.register_page(__name__)
 
-# wygląd strony
+# page layout
 layout = html.Div([
     dcc.Store(id='csv_data', data=[], storage_type='memory'),
     dcc.Store(id='y_label_column', data=[], storage_type='memory'),
@@ -33,14 +33,13 @@ layout = html.Div([
             ], className="px-3 sidepanel")
         ], width=2),
         dbc.Col([
-            dcc.Loading(id="loading-1",type="default",children=html.Div(id="plots"),className="spinxD")
-            #dbc.Spinner(html.Div(id='plots'), spinner_class_name="spinxD"),
+            dcc.Loading(id="loading-1", type="default", children=html.Div(id="plots"), className="spin")
         ], width=10)
     ])
 ])
 
 
-# funkcja odpowiedzialna za prawidlowe wczytanie danych
+# data loading function
 def parse_data_model_flaml(contents, filename):
     content_type, content_string = contents.split(",")
 
@@ -59,7 +58,7 @@ def parse_data_model_flaml(contents, filename):
     return df
 
 
-# czesc odpowiedzialna za dodanie pliku csv
+# part responsible for adding csv file
 @callback(
     [Output('csv_data', 'data'),
         Output('select_y_label_column', 'children')],
@@ -87,7 +86,7 @@ def update_output(contents, filename):
     return data, children
 
 
-# Wybranie kolumny
+# part responsible for choosing target column
 @callback(
     [Output('y_label_column', 'data'),
         Output('upload_model_section', 'children')],
@@ -112,7 +111,7 @@ def select_kolumns(value):
     return data, children
 
 
-# wybranie modelu a nastepnie narysowanie wykresow
+# part responsible for adding model and showing plots
 @callback(
     Output('plots', 'children'),
     Input('upload_model', 'contents'),
@@ -129,12 +128,10 @@ def update_model(contents, filename, df, column):
 
         df = pd.DataFrame.from_dict(df)
         df = df.dropna()
-
         X = df.iloc[:, df.columns != column["name"]]
         y = df.iloc[:, df.columns == column["name"]]
         y = y.squeeze()
 
-        #sprawdzenie czy klasyfikacja czy regresja
         if isinstance(y[0], (int, float)):
             task = "regression"
         else:

@@ -87,7 +87,7 @@ def accuracy_plot(ensembled_model, X, y, library="Flaml"):
         models_name = ['Ensemble']
 
         for weight, model in ensembled_model.get_models_with_weights():
-            models_name.append( str(type(model._final_estimator.choice)).split('.')[-1][:-2])
+            models_name.append(str(type(model._final_estimator.choice)).split('.')[-1][:-2])
             prediction = model.predict(X)
             prediction_class = [class_names[idx] for idx in prediction]
             accuracy.append(accuracy_score(y, prediction_class))
@@ -165,7 +165,7 @@ def precision_plot(ensembled_model, X, y, library="Flaml"):
         models_name = ['Ensemble']
 
         for weight, model in ensembled_model.get_models_with_weights():
-            models_name.append( str(type(model._final_estimator.choice)).split('.')[-1][:-2])
+            models_name.append(str(type(model._final_estimator.choice)).split('.')[-1][:-2])
             prediction = model.predict(X)
             prediction_class = [class_names[idx] for idx in prediction]
             precision.append(precision_score(y, prediction_class, average='micro'))
@@ -244,7 +244,7 @@ def recall_plot(ensembled_model, X, y, library="Flaml"):
         models_name = ['Ensemble']
 
         for weight, model in ensembled_model.get_models_with_weights():
-            models_name.append( str(type(model._final_estimator.choice)).split('.')[-1][:-2])
+            models_name.append(str(type(model._final_estimator.choice)).split('.')[-1][:-2])
             prediction = model.predict(X)
             prediction_class = [class_names[idx] for idx in prediction]
             recall.append(recall_score(y, prediction_class, average='micro'))
@@ -322,7 +322,7 @@ def f1_score_plot(ensembled_model, X, y, library="Flaml"):
         models_name = ['Ensemble']
 
         for weight, model in ensembled_model.get_models_with_weights():
-            models_name.append( str(type(model._final_estimator.choice)).split('.')[-1][:-2])
+            models_name.append(str(type(model._final_estimator.choice)).split('.')[-1][:-2])
             prediction = model.predict(X)
             prediction_class = [class_names[idx] for idx in prediction]
             f1.append(f1_score(y, prediction_class, average='micro'))
@@ -396,7 +396,7 @@ def mape_plot(ensembled_model, X, y, library="Flaml"):
         models_name = ['Ensemble']
 
         for weight, model in ensembled_model.get_models_with_weights():
-            models_name.append( str(type(model._final_estimator.choice)).split('.')[-1][:-2])
+            models_name.append(str(type(model._final_estimator.choice)).split('.')[-1][:-2])
             mape.append(mean_absolute_percentage_error(y, model.predict(X)))
 
     fig = empty_fig()
@@ -468,7 +468,7 @@ def mae_plot(ensembled_model, X, y, library="Flaml"):
         models_name = ['Ensemble']
 
         for weight, model in ensembled_model.get_models_with_weights():
-            models_name.append( str(type(model._final_estimator.choice)).split('.')[-1][:-2])
+            models_name.append(str(type(model._final_estimator.choice)).split('.')[-1][:-2])
             mae.append(mean_absolute_error(y, model.predict(X)))
 
     fig = empty_fig()
@@ -540,7 +540,7 @@ def mse_plot(ensembled_model, X, y, library="Flaml"):
         models_name = ['Ensemble']
 
         for weight, model in ensembled_model.get_models_with_weights():
-            models_name.append( str(type(model._final_estimator.choice)).split('.')[-1][:-2])
+            models_name.append(str(type(model._final_estimator.choice)).split('.')[-1][:-2])
             mse.append(mean_squared_error(y, model.predict(X)))
 
     fig = empty_fig()
@@ -1111,6 +1111,7 @@ def partial_dependence_line_plot(y_values, x_values, model_names, name):
     for line_value, model_name in zip(y_values, model_names):
         fig.add_trace(go.Scatter(x=x_values, y=line_value, mode='lines', name=model_name))
     return fig
+
 
 # Code below is modified code from scikit-learn library to operate AutoSklearn partial dependence
 from collections.abc import Iterable
