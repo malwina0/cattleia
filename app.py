@@ -36,7 +36,7 @@ navbar = dbc.Navbar(
                             align="center",
                             className="g-0",
                         ),
-                        href="/flam",
+                        href="/flaml",
                         style={"textDecoration": "none"},
                     ),
                 ], width="auto"),

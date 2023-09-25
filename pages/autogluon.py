@@ -95,7 +95,7 @@ def update_output(contents, filename):
         Output('upload_model_section_ag', 'children')],
     Input('column_select_ag', 'value')
 )
-def select_kolumns(value):
+def select_columns(value):
     children = html.Div([
         html.H5("Upload FLAML model", className="sidepanel_text"),
         dcc.Upload(
