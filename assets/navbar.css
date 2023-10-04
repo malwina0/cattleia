@@ -1,5 +1,44 @@
+#menu {
+  position: fixed;
+  left: 0;
+  top: 150px;
+  width: 250px;
+  height: 100%;
+  background-color: #333;
+  transition: left 0.3s ease-in-out;
+  z-index: 1;
+  padding: 20px;
+  color: white;
+}
+
+#content {
+    top: 150px;
+    margin-left: 250px;
+    transition: margin-left 0.3s ease-in-out;
+    padding: 20px;
+    margin-top: 0;
+}
+
+.menu-open #menu {
+  top: 0; /* Pojawi się na górze ekranu */
+}
+
+.menu-open #content {
+  margin-left: 250px;
+}
+
+
+
+.tittle{
+    margin-left: 50px;
+    margin-right: 50px;
+}
+
+
+
 .nav_bar_text {
     font-size: 50px;
+    font-family: 'Product Sans', sans-serif;
 }
 
 
@@ -21,6 +60,7 @@ body {
     border: 10px solid;
     border-color: rgba(44,47,56,255);
     outline: 5px solid rgba(30,30,30,255);
+    width: 100%;
 }
 
 
