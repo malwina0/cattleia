@@ -16,7 +16,7 @@ navbar = dbc.Navbar(
                     dcc.Link(
                         dbc.Row(
                             [
-                                dbc.Col(html.Img(src="assets/cattleia.png", height="100px"), ),
+                                dbc.Col(html.Img(src="assets/cattleia.png", height="80px"), ),
                             ],
                             align="center",
                             className="g-0",
@@ -25,13 +25,12 @@ navbar = dbc.Navbar(
                         style={"textDecoration": "none"},
                     ),
                 ], width='auto'),
-                dbc.Col(html.Img(src="assets/tittle.png", height="100px"), align="center", className="tittle", width='auto'),
-                #dbc.Col(html.H1("Cattleia"), align="center", className="tittle", width='auto'),
+                dbc.Col(html.Img(src="assets/tittle.png", height="80px"), align="center", className="tittle", width='auto'),
                 dbc.Col([
                     html.A(
                         dbc.Row(
                             [
-                                dbc.Col(html.Img(src="assets/github.png", height="90px"), ),
+                                dbc.Col(html.Img(src="assets/github.png", height="70px"), ),
                             ],
                             align="center",
                             className="g-0",
@@ -41,8 +40,7 @@ navbar = dbc.Navbar(
                     ),
                 ], width='auto'),
             ], justify="between"),
-        ], className="custom_nav_bar",
-    style={"display": "block"}
+        ], className="custom_nav_bar", style={"display": "block"}
     ),
     color='rgba(38,38,38, 0)',
     dark=True,

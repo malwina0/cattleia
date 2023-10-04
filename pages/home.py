@@ -17,33 +17,29 @@ dash.register_page(__name__,  path='/')
 layout = html.Div([
     dcc.Store(id='csv_data', data=[], storage_type='memory'),
     dcc.Store(id='y_label_column', data=[], storage_type='memory'),
-    dbc.Row([
-        # side menu
-        dbc.Col([
-            html.Div([
-                dbc.Container([
-                    html.H5("Upload csv data", className="sidepanel_text"),
-                    dcc.Upload(
-                        id='upload_csv_data',
-                        children=html.Div([
-                            'Drag and Drop or ',
-                            html.A('Select Files')
-                        ]),
-                        className="upload_data",
-                        multiple=True
-                    ),
-                    html.Div(id='select_y_label_column'),
-                    html.Div(id='upload_model_section'),
-                ], className="px-3 sidepanel")
-            ], id="side_menu_div", style={'marginLeft': 50})
-        ], width=2),
-        # plots
-        dbc.Col([
-            html.Div([
-                dcc.Loading(id="loading-1", type="default", children=html.Div(id="plots"), className="spin")
-            ], id="plots_div")
-        ], width=10)
-    ])
+    # side menu
+    html.Div([
+        dbc.Container([
+            dcc.Link(html.H5("Instruction"), href="/instruction", className="sidepanel_text"),
+            html.Hr(),
+            html.H5("Upload csv data", className="sidepanel_text"),
+            dcc.Upload(
+                id='upload_csv_data',
+                children=html.Div([
+                    'Drag and Drop or ',
+                    html.A('Select Files')
+                ]),
+                className="upload_data",
+                multiple=True
+            ),
+            html.Div(id='select_y_label_column'),
+            html.Div(id='upload_model_section'),
+        ], className="px-3 sidepanel")
+    ], id="side_menu_div"),
+    # plots
+    html.Div([
+        dcc.Loading(id="loading-1", type="default", children=html.Div(id="plots"), className="spin")
+    ], id="plots_div")
 ])
 
 
@@ -96,7 +92,7 @@ def update_output(contents, filename):
             html.P(filename, className="sidepanel_text"),
             html.Hr(),
             html.H5("Select target colum", className="sidepanel_text"),
-            dcc.Dropdown(id='column_select',
+            dcc.Dropdown(id='column_select', className="dropdown-class",
                          options=[{'label': x, 'value': x} for x in df.columns]),
             html.Hr(),
         ])
@@ -122,7 +118,6 @@ def select_columns(value):
             className="upload_data",
             multiple=True
         ),
-        html.Hr(),
     ])
     data = {'name': value}
 
@@ -156,7 +151,6 @@ def update_model(contents, filename, df, column):
         X = df.iloc[:, df.columns != column["name"]]
         y = df.iloc[:, df.columns == column["name"]]
         y = y.squeeze()
-
 
         if y.squeeze().nunique() > 10:
             task = "regression"
@@ -216,3 +210,32 @@ def update_model(contents, filename, df, column):
 
     return children
 
+
+# callback responsible for moving the menu
+dash.clientside_callback(
+    """
+    function() {
+        var menu = document.getElementById('side_menu_div');
+        var content = document.getElementById('plots_div');
+
+        menu.style.left = '0';
+        content.style.left = '250px';
+
+        window.addEventListener('scroll', function() {
+            var currentScrollY = window.scrollY;
+            console.log(currentScrollY);
+            if (currentScrollY > 50) {
+                menu.style.left = '-250px';
+                content.style.marginLeft = '0';
+            } else {
+                menu.style.left = '0';
+                content.style.marginLeft = '250px';
+            }
+        });
+    }
+    """,
+    Output('side_menu_div', 'style'),
+    Output('plots_div', 'style'),
+    Input('upload_csv_data', 'contents'),
+    prevent_initial_call=False
+)
