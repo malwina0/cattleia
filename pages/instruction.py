@@ -1,75 +1,36 @@
 import dash
 from dash import html, dcc, callback, Input, Output, State
+import dash_bootstrap_components as dbc
 
 
 dash.register_page(__name__)
 
 layout = html.Div([
-    html.Div(id='menu', children=[
-        # Tutaj dodaj elementy Twojego menu
-        html.H1("Menu"),
-        html.H1("Pozycja 1"),
-        html.H1("Pozycja 2"),
-        html.H1("Pozycja 3"),
-    ]),
-    html.Div(id='content', children=[
-        # Tutaj dodaj zawartość swojej strony
-        html.H1("Zawartość strony"),
-        html.H1("Aliquam erat volutpat. Sed vulputate nunc eu libero dictum, nec facilisis justo dapibus."),
-        html.H1("Etiam vel quam vel ipsum iaculis sollicitudi"),
-        html.H1("Zawartość strony"),
-        html.H1("Etiam vel quam vel ipsum iaculis sollicitudi"),
-        html.H1("Zawartość strony"),
-        html.H1("Etiam vel quam vel ipsum iaculis sollicitudi"),
-        html.H1("Zawartość strony"),
-        html.H1("Etiam vel quam vel ipsum iaculis sollicitudi"),
-        html.H1("Zawartość strony"),
-        html.H1("Etiam vel quam vel ipsum iaculis sollicitudi"),
-        html.H1("Zawartość strony"),
-        html.H1("Etiam vel quam vel ipsum iaculis sollicitudi"),
-        html.H1("Zawartość strony"),
-        html.H1("Etiam vel quam vel ipsum iaculis sollicitudi"),
-        html.H1("Zawartość strony"),
-        html.H1("Etiam vel quam vel ipsum iaculis sollicitudi"),
-        html.H1("Zawartość strony"),
-        html.H1("Etiam vel quam vel ipsum iaculis sollicitudi"),
-        html.H1("Zawartość strony"),
-        html.H1("Etiam vel quam vel ipsum iaculis sollicitudi"),
-        html.H1("Zawartość strony"),
-        html.H1("Etiam vel quam vel ipsum iaculis sollicitudi"),
-        html.H1("Zawartość strony"),
+    dbc.Row([
+        dbc.Col(html.H1("1. Train model"), width='auto', className="instruction_main"),
+        dbc.Col(html.Img(src="assets/train.png", height="70px"), align="center", width='auto'),
+    ], justify="start"),
+    dbc.Row([
+        dbc.Col(html.H1("2. Save model"), width='auto', className="instruction_main"),
+        dbc.Col(html.Img(src="assets/save.png", height="70px"), align="center", width='auto'),
+    ], justify="start"),
+    dbc.Row([
+        dbc.Col(html.H1("3. Upload data file"), width='auto', className="instruction_main"),
+        dbc.Col(html.Img(src="assets/upload.png", height="70px"), align="center", width='auto'),
+    ], justify="start"),
+    dbc.Row([
+        dbc.Col(html.H1("4. Select column"), width='auto', className="instruction_main"),
+        dbc.Col(html.Img(src="assets/select.png", height="70px"), align="center", width='auto'),
+    ], justify="start"),
+    dbc.Row([
+        dbc.Col(html.H1("5. Upload model"), width='auto', className="instruction_main"),
+        dbc.Col(html.Img(src="assets/upload.png", height="70px"), align="center", width='auto'),
+    ], justify="start"),
+    dbc.Row([
+        dbc.Col(html.H1("6. Analise metrics and plots"), align="center", width='auto', className="instruction_main"),
+        dbc.Col(html.Img(src="assets/analise.png", height="70px"), align="center", width='auto'),
+    ], justify="start"),
 
-    ]),
-    dcc.Interval(id='interval-component', interval=3000)
-])
+], className="instruction")
 
-dash.clientside_callback(
-    """
-    function() {
-        //var menu = document.getElementById('menu');
-        //var content = document.getElementById('content');
 
-        // Początkowo menu jest widoczne
-        menu.style.left = '0';
-        content.style.left = '250px';
-
-        window.addEventListener('scroll', function() {
-            var currentScrollY = window.scrollY;
-            console.log(currentScrollY);
-            if (currentScrollY > 50) {
-                // Przewijanie w dół - chowaj menu
-                menu.style.left = '-250px';
-                content.style.marginLeft = '0';
-            } else {
-                // Przewijanie w górę - wysuwaj menu
-                menu.style.left = '0';
-                content.style.marginLeft = '250px';
-            }
-        });
-    }
-    """,
-    Output('menu', 'style'),
-    Output('content', 'style'),
-    Input('menu', 'n_clicks'),
-    prevent_initial_call=False
-)

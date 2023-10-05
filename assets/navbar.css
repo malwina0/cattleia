@@ -129,3 +129,13 @@ body {
 ::-webkit-scrollbar-thumb:hover {
   background: #555;
 }
+
+.instruction_main{
+    color: rgba(225, 225, 225, 255);
+    font-size: 80px;
+}
+
+.instruction{
+    margin-top: 50px;
+    margin-left: 100px;
+}
