@@ -865,7 +865,7 @@ def prediction_compare_plot(ensemble_model, X, y, library="Flaml", task="regress
                                [1, 'rgb(125,179,67)'],
                                ]
 
-    fig = px.imshow(plot_value, text_auto=True, color_continuous_scale=discrete_nonuniform)
+    fig = px.imshow(plot_value, text_auto=False, color_continuous_scale=discrete_nonuniform)
     fig.update_layout(
         title="Models predictions compare",
         plot_bgcolor='rgba(44,47,56,255)',
