@@ -136,6 +136,13 @@ body {
 }
 
 .instruction{
-    margin-top: 50px;
-    margin-left: 100px;
+    margin-top: 30px;
+    margin-left: 70px;
+    overflow-x: hidden
+}
+
+.instruction_str{
+    color: rgba(225, 225, 225, 255);
+    font-size: 18px;
+    margin-left: 50px;
 }
