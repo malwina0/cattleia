@@ -1,5 +1,5 @@
 import dash
-from dash import html, dcc, callback, Input, Output, State
+from dash import html
 import dash_bootstrap_components as dbc
 
 
@@ -69,11 +69,9 @@ layout = html.Div([
         dbc.Col(html.H1("6. Analise metrics and plots"), align="center", width='auto', className="instruction_main"),
         dbc.Col(html.Img(src="assets/analise.png", height="50px"), align="center", width='auto'),
     ], justify="start"),
-    dbc.Row([html.H2("Analyze plots and tables created by cattleia to better understand the ensemble model.",
+    dbc.Row([html.H2("Analyse plots and tables created by cattleia to better understand the ensemble model.",
                      className="instruction_str")]),
     html.Br(),
     html.Br(),
     html.Br(),
 ], className="instruction")
-
-
