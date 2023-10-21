@@ -1,5 +1,6 @@
 body {
-  background-color: rgba(30,30,30,255);
+    background-color: rgba(30,30,30,255);
+    overflow-x: hidden;
 }
 
 
@@ -136,6 +137,30 @@ body {
 }
 
 .instruction{
-    margin-top: 50px;
+    margin-top: 30px;
+    margin-left: 70px;
+    overflow-x: hidden
+}
+
+.instruction_str{
+    color: rgba(225, 225, 225, 255);
+    font-size: 18px;
+    margin-left: 50px;
+}
+
+.about_us_main{
+    color: rgba(225, 225, 225, 255);
+    font-size: 25px;
+}
+
+.about_us_str{
+    color: rgba(225, 225, 225, 255);
+    font-size: 15px;
+    margin-left: 50px;
+}
+
+.about_us_img{
+    color: rgba(225, 225, 225, 255);
+    font-size: 15px;
     margin-left: 100px;
 }
