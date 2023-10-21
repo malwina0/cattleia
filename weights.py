@@ -1,6 +1,7 @@
 import copy
 import dash
 from dash import html, Dash, dcc, Output, Input, callback, MATCH, State, ALL
+import dash_bootstrap_components as dbc
 import pickle
 import pandas as pd
 from flaml import AutoML
@@ -20,22 +21,31 @@ def get_ensemble_names_weights(ensemble_model):
     return model_names, weights
 
 
-def slider_section(model_name, i):
+def slider_section(model_name, weight, i):
     return html.Div([
-        html.Div(f'{model_name}:', style={'textAlign': 'left', 'paddingRight': '10px', 'color': 'white'}),
-        dcc.Slider(
-            id={"type": "part_add", "index": i},
-            min=0,
-            max=1,
-            step=0.05,
-            value=1,
-            tooltip={"placement": "right", "always_visible": False},
-            updatemode='drag',
-            persistence=True,
-            persistence_type='session',
-            marks=None,
-            className='weight-slider',
-        )
+        dbc.Row(
+            [
+                dbc.Col(
+                    html.Div(f'{model_name}', style={'textAlign': 'right', 'paddingRight': '0px', 'color': 'white'}),
+                    width=3
+                ),
+                dbc.Col(
+                    dcc.Slider(
+                        id={"type": "part_add", "index": i},
+                        min=0,
+                        max=1,
+                        step=0.01,
+                        value=weight,
+                        tooltip={"placement": "right", "always_visible": False},
+                        updatemode='drag',
+                        persistence=True,
+                        persistence_type='session',
+                        marks=None,
+                        className='weight-slider',
+                    ),
+                    width=10
+                )
+        ])
     ], style={'display': 'inline'})
 
 
@@ -56,4 +66,41 @@ def weights_plot(ensemble_model, X, y, models_name, weights):
     )
     return fig
 
+
+def weights_metrics_table():
+    return html.Table([
+            # Table Header
+            html.Tr([
+                html.Th('Column 1'),
+                html.Th('Column 2'),
+                html.Th('Column 3')
+            ]),
+
+            # Table Rows (5 empty rows)
+            html.Tr([
+                html.Td(''),
+                html.Td(''),
+                html.Td('')
+            ]),
+            html.Tr([
+                html.Td(''),
+                html.Td(''),
+                html.Td('')
+            ]),
+            html.Tr([
+                html.Td(''),
+                html.Td(''),
+                html.Td('')
+            ]),
+            html.Tr([
+                html.Td(''),
+                html.Td(''),
+                html.Td('')
+            ]),
+            html.Tr([
+                html.Td(''),
+                html.Td(''),
+                html.Td('')
+            ])
+        ])
 

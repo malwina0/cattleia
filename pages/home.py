@@ -1,14 +1,14 @@
 import dash
-from dash import html, dcc, callback, Input, Output, State
-import base64
-import io
+from dash import html, dcc, Output, Input, callback, State, ALL
 import dash_bootstrap_components as dbc
 import sys
-import zipfile
 import metrics
 import shutil
 import pandas as pd
-from autogluon.tabular import TabularPredictor
+from utils import parse_data
+
+from weights import slider_section, get_ensemble_names_weights, weights_plot, weights_metrics_table
+
 sys.path.append("..")
 
 dash.register_page(__name__,  path='/')
@@ -54,7 +54,7 @@ about_us = html.Div([
         creating predictive models and extracting valuable insights from numerical information. 
         Our mission is to develop skills in this field and share our knowledge with others. 
         Cattleia is our project created as a Bachelor thesis.  
-        Our project co-ordinator and supervisor is Anna Kozak
+        Our project co-ordinator and supervisor is Anna Kozak.
     """, className="about_us_str", style={"max-width": "70%", "height": "auto"}),
     ])
 
@@ -63,6 +63,10 @@ about_us = html.Div([
 layout = html.Div([
     dcc.Store(id='csv_data', data=[], storage_type='memory'),
     dcc.Store(id='y_label_column', data=[], storage_type='memory'),
+    dcc.Store(id='ensemble_model', data=[], storage_type='memory'),
+    dcc.Store(id='library', data='', storage_type='memory'),
+    dcc.Store(id='model_names', data=[], storage_type='memory'),
+    dcc.Store(id='weights', data=[], storage_type='memory'),
     # side menu
     html.Div([
         dbc.Container([
@@ -89,41 +93,12 @@ layout = html.Div([
 ])
 
 
-# data loading function
-def parse_data(contents, filename):
-    content_type, content_string = contents.split(",")
-
-    decoded = base64.b64decode(content_string)
-    try:
-        if "csv" in filename:
-            df = pd.read_csv(io.StringIO(decoded.decode("utf-8")))
-            return df
-        elif "pkl" in filename:
-            model = pd.read_pickle(io.BytesIO(decoded))
-            if "<class 'flaml" in str(model.__class__).split("."):
-                library = "Flaml"
-            else:
-                library = "AutoSklearn"
-            return model, library
-        elif "zip" in filename:
-            with zipfile.ZipFile(io.BytesIO(decoded), 'r') as zip_ref:
-                zip_ref.extractall('./uploaded_model')
-
-            model = TabularPredictor.load('./uploaded_model', require_py_version_match=False)
-            library = "AutoGluon"
-            return model, library
-
-    except Exception as e:
-        print(e)
-        return html.Div(["There was an error processing this file."])
-
-
 # part responsible for adding csv file
 @callback(
     [Output('csv_data', 'data'),
-        Output('select_y_label_column', 'children')],
+    Output('select_y_label_column', 'children')],
     [Input('upload_csv_data', 'contents'),
-        State('upload_csv_data', 'filename')]
+    State('upload_csv_data', 'filename')]
 )
 def update_output(contents, filename):
     data = []
@@ -169,6 +144,27 @@ def select_columns(value):
 
     return data, children
 
+# @callback(Output('ensemble_model', 'data'),
+#           Input('upload_model', 'contents'),
+#           State('upload_model', 'filename'),
+#           )
+# def update_model_0(contents, filename):
+#     if contents:
+#         contents = contents[0]
+#         filename = filename[0]
+#
+#         # delete folder if it already is, only for autogluon
+#         try:
+#             shutil.rmtree('./uploaded_model')
+#         except FileNotFoundError:
+#             pass
+#
+#         ensemble_model, library = parse_data(contents, filename)
+#         print(library)
+#         model_names, weights = get_ensemble_names_weights(ensemble_model)
+#         original_weights = copy.deepcopy(weights)
+#         return [ensemble_model]
+
 
 # part responsible for adding model and showing plots
 @callback(
@@ -192,6 +188,7 @@ def update_model(contents, filename, df, column, about_us):
             pass
 
         model, library = parse_data(contents, filename)
+        models_name, weights = get_ensemble_names_weights(model)
 
         df = pd.DataFrame.from_dict(df)
         df = df.dropna()
@@ -203,7 +200,6 @@ def update_model(contents, filename, df, column, about_us):
             task = "regression"
         else:
             task = "classification"
-
         if task == "regression":
             plot_component = [
                 dbc.Row([
@@ -238,6 +234,14 @@ def update_model(contents, filename, df, column, about_us):
                           className="plot"),
                 dcc.Graph(figure=metrics.prediction_compare_plot(model, X, y, library=library, task=task),
                           className="plot"),
+                dbc.Row([
+                    dbc.Col([
+                        html.Div([slider_section(model_name, weights[i], i) for i, model_name in enumerate(models_name)],
+                         style={'color': 'white'})
+                    ], width=8),
+                    dbc.Col([weights_metrics_table()], width=4)
+                ]),
+                dcc.Graph(figure=weights_plot(model, X, y, models_name, weights), className="plot", id='my-graph'),
             ]
 
         for plot in metrics.permutation_feature_importance_all(model, X, y, library=library, task=task):
@@ -257,6 +261,39 @@ def update_model(contents, filename, df, column, about_us):
 
     return children
 
+@callback(
+Output('my-graph', 'figure', allow_duplicate=True),
+    Input({"type": "part_add", "index": ALL}, 'value'),
+    Input('upload_model', 'contents'),
+    State('upload_model', 'filename'),
+    State('csv_data', 'data'),
+    State('y_label_column', 'data'),
+    prevent_initial_call=True
+)
+def display_output(values, contents, filename, df, column):
+    if contents:
+        contents = contents[0]
+        filename = filename[0]
+
+        # delete folder if it already is, only for autogluon
+        try:
+            shutil.rmtree('./uploaded_model')
+        except FileNotFoundError:
+            pass
+
+        model, library = parse_data(contents, filename)
+        models_name, weights = get_ensemble_names_weights(model)
+
+        df = pd.DataFrame.from_dict(df)
+        df = df.dropna()
+        X = df.iloc[:, df.columns != column["name"]]
+        y = df.iloc[:, df.columns == column["name"]]
+        y = y.squeeze()
+
+        sum_slider_values = sum(values)
+
+        weights = [value / sum_slider_values for value in values]
+        return weights_plot(model, X, y, models_name, weights)
 
 # callback responsible for moving the menu
 dash.clientside_callback(

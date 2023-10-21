@@ -1,4 +1,3 @@
-/* Assuming your slider has the ID "my-slider" */
 .weight-slider .rc-slider-rail{
   align-items: center;
   text-align: right;
@@ -7,22 +6,6 @@
   border-radius: 0;
 }
 
-.weight-slider{
-  /*width: 20px;*/
-  /*display: inline-block;*/
-  /*width: 10%;*/
-
-}
-
-
-/*.weight-slider .rc-slider-vertical {*/
-/*  !* Set the width of the slider *!*/
-/*  width: 20px; !* Adjust this value as needed *!*/
-/*  background-color: greenyellow;*/
-/*  height: 100px;*/
-/*}*/
-
-/* Style the track of the slider */
 .weight-slider .rc-slider-track {
   background-color: #ffaef4; /* Set your desired track color */
   border-radius: 0; /* Remove border radius to make it rectangular */
@@ -30,12 +13,6 @@
   height: 20px;
 }
 
-/* Style the thumb (handle) of the slider */
 .weight-slider .rc-slider-handle {
-  /*width: 20px; !* Set the width of the thumb *!*/
-  /*height: 20px; !* Set the height of the thumb *!*/
-  /*background-color: #ffaef4; !* Set your desired thumb color *!*/
-  /*border: none; !* Remove the default border *!*/
-  /*margin-top: -7px; !* Adjust vertical alignment if necessary *!*/
   visibility: hidden;
 }
