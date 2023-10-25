@@ -1,0 +1,166 @@
+body {
+    background-color: rgba(30,30,30,255);
+    overflow-x: hidden;
+}
+
+
+.custom_nav_bar{
+    background-color: rgba(44,47,56,255);
+    border-radius: 25px;
+    border: 10px solid;
+    border-color: rgba(44,47,56,255);
+    outline: 5px solid rgba(30,30,30,255);
+    width: 100%;
+}
+
+
+.tittle{
+    margin-left: 50px;
+    margin-right: 50px;
+}
+
+
+#side_menu_div {
+  position: fixed;
+  left: 0;
+  top: 100px;
+  width: 250px;
+  height: 100%;
+  background-color: transparent;
+  transition: left 0.3s ease-in-out;
+  z-index: 1;
+  padding: 20px;
+  color: white;
+}
+
+
+#plots_div {
+    top: 100px;
+    margin-left: 250px;
+    transition: margin-left 0.3s ease-in-out;
+    padding: 20px;
+    margin-top: 0;
+}
+
+
+.spin{
+     position: absolute;
+     top: 200px;
+
+ }
+
+
+.upload_data{
+    width: 100%;
+    height: 60px;
+    border-width: 1px;
+    border-style: solid;
+    border-radius: 5px;
+    text-align: center;
+    vertical-align: middle;
+    color: rgba(225, 225, 225, 255);
+}
+
+
+.sidepanel_text{
+    color: rgba(225, 225, 225, 255);
+    text-align: center;
+}
+
+
+.sidepanel{
+    background-color: rgba(44, 47, 56, 255);
+    border-radius: 25px;
+    margin-top: 20px;
+    margin-bottom: 20px;
+    margin-left: 10px;
+    margin-right: 20px;
+
+}
+
+
+.plot{
+    margin-top: 20px;
+    margin-bottom: 20px;
+    margin-left: 5px;
+    margin-right: 10px;
+    border: 20px solid;
+    border-color: rgba(44,47,56,255);
+    border-radius: 25px;
+}
+
+
+/* menu wyboru */
+.dropdown-class > .Select-control {
+    width:100% !important;
+    border: 2px solid black;
+    border-radius:20px;
+    background-color:rgba(0,114,239,255);
+}
+
+
+/* opcje */
+.Select-menu-outer {
+    background-color: rgba(44,47,56,255);
+    border: 2px solid black;
+    border-radius:20px;
+    color: white;
+    overflow: hidden;
+    scrollbar-width: thin;
+    scrollbar-color: #333333 #666666;
+}
+
+
+/* width */
+::-webkit-scrollbar {
+  width: 10px;
+}
+
+/* Track */
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+/* Handle */
+::-webkit-scrollbar-thumb {
+  background: #888;
+}
+
+/* Handle on hover */
+::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
+
+.instruction_main{
+    color: rgba(225, 225, 225, 255);
+    font-size: 80px;
+}
+
+.instruction{
+    margin-top: 30px;
+    margin-left: 70px;
+    overflow-x: hidden
+}
+
+.instruction_str{
+    color: rgba(225, 225, 225, 255);
+    font-size: 18px;
+    margin-left: 50px;
+}
+
+.about_us_main{
+    color: rgba(225, 225, 225, 255);
+    font-size: 25px;
+}
+
+.about_us_str{
+    color: rgba(225, 225, 225, 255);
+    font-size: 15px;
+    margin-left: 50px;
+}
+
+.about_us_img{
+    color: rgba(225, 225, 225, 255);
+    font-size: 15px;
+    margin-left: 100px;
+}
