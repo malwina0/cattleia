@@ -133,6 +133,7 @@ def uniformity(pred1, pred2):
     """
     return accuracy_score(pred1, pred2)
 
+
 def disagreement_ratio(pred1, pred2):
     """ Calculates percentage of observations where two classification models
     predicted different value
@@ -275,6 +276,91 @@ def conjunctive_recall(pred1, pred2, y, positive=None):
             if pred1[i] == positive and pred2[i] == positive:
                 TTP += 1
     return TTP/P
+
+def correctness_counter(pred1, pred2, y):
+    """ Calculates count of observationes predicted on different level
+    of correctness: predicted correctly by both, predicted correctly
+    by only one model and predicted wrong by both.
+
+    Parameters
+    ----------
+    pred1 : list, numpy.array, pandas.series
+        numeric vector representing results of model prediction
+    pred2 : list, numpy.array, pandas.series
+        numeric vector representing results of model prediction
+    y: list, numpy.array, pandas.series
+        true values of predicted variable
+
+    Returns
+    -------
+    3 numeric values representing percentage of correctly, semi-correctly
+     and wrong predicted observations
+    """
+    double_correct = 0
+    disagreement = 0
+    double_wrong = 0
+    n_observations = len(y)
+    for i in range(n_observations):
+        if pred1[i] == pred2[i]:
+            if y[i] == pred1[i]:
+                double_correct += 1
+            else:
+                double_wrong += 1
+        else:
+            disagreement += 1
+    return double_correct/n_observations, disagreement/n_observations, double_wrong/n_observations
+
+
+def average_collective_score(pred1, pred2, y, positive=None):
+    """ Calculates collective score of two models predictions by summing
+    number of observations with weights corresponding to its prediciton
+    correctness. When both models predicted correctly, observation is given
+    weight 1, when only one model predicted right, the weight is equal to 0.5, otherwise
+    observation is counted with weight 0. Sum is divided by number of observations.
+
+    Parameters
+    ----------
+    pred1 : list, numpy.array, pandas.series
+        numeric vector representing results of model prediction
+    pred2 : list, numpy.array, pandas.series
+        numeric vector representing results of model prediction
+    y: list, numpy.array, pandas.series
+        true values of predicted variable
+
+    Returns
+    -------
+    Numeric value
+        Average collective score value of given predictions pair
+        and true values vector
+
+    """
+    if not positive:
+        positive = y.unique()[1]
+    TTP_TTN = 0
+    FFP_FFN = 0
+    n_observations = len(y)
+    weights = []
+    for i in range(len(y)):
+        if y[i] == positive:
+            if pred1[i] == positive and pred2[i] == positive:
+                TTP_TTN += 1
+                weights = weights + [1]
+            elif pred1[i] != positive and pred2[i] != positive:
+                FFP_FFN += 1
+                weights = weights + [0]
+            else:
+                weights = weights + [0.5]
+
+        else:
+            if pred1[i] == positive and pred2[i] == positive:
+                FFP_FFN += 1
+                weights = weights + [0]
+            elif pred1[i] != positive and pred2[i] != positive:
+                TTP_TTN += 1
+                weights = weights + [1]
+            else:
+                weights = weights + [0.5]
+    return (TTP_TTN + 0.5*(n_observations - TTP_TTN - FFP_FFN))/n_observations, weights
 
 def macro_conjunctive_precission(pred1, pred2, y):
     """ Calculates macro conjunctive precission for multiclass classification task,
