@@ -1,13 +1,17 @@
 import dash
-from dash import html, dcc, Output, Input, callback, State, ALL
+from dash import html, dcc, Output, Input, callback, State, ALL, dash_table
 import dash_bootstrap_components as dbc
 import sys
+
+from sklearn.metrics import mean_absolute_percentage_error, mean_squared_error, mean_absolute_error
+
 import metrics
 import shutil
 import pandas as pd
 from utils import parse_data
 
-from weights import slider_section, get_ensemble_names_weights, weights_plot, weights_metrics_table
+from weights import slider_section, get_ensemble_names_weights, weights_plot, \
+    calculate_classification_metrics, metrics_table
 
 sys.path.append("..")
 
@@ -144,27 +148,6 @@ def select_columns(value):
 
     return data, children
 
-# @callback(Output('ensemble_model', 'data'),
-#           Input('upload_model', 'contents'),
-#           State('upload_model', 'filename'),
-#           )
-# def update_model_0(contents, filename):
-#     if contents:
-#         contents = contents[0]
-#         filename = filename[0]
-#
-#         # delete folder if it already is, only for autogluon
-#         try:
-#             shutil.rmtree('./uploaded_model')
-#         except FileNotFoundError:
-#             pass
-#
-#         ensemble_model, library = parse_data(contents, filename)
-#         print(library)
-#         model_names, weights = get_ensemble_names_weights(ensemble_model)
-#         original_weights = copy.deepcopy(weights)
-#         return [ensemble_model]
-
 
 # part responsible for adding model and showing plots
 @callback(
@@ -213,6 +196,16 @@ def update_model(contents, filename, df, column, about_us):
                           className="plot"),
                 dcc.Graph(figure=metrics.prediction_compare_plot(model, X, y, library=library, task=task),
                           className="plot"),
+                dbc.Row([
+                    dbc.Col([
+                        html.Div([],  style={'height': '30px'}), #placeholder to show metrics in the same line
+                        html.Div(
+                            [slider_section(model_name, weights[i], i) for i, model_name in enumerate(models_name)],
+                            style={'color': 'white'})
+                    ], width=7),
+                    dbc.Col([metrics_table(model, X, y, weights)
+                    ], width=4)
+                ]),
             ]
         else:
             plot_component = [
@@ -234,14 +227,6 @@ def update_model(contents, filename, df, column, about_us):
                           className="plot"),
                 dcc.Graph(figure=metrics.prediction_compare_plot(model, X, y, library=library, task=task),
                           className="plot"),
-                dbc.Row([
-                    dbc.Col([
-                        html.Div([slider_section(model_name, weights[i], i) for i, model_name in enumerate(models_name)],
-                         style={'color': 'white'})
-                    ], width=8),
-                    dbc.Col([weights_metrics_table()], width=4)
-                ]),
-                dcc.Graph(figure=weights_plot(model, X, y, models_name, weights), className="plot", id='my-graph'),
             ]
 
         for plot in metrics.permutation_feature_importance_all(model, X, y, library=library, task=task):
@@ -262,8 +247,8 @@ def update_model(contents, filename, df, column, about_us):
     return children
 
 @callback(
-Output('my-graph', 'figure', allow_duplicate=True),
-    Input({"type": "part_add", "index": ALL}, 'value'),
+Output('metrics-table', 'data', allow_duplicate=True),
+    Input({"type": "weight_slider", "index": ALL}, 'value'),
     Input('upload_model', 'contents'),
     State('upload_model', 'filename'),
     State('csv_data', 'data'),
@@ -275,25 +260,30 @@ def display_output(values, contents, filename, df, column):
         contents = contents[0]
         filename = filename[0]
 
-        # delete folder if it already is, only for autogluon
-        try:
-            shutil.rmtree('./uploaded_model')
-        except FileNotFoundError:
-            pass
-
-        model, library = parse_data(contents, filename)
-        models_name, weights = get_ensemble_names_weights(model)
-
-        df = pd.DataFrame.from_dict(df)
-        df = df.dropna()
+        ensemble_model, library = parse_data(contents, filename)
+        df = pd.DataFrame.from_dict(df).dropna()
         X = df.iloc[:, df.columns != column["name"]]
-        y = df.iloc[:, df.columns == column["name"]]
-        y = y.squeeze()
+        y = df.iloc[:, df.columns == column["name"]].squeeze()
 
         sum_slider_values = sum(values)
 
-        weights = [value / sum_slider_values for value in values]
-        return weights_plot(model, X, y, models_name, weights)
+        weights = [round((value / sum_slider_values), 2) for value in values]
+        mape = []
+        mae = []
+        mse = []
+        for weight, model in ensemble_model.get_models_with_weights():
+            mape.append(float('%.*g' % (3, mean_absolute_percentage_error(y, model.predict(X)))))
+            mae.append(float('%.*g' % (3, mean_absolute_error(y, model.predict(X)))))
+            mse.append(round(mean_squared_error(y, model.predict(X))))
+
+        data = {
+            'weight': weights,
+            'MAPE': mape,
+            'MAE': mae,
+            'MSE': mse
+        }
+        df = pd.DataFrame(data)
+        return df.to_dict('records')
 
 # callback responsible for moving the menu
 dash.clientside_callback(
