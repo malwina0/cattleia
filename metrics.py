@@ -9,6 +9,7 @@ from sklearn.metrics import accuracy_score
 from sklearn.metrics import precision_score
 from sklearn.metrics import recall_score
 from sklearn.metrics import f1_score
+from sklearn.metrics import r2_score
 from scipy.stats import chi2_contingency
 from sklearn.inspection import permutation_importance
 from sklearn.inspection import partial_dependence
@@ -525,6 +526,142 @@ def mse_plot(ensemble_model, X, y, library="Flaml"):
         xaxis=dict(
             tickmode='array',
             tickvals=list(range(len(mse))),
+            ticktext=models_name
+        ),
+        showlegend=False
+    )
+
+    return fig
+
+
+def rmse_plot(ensemble_model, X, y, library="Flaml"):
+    """RMSE metrics plot of individual models from the ensemled model.
+
+    Parameters
+    ----------
+    ensemble_model : Flaml, AutoGluon or AutoSklearn ensemble model.
+
+    X, y : dataframe
+
+    library : {'Flaml', 'AutoGluon', 'AutoSklearn'}
+            string that specifies the model library
+
+    Returns
+    -------
+    fig : plotly.graph_objs._figure.Figure
+        plotly plot
+
+    Examples
+    --------
+    rmse_plot(model_reg, X_reg, y_reg)
+    """
+    if library == "Flaml":
+        ensemble_models = ensemble_model.model.estimators_
+        rmse = [mean_squared_error(y, ensemble_model.predict(X), squared=False)]
+        models_name = ['Ensemble']
+
+        X_transform = ensemble_model._state.task.preprocess(X, ensemble_model._transformer)
+        for model in ensemble_models:
+            rmse.append(mean_squared_error(y, model.predict(X_transform), squared=False))
+            models_name.append(type(model).__name__)
+    elif library == "AutoGluon":
+        ensemble_models = ensemble_model.info()['model_info'][ensemble_model.get_model_best()]['stacker_info'][
+            'base_model_names']
+        rmse = [mean_squared_error(y, ensemble_model.predict(X), squared=False)]
+        models_name = ['Ensemble']
+
+        final_model = ensemble_model.get_model_best()
+        for model_name in ensemble_models:
+            models_name.append(model_name)
+            ensemble_model.set_model_best(model_name)
+            rmse.append(mean_squared_error(y, ensemble_model.predict(X), squared=False))
+        ensemble_model.set_model_best(final_model)
+    elif library == "AutoSklearn":
+        rmse = [mean_squared_error(y, ensemble_model.predict(X), squared=False)]
+        models_name = ['Ensemble']
+
+        for weight, model in ensemble_model.get_models_with_weights():
+            models_name.append(str(type(model._final_estimator.choice)).split('.')[-1][:-2])
+            rmse.append(mean_squared_error(y, model.predict(X), squared=False))
+
+    fig = empty_fig()
+    for i in range(len(rmse)):
+        fig.add_trace(go.Bar(x=[i], y=[rmse[i]], name=models_name[i]))
+
+    fig.update_traces(marker=dict(color='rgba(0,114,239,255)'))
+    fig.update_layout(
+        title="RMSE metric values",
+        xaxis=dict(
+            tickmode='array',
+            tickvals=list(range(len(rmse))),
+            ticktext=models_name
+        ),
+        showlegend=False
+    )
+
+    return fig
+
+
+def r_2_plot(ensemble_model, X, y, library="Flaml"):
+    """R^2 metrics plot of individual models from the ensemled model.
+
+    Parameters
+    ----------
+    ensemble_model : Flaml, AutoGluon or AutoSklearn ensemble model.
+
+    X, y : dataframe
+
+    library : {'Flaml', 'AutoGluon', 'AutoSklearn'}
+            string that specifies the model library
+
+    Returns
+    -------
+    fig : plotly.graph_objs._figure.Figure
+        plotly plot
+
+    Examples
+    --------
+    r_2_plot(model_reg, X_reg, y_reg)
+    """
+    if library == "Flaml":
+        ensemble_models = ensemble_model.model.estimators_
+        r2 = [r2_score(y, ensemble_model.predict(X))]
+        models_name = ['Ensemble']
+
+        X_transform = ensemble_model._state.task.preprocess(X, ensemble_model._transformer)
+        for model in ensemble_models:
+            r2.append(r2_score(y, model.predict(X_transform)))
+            models_name.append(type(model).__name__)
+    elif library == "AutoGluon":
+        ensemble_models = ensemble_model.info()['model_info'][ensemble_model.get_model_best()]['stacker_info'][
+            'base_model_names']
+        r2 = [r2_score(y, ensemble_model.predict(X))]
+        models_name = ['Ensemble']
+
+        final_model = ensemble_model.get_model_best()
+        for model_name in ensemble_models:
+            models_name.append(model_name)
+            ensemble_model.set_model_best(model_name)
+            r2.append(r2_score(y, ensemble_model.predict(X)))
+        ensemble_model.set_model_best(final_model)
+    elif library == "AutoSklearn":
+        r2 = [r2_score(y, ensemble_model.predict(X))]
+        models_name = ['Ensemble']
+
+        for weight, model in ensemble_model.get_models_with_weights():
+            models_name.append(str(type(model._final_estimator.choice)).split('.')[-1][:-2])
+            r2.append(r2_score(y, model.predict(X)))
+
+    fig = empty_fig()
+    for i in range(len(r2)):
+        fig.add_trace(go.Bar(x=[i], y=[r2[i]], name=models_name[i]))
+
+    fig.update_traces(marker=dict(color='rgba(0,114,239,255)'))
+    fig.update_layout(
+        title="R^2 metric values",
+        xaxis=dict(
+            tickmode='array',
+            tickvals=list(range(len(r2))),
             ticktext=models_name
         ),
         showlegend=False

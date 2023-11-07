@@ -212,6 +212,12 @@ def update_model(contents, filename, df, column, about_us):
                     dbc.Col([dcc.Graph(figure=metrics.mape_plot(model, X, y, library=library), className="plot")],
                             width=6),
                 ]),
+                dbc.Row([
+                    dbc.Col([dcc.Graph(figure=metrics.rmse_plot(model, X, y, library=library), className="plot")],
+                            width=6),
+                    dbc.Col([dcc.Graph(figure=metrics.r_2_plot(model, X, y, library=library), className="plot")],
+                            width=6),
+                ]),
                 dcc.Graph(figure=metrics.mae_plot(model, X, y, library=library), className="plot"),
                 dcc.Graph(figure=metrics.correlation_plot(model, X, library=library, task=task, y=y),
                           className="plot"),
