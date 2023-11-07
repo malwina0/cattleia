@@ -79,13 +79,15 @@ def strong_disagreement_ratio(pred1, pred2, y):
     Numeric value
         SDR value of given predictions pair and true values vector
     """
+    n = len(pred1)
+    pred1, pred2 = np.array([pred1]), np.array([pred2])
     difference = np.abs(pred1 - pred2)
     standard_deviation = np.std(y)
     count = 0
-    for i in difference:
+    for i in difference[0]:
         if i > standard_deviation:
             count += 1
-    return count/len(difference)
+    return count/n
 
 def agreement_ratio(pred1, pred2, y):
     """ Calculates percentage of observations that were predicted very
@@ -105,13 +107,15 @@ def agreement_ratio(pred1, pred2, y):
     Numeric value
         AR value of given predictions pair and true values vector
     """
+    n = len(pred1)
+    pred1, pred2 = np.array([pred1]), np.array([pred2])
     difference = np.abs(pred1 - pred2)
     standard_deviation = np.std(y)
     count = 0
-    for i in difference:
+    for i in difference[0]:
         if i < standard_deviation/50:
             count += 1
-    return count/len(difference)
+    return count/n
 
 def uniformity(pred1, pred2):
     """ Calculates uniformity of two prediction vectors, which is a measure
@@ -243,6 +247,8 @@ def conjunctive_precission(pred1, pred2, y, positive=None):
                 TTP += 1
             else:
                 FFN += 1
+    if TTP+FFN == 0:
+        return 0
     return TTP/(TTP+FFN)
 
 def conjunctive_recall(pred1, pred2, y, positive=None):
