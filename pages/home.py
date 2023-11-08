@@ -9,6 +9,8 @@ import metrics
 import shutil
 import pandas as pd
 from autogluon.tabular import TabularPredictor
+import dash_daq as daq
+
 sys.path.append("..")
 
 dash.register_page(__name__,  path='/')
@@ -63,6 +65,10 @@ about_us = html.Div([
 layout = html.Div([
     dcc.Store(id='csv_data', data=[], storage_type='memory'),
     dcc.Store(id='y_label_column', data=[], storage_type='memory'),
+    dcc.Store(id='metrics_plots', data=[], storage_type='memory'),
+    dcc.Store(id='compatimetric_plots', data=[], storage_type='memory'),
+    dcc.Store(id='weight_pots', data=[], storage_type='memory'),
+
     # side menu
     html.Div([
         dbc.Container([
@@ -80,6 +86,7 @@ layout = html.Div([
             ),
             html.Div(id='select_y_label_column'),
             html.Div(id='upload_model_section'),
+            html.Div(id="switch_annotation")
         ], className="px-3 sidepanel")
     ], id="side_menu_div"),
     # plots
@@ -149,7 +156,8 @@ def update_output(contents, filename):
 # part responsible for choosing target column
 @callback(
     [Output('y_label_column', 'data'),
-        Output('upload_model_section', 'children')],
+     Output('upload_model_section', 'children'),
+     Output('switch_annotation', 'children')],
     Input('column_select', 'value')
 )
 def select_columns(value):
@@ -165,14 +173,25 @@ def select_columns(value):
             multiple=True
         ),
     ])
+    switch = html.Div([
+        html.Hr(),
+        html.H5("Annotation OFF", className="sidepanel_text", id="switch_text"),
+        daq.ToggleSwitch(
+            id='my-toggle-switch',
+            value=False,
+            color="#0072ef"
+        )
+    ])
+
     data = {'name': value}
 
-    return data, children
+    return data, children, switch
 
 
 # part responsible for adding model and showing plots
 @callback(
-    Output('plots', 'children'),
+    [Output('plots', 'children'),
+     Output('metrics_plots', 'data')],
     Input('upload_model', 'contents'),
     State('upload_model', 'filename'),
     State('csv_data', 'data'),
@@ -221,6 +240,7 @@ def update_model(contents, filename, df, column, about_us):
                 dcc.Graph(figure=metrics.mae_plot(model, X, y, library=library), className="plot"),
                 dcc.Graph(figure=metrics.correlation_plot(model, X, library=library, task=task, y=y),
                           className="plot"),
+                html.H2("asdasdasdasdasdaaaaaaaaaaaaaaaaaaasadasda", className="about_us_str", id="ann_1"),
                 dcc.Graph(figure=metrics.prediction_compare_plot(model, X, y, library=library, task=task),
                           className="plot"),
             ]
@@ -242,6 +262,11 @@ def update_model(contents, filename, df, column, about_us):
                 ]),
                 dcc.Graph(figure=metrics.correlation_plot(model, X, library=library, task=task, y=y),
                           className="plot"),
+                html.H2("""
+                    Partial Dependence isolate one specific feature's effect on the model's output while maintaining 
+                    all other features at fixed values. It capturing how the model's output changes as the chosen 
+                    feature varies. 
+                    """, className="annotation_str", id="ann_1"),
                 dcc.Graph(figure=metrics.prediction_compare_plot(model, X, y, library=library, task=task),
                           className="plot"),
             ]
@@ -259,9 +284,52 @@ def update_model(contents, filename, df, column, about_us):
         except FileNotFoundError:
             pass
 
+        plot_component.insert(0, html.Div([
+            dbc.Row([
+                dbc.Col([html.Button('Weights', id="weights", className="button_1")], width=2),
+                dbc.Col([html.Button('Metrics', id="metrics", className="button_1")], width=2),
+                dbc.Col([html.Button('Compatimetrics', id="compatimetrics", className="button_1")],width=2),
+            ], justify="center"),
+        ], style={"display": "block", "position": "sticky"}))
+
         children = html.Div(plot_component)
 
-    return children
+    return children, children
+
+
+@callback(
+    Output('plots', 'children', allow_duplicate=True),
+    Input('weights', 'n_clicks'),
+    State('weight_pots', 'data'),
+    State('metrics_plots', 'data'),
+    prevent_initial_call=True
+)
+def show_metrics(n_clicks, data, metrics_plots):
+    if n_clicks >= 1:
+        return data
+    return metrics_plots
+
+@callback(
+    Output('plots', 'children', allow_duplicate=True),
+    Input('metrics', 'n_clicks'),
+    State('metrics_plots', 'data'),
+    prevent_initial_call=True
+)
+def show_metrics(n_clicks, data):
+    return data
+
+
+
+@callback(
+    [Output('ann_1', 'style'),
+     Output('switch_text', 'children')],
+    Input('my-toggle-switch', 'value')
+)
+def update_output(value):
+    if value:
+        return {}, "Annotation ON"
+    else:
+        return {"display": "none"}, "Annotation OFF"
 
 
 # callback responsible for moving the menu
