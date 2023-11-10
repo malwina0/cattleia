@@ -10,8 +10,9 @@ import shutil
 import pandas as pd
 from utils import parse_data
 
-from weights import slider_section, get_ensemble_names_weights, weights_plot, \
-    calculate_classification_metrics, metrics_table
+from weights import slider_section, get_ensemble_names_weights, \
+    tbl_metrics_regression, tbl_metrics_regression_adj_ensemble, calculate_metrics_regression, \
+    calculate_metrics_regression_adj_ensemble
 
 sys.path.append("..")
 
@@ -171,7 +172,8 @@ def update_model(contents, filename, df, column, about_us):
             pass
 
         model, library = parse_data(contents, filename)
-        models_name, weights = get_ensemble_names_weights(model)
+        print(library)
+        models_name, weights = get_ensemble_names_weights(model, library)
 
         df = pd.DataFrame.from_dict(df)
         df = df.dropna()
@@ -203,9 +205,12 @@ def update_model(contents, filename, df, column, about_us):
                             [slider_section(model_name, weights[i], i) for i, model_name in enumerate(models_name)],
                             style={'color': 'white'})
                     ], width=7),
-                    dbc.Col([metrics_table(model, X, y, weights)
+                    dbc.Col([tbl_metrics_regression(model, X, y, library, weights)
                     ], width=4)
                 ]),
+                dbc.Row([
+                    dbc.Col([tbl_metrics_regression_adj_ensemble(model, X, y, library, weights)], width=4)
+                ], justify="center")
             ]
         else:
             plot_component = [
@@ -248,6 +253,7 @@ def update_model(contents, filename, df, column, about_us):
 
 @callback(
 Output('metrics-table', 'data', allow_duplicate=True),
+    Output('adj_weights-table', 'data'),
     Input({"type": "weight_slider", "index": ALL}, 'value'),
     Input('upload_model', 'contents'),
     State('upload_model', 'filename'),
@@ -266,24 +272,12 @@ def display_output(values, contents, filename, df, column):
         y = df.iloc[:, df.columns == column["name"]].squeeze()
 
         sum_slider_values = sum(values)
-
         weights = [round((value / sum_slider_values), 2) for value in values]
-        mape = []
-        mae = []
-        mse = []
-        for weight, model in ensemble_model.get_models_with_weights():
-            mape.append(float('%.*g' % (3, mean_absolute_percentage_error(y, model.predict(X)))))
-            mae.append(float('%.*g' % (3, mean_absolute_error(y, model.predict(X)))))
-            mse.append(round(mean_squared_error(y, model.predict(X))))
 
-        data = {
-            'weight': weights,
-            'MAPE': mape,
-            'MAE': mae,
-            'MSE': mse
-        }
-        df = pd.DataFrame(data)
-        return df.to_dict('records')
+        df = calculate_metrics_regression(ensemble_model, X, y, library, weights)
+        df_adj = calculate_metrics_regression_adj_ensemble(ensemble_model, X, y, library, weights)
+
+        return df.to_dict('records'), df_adj.to_dict('records')
 
 # callback responsible for moving the menu
 dash.clientside_callback(
