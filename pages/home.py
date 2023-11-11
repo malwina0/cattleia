@@ -2,17 +2,12 @@ import dash
 from dash import html, dcc, Output, Input, callback, State, ALL, dash_table
 import dash_bootstrap_components as dbc
 import sys
-
-from sklearn.metrics import mean_absolute_percentage_error, mean_squared_error, mean_absolute_error
-
 import metrics
 import shutil
 import pandas as pd
 from utils import parse_data
-
 from weights import slider_section, get_ensemble_names_weights, \
-    tbl_metrics_regression, tbl_metrics_regression_adj_ensemble, calculate_metrics_regression, \
-    calculate_metrics_regression_adj_ensemble
+    tbl_metrics, tbl_metrics_adj_ensemble, calculate_metrics, calculate_metrics_adj_ensemble
 
 sys.path.append("..")
 
@@ -72,6 +67,7 @@ layout = html.Div([
     dcc.Store(id='library', data='', storage_type='memory'),
     dcc.Store(id='model_names', data=[], storage_type='memory'),
     dcc.Store(id='weights', data=[], storage_type='memory'),
+    dcc.Store(id='task', data='', storage_type='memory'),
     # side menu
     html.Div([
         dbc.Container([
@@ -172,7 +168,6 @@ def update_model(contents, filename, df, column, about_us):
             pass
 
         model, library = parse_data(contents, filename)
-        print(library)
         models_name, weights = get_ensemble_names_weights(model, library)
 
         df = pd.DataFrame.from_dict(df)
@@ -181,6 +176,7 @@ def update_model(contents, filename, df, column, about_us):
         y = df.iloc[:, df.columns == column["name"]]
         y = y.squeeze()
 
+        global task
         if y.squeeze().nunique() > 10:
             task = "regression"
         else:
@@ -197,20 +193,7 @@ def update_model(contents, filename, df, column, about_us):
                 dcc.Graph(figure=metrics.correlation_plot(model, X, library=library, task=task, y=y),
                           className="plot"),
                 dcc.Graph(figure=metrics.prediction_compare_plot(model, X, y, library=library, task=task),
-                          className="plot"),
-                dbc.Row([
-                    dbc.Col([
-                        html.Div([],  style={'height': '30px'}), #placeholder to show metrics in the same line
-                        html.Div(
-                            [slider_section(model_name, weights[i], i) for i, model_name in enumerate(models_name)],
-                            style={'color': 'white'})
-                    ], width=7),
-                    dbc.Col([tbl_metrics_regression(model, X, y, library, weights)
-                    ], width=4)
-                ]),
-                dbc.Row([
-                    dbc.Col([tbl_metrics_regression_adj_ensemble(model, X, y, library, weights)], width=4)
-                ], justify="center")
+                          className="plot")
             ]
         else:
             plot_component = [
@@ -231,8 +214,25 @@ def update_model(contents, filename, df, column, about_us):
                 dcc.Graph(figure=metrics.correlation_plot(model, X, library=library, task=task, y=y),
                           className="plot"),
                 dcc.Graph(figure=metrics.prediction_compare_plot(model, X, y, library=library, task=task),
-                          className="plot"),
+                          className="plot")
             ]
+        plot_component.append(
+            dbc.Row([
+                dbc.Col([
+                    html.Div([], style={'height': '31px'}),  # placeholder to show metrics in the same line
+                    html.Div(
+                        [slider_section(model_name, weights[i], i) for i, model_name in enumerate(models_name)],
+                        style={'color': 'white'})
+                ], width=7),
+                dbc.Col([tbl_metrics(model, X, y, task, library, weights)
+                         ], width=4)
+            ])
+        )
+        plot_component.append(
+            dbc.Row([
+                dbc.Col([tbl_metrics_adj_ensemble(model, X, y, task, library, weights)], width=4)
+            ], justify="center")
+        )
 
         for plot in metrics.permutation_feature_importance_all(model, X, y, library=library, task=task):
             plot_component.append(dcc.Graph(figure=plot, className="plot"))
@@ -274,8 +274,8 @@ def display_output(values, contents, filename, df, column):
         sum_slider_values = sum(values)
         weights = [round((value / sum_slider_values), 2) for value in values]
 
-        df = calculate_metrics_regression(ensemble_model, X, y, library, weights)
-        df_adj = calculate_metrics_regression_adj_ensemble(ensemble_model, X, y, library, weights)
+        df = calculate_metrics(ensemble_model, X, y, task, library, weights)
+        df_adj = calculate_metrics_adj_ensemble(ensemble_model, X, y, task, library, weights)
 
         return df.to_dict('records'), df_adj.to_dict('records')
 
