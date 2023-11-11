@@ -216,23 +216,24 @@ def update_model(contents, filename, df, column, about_us):
                 dcc.Graph(figure=metrics.prediction_compare_plot(model, X, y, library=library, task=task),
                           className="plot")
             ]
-        plot_component.append(
-            dbc.Row([
-                dbc.Col([
-                    html.Div([], style={'height': '31px'}),  # placeholder to show metrics in the same line
-                    html.Div(
-                        [slider_section(model_name, weights[i], i) for i, model_name in enumerate(models_name)],
-                        style={'color': 'white'})
-                ], width=7),
-                dbc.Col([tbl_metrics(model, X, y, task, library, weights)
-                         ], width=4)
-            ])
-        )
-        plot_component.append(
-            dbc.Row([
-                dbc.Col([tbl_metrics_adj_ensemble(model, X, y, task, library, weights)], width=4)
-            ], justify="center")
-        )
+        if library != "Flaml":
+            plot_component.append(
+                dbc.Row([
+                    dbc.Col([
+                        html.Div([], style={'height': '31px'}),  # placeholder to show metrics in the same line
+                        html.Div(
+                            [slider_section(model_name, weights[i], i) for i, model_name in enumerate(models_name)],
+                            style={'color': 'white'})
+                    ], width=7),
+                    dbc.Col([tbl_metrics(model, X, y, task, library, weights)
+                             ], width=4)
+                ])
+            )
+            plot_component.append(
+                dbc.Row([
+                    dbc.Col([tbl_metrics_adj_ensemble(model, X, y, task, library, weights)], width=4)
+                ], justify="center")
+            )
 
         for plot in metrics.permutation_feature_importance_all(model, X, y, library=library, task=task):
             plot_component.append(dcc.Graph(figure=plot, className="plot"))

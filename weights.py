@@ -23,8 +23,7 @@ def get_ensemble_names_weights(ensemble_model, library):
             weights.append(weight)
     elif library == "AutoGluon":
         model_names = ensemble_model.info()['model_info'][ensemble_model.get_model_best()]['stacker_info']['base_model_names']
-        # TODO
-        # test if needed and handle cases when there is more layers (not 'S1F1')
+        # TODO: test if needed and handle cases when there is more layers (not 'S1F1')
         weights = list(ensemble_model.info()['model_info'][ensemble_model.get_model_best()]['children_info']['S1F1']['model_weights'].values())
 
     return model_names, weights
@@ -91,14 +90,15 @@ def calculate_metrics(ensemble_model, X, y, task, library, weights):
                 precision.append(round(precision_score(y, prediction_class, average='micro'), 2))
                 recall.append(round(recall_score(y, prediction_class, average='micro'), 2))
                 f1.append(round(f1_score(y, prediction_class, average='micro'), 2))
-        # elif library == "AutoGluon":
-        #     final_model = ensemble_model.get_model_best()
-        #     for model_name in ensemble_model.info()['model_info'][ensemble_model.get_model_best()]['stacker_info']['base_model_names']:
-        #         ensemble_model.set_model_best(model_name)
-        #         mape.append(float('%.*g' % (3, mean_absolute_percentage_error(y, ensemble_model.predict(X)))))
-        #         mae.append(float('%.*g' % (3, mean_absolute_error(y, ensemble_model.predict(X)))))
-        #         mse.append(round(mean_squared_error(y, ensemble_model.predict(X))))
-        #     ensemble_model.set_model_best(final_model)
+        elif library == "AutoGluon":
+            final_model = ensemble_model.get_model_best()
+            for model_name in ensemble_model.info()['model_info'][ensemble_model.get_model_best()]['stacker_info']['base_model_names']:
+                ensemble_model.set_model_best(model_name)
+                accuracy.append(round(accuracy_score(y, ensemble_model.predict(X)), 2))
+                precision.append(round(precision_score(y, ensemble_model.predict(X), average='micro'), 2))
+                recall.append(round(recall_score(y, ensemble_model.predict(X), average='micro'), 2))
+                f1.append(round(f1_score(y, ensemble_model.predict(X), average='micro'), 2))
+            ensemble_model.set_model_best(final_model)
 
         data = {
             'weight': weights,
@@ -166,6 +166,13 @@ def calculate_metrics_adj_ensemble(ensemble_model, X, y, task, library, weights)
             for weight, model in ensemble_model.get_models_with_weights():
                 prediction = model.predict_proba(X)
                 proba_predictions.append(prediction.tolist())
+        elif library == "AutoGluon":
+            final_model = ensemble_model.get_model_best()
+            for model_name in ensemble_model.info()['model_info'][ensemble_model.get_model_best()]['stacker_info'][
+                'base_model_names']:
+                ensemble_model.set_model_best(model_name)
+                proba_predictions.append(ensemble_model.predict_proba(X).values.tolist())
+            ensemble_model.set_model_best(final_model)
 
         y_proba_adj = [
             [sum(w * x for x, w in zip(elements, weights)) for elements in zip(*rows)]
