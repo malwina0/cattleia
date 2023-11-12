@@ -11,7 +11,7 @@ from weights import slider_section, get_ensemble_names_weights, \
 
 sys.path.append("..")
 
-dash.register_page(__name__,  path='/')
+dash.register_page(__name__, path='/')
 
 about_us = html.Div([
     html.H2("What is cattleia?", className="about_us_main"),
@@ -56,18 +56,12 @@ about_us = html.Div([
         Cattleia is our project created as a Bachelor thesis.  
         Our project co-ordinator and supervisor is Anna Kozak.
     """, className="about_us_str", style={"max-width": "70%", "height": "auto"}),
-    ])
-
+])
 
 # page layout
 layout = html.Div([
     dcc.Store(id='csv_data', data=[], storage_type='memory'),
     dcc.Store(id='y_label_column', data=[], storage_type='memory'),
-    dcc.Store(id='ensemble_model', data=[], storage_type='memory'),
-    dcc.Store(id='library', data='', storage_type='memory'),
-    dcc.Store(id='model_names', data=[], storage_type='memory'),
-    dcc.Store(id='weights', data=[], storage_type='memory'),
-    dcc.Store(id='task', data='', storage_type='memory'),
     # side menu
     html.Div([
         dbc.Container([
@@ -97,9 +91,9 @@ layout = html.Div([
 # part responsible for adding csv file
 @callback(
     [Output('csv_data', 'data'),
-    Output('select_y_label_column', 'children')],
+     Output('select_y_label_column', 'children')],
     [Input('upload_csv_data', 'contents'),
-    State('upload_csv_data', 'filename')]
+     State('upload_csv_data', 'filename')]
 )
 def update_output(contents, filename):
     data = []
@@ -125,7 +119,7 @@ def update_output(contents, filename):
 # part responsible for choosing target column
 @callback(
     [Output('y_label_column', 'data'),
-        Output('upload_model_section', 'children')],
+     Output('upload_model_section', 'children')],
     Input('column_select', 'value')
 )
 def select_columns(value):
@@ -199,9 +193,9 @@ def update_model(contents, filename, df, column, about_us):
             plot_component = [
                 dbc.Row([
                     dbc.Col([dcc.Graph(figure=metrics.accuracy_plot(model, X, y, library=library),
-                        className="plot")], width=6),
+                                       className="plot")], width=6),
                     dbc.Col([dcc.Graph(figure=metrics.precision_plot(model, X, y, library=library),
-                        className="plot")], width=6),
+                                       className="plot")], width=6),
                 ]),
                 dbc.Row([
                     dbc.Col(
@@ -252,8 +246,9 @@ def update_model(contents, filename, df, column, about_us):
 
     return children
 
+
 @callback(
-Output('metrics-table', 'data', allow_duplicate=True),
+    Output('metrics-table', 'data', allow_duplicate=True),
     Output('adj_weights-table', 'data'),
     Input({"type": "weight_slider", "index": ALL}, 'value'),
     Input('upload_model', 'contents'),
@@ -279,6 +274,7 @@ def display_output(values, contents, filename, df, column):
         df_adj = calculate_metrics_adj_ensemble(ensemble_model, X, y, task, library, weights)
 
         return df.to_dict('records'), df_adj.to_dict('records')
+
 
 # callback responsible for moving the menu
 dash.clientside_callback(

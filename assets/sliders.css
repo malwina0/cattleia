@@ -1,0 +1,18 @@
+.weight-slider .rc-slider-rail {
+    align-items: center;
+    text-align: right;
+    background-color: #2c2f38;
+    height: 20px;
+    border-radius: 0;
+}
+
+.weight-slider .rc-slider-track {
+    background-color: #ffaef4; /* Set your desired track color */
+    border-radius: 0; /* Remove border radius to make it rectangular */
+    /*width: 50px;*/
+    height: 20px;
+}
+
+.weight-slider .rc-slider-handle {
+    visibility: hidden;
+}
