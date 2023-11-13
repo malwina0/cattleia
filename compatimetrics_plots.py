@@ -4,7 +4,7 @@ import plotly.express as px
 import plotly.graph_objects as go
 from metrics import empty_fig
 from compatimetrics import mean_squared_difference, \
-    root_mean_squared_difference, strong_disagreement_ratio, agreement_ratio, \
+    root_mean_squared_difference, strong_disagreement_ratio, agreement_ratio, conjunctive_rmse, \
     uniformity, disagreement_ratio, disagreement_postive_ratio, correctness_counter, \
     conjunctive_accuracy, conjunctive_precission, conjunctive_recall, average_collective_score
 
@@ -63,10 +63,29 @@ def get_predictions_from_model(ensemble_model, X, y, library, task):
             for weight, model in ensemble_model.get_models_with_weights():
                 prediction = model.predict(X)
                 prediction_class = [class_names[idx] for idx in prediction]
-                predictions[str(type(model._final_estimator.choice)).split('.')[-1][:-2]] = prediction_class
+                name = str(type(model._final_estimator.choice)).split('.')[-1][:-2]
+                if name in predictions.keys():
+                    i = 1
+                    name_new = name + "_" + str(i)
+                    while name_new in predictions.keys():
+                        i += 1
+                        name_new = name + "_" + str(i)
+                    predictions[name_new] = prediction_class
+                else:
+                    predictions[name] = prediction_class
         else:
             for weight, model in ensemble_model.get_models_with_weights():
-                predictions[str(type(model._final_estimator.choice)).split('.')[-1][:-2]] = model.predict(X)
+                prediction = model.predict(X)
+                name = str(type(model._final_estimator.choice)).split('.')[-1][:-2]
+                if name in predictions.keys():
+                    i = 1
+                    name_new = name + "_" + str(i)
+                    while name_new in predictions.keys():
+                        i += 1
+                        name_new = name + "_" + str(i)
+                    predictions[name_new] = prediction
+                else:
+                    predictions[name] = prediction
 
     return predictions
 
@@ -382,6 +401,53 @@ def rmsd_comparison(predictions, model_to_compare):
 
     return fig
 
+def conjunctive_rmse_plot(predictions, y, model_to_compare):
+    """Bar chart showing values of chosen model RMSE and Conjunctive RMSE between
+    this and other models.
+
+    Parameters
+    ----------
+    predictions: dictionary with predictions of ensemble component models
+        of form {'model_name': 'prediction_vector'}
+
+    y: list, numpy.array, pandas.series
+        true values of predicted variable
+
+    model_to_compare: string
+        name of model to compare with other models
+
+    Returns
+    -------
+    fig : plotly.graph_objs._figure.Figure
+        plotly plot
+
+    Examples
+    --------
+    conjunctive_rmse_plot(predictions, y, model_to_compare)
+    """
+    models = list(predictions.keys())
+    compare_prediction = predictions[model_to_compare]
+    models.remove(model_to_compare)
+    color_map = {}
+    RMSE = [root_mean_squared_difference(compare_prediction, y)]
+    names = [model_to_compare]
+    color_map[model_to_compare] = 'purple'
+    for model in models:
+        RMSE.append(conjunctive_rmse(predictions[model], compare_prediction, y))
+        names.append("with " + model)
+        color_map["with " + model] = 'rgba(0,114,239,255)'
+    fig = empty_fig()
+    for i in range(len(RMSE)):
+        fig.add_trace(go.Bar(x=[RMSE[i]], y=[names[i]], orientation='h', marker_color=color_map[names[i]]))
+    fig.add_vline(x=RMSE[0], line_width=3, line_dash='dash', line_color='magenta')
+    fig.update_layout(
+        title="Comparison of " + model_to_compare + " RMSE and joined models conjunctive RMSE",
+        font_size=17,
+        title_font_size=20,
+        showlegend=False
+    )
+
+    return fig
 
 def difference_distribution(predictions, model_to_compare):
     """Line chart displaying difference of predictions between chosen model
@@ -466,8 +532,8 @@ def difference_boxplot(predictions, y, model_to_compare):
                       columns=['difference', 'model_name'])
     fig = px.box(df, x="model_name", y="difference")
     standard_deviation = np.std(y)
-    fig.add_hline(y=standard_deviation, line_width=3, line_dash='dash')
-    fig.add_hline(y=standard_deviation / 50, line_width=3, line_dash='dash')
+    fig.add_hline(y=standard_deviation, line_width=3, line_dash='dash', line_color='lightpink')
+    fig.add_hline(y=standard_deviation / 50, line_width=3, line_dash='dash', line_color='lightpink')
     fig.update_traces(marker=dict(color='rgba(0,114,239,255)'))
     fig.update_layout(
         title={'text': "Distribution of absolute difference between " + model_to_compare + " prediction <br> and " +
@@ -812,6 +878,9 @@ def conjunctive_metrics_plot(predictions, y, model_to_compare):
         gridwidth=3,
         title='Metric value'
     )
+    fig.data[0].marker.color = 'rgba(0,114,239,255)'
+    fig.data[1].marker.color = 'purple'
+    fig.data[2].marker.color = '#321e8a'
     fig.update_xaxes(title='')
     return fig
 
@@ -869,6 +938,9 @@ def prediction_correctness_plot(predictions, y, model_to_compare):
         gridwidth=3,
         title='Percentage'
     )
+    fig.data[0].marker.color = '#168c65'
+    fig.data[1].marker.color = '#2d2d87'
+    fig.data[2].marker.color = '#a8324e'
     fig.update_yaxes(title='')
     return fig
 

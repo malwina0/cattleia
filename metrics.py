@@ -129,38 +129,38 @@ def precision_plot(ensemble_model, X, y, library="Flaml"):
     """
     if library == "Flaml":
         ensemble_models = ensemble_model.model.estimators_
-        precision = [precision_score(y, ensemble_model.predict(X), average='micro')]
+        precision = [precision_score(y, ensemble_model.predict(X), average='macro')]
         models_name = ['Ensemble']
 
         X_transform = ensemble_model._state.task.preprocess(X, ensemble_model._transformer)
         for model in ensemble_models:
             y_pred_class = model.predict(X_transform)
             y_pred_class_name = ensemble_model._label_transformer.inverse_transform(y_pred_class)
-            precision.append(precision_score(y, y_pred_class_name, average='micro'))
+            precision.append(precision_score(y, y_pred_class_name, average='macro'))
             models_name.append(type(model).__name__)
     elif library == "AutoGluon":
         ensemble_models = ensemble_model.info()['model_info'][ensemble_model.get_model_best()]['stacker_info'][
             'base_model_names']
-        precision = [precision_score(y, ensemble_model.predict(X), average='micro')]
+        precision = [precision_score(y, ensemble_model.predict(X), average='macro')]
         models_name = ['Ensemble']
 
         final_model = ensemble_model.get_model_best()
         for model_name in ensemble_models:
             models_name.append(model_name)
             ensemble_model.set_model_best(model_name)
-            precision.append(precision_score(y, ensemble_model.predict(X), average='micro'))
+            precision.append(precision_score(y, ensemble_model.predict(X), average='macro'))
         ensemble_model.set_model_best(final_model)
     elif library == "AutoSklearn":
         class_names = list(y.unique())
         class_names.sort()
-        precision = [precision_score(y, ensemble_model.predict(X), average='micro')]
+        precision = [precision_score(y, ensemble_model.predict(X), average='macro')]
         models_name = ['Ensemble']
 
         for weight, model in ensemble_model.get_models_with_weights():
             models_name.append(str(type(model._final_estimator.choice)).split('.')[-1][:-2])
             prediction = model.predict(X)
             prediction_class = [class_names[idx] for idx in prediction]
-            precision.append(precision_score(y, prediction_class, average='micro'))
+            precision.append(precision_score(y, prediction_class, average='macro'))
 
     fig = empty_fig()
     for i in range(len(precision)):
@@ -204,38 +204,38 @@ def recall_plot(ensemble_model, X, y, library="Flaml"):
     if library == "Flaml":
         ensemble_models = ensemble_model.model.estimators_
 
-        recall = [recall_score(y, ensemble_model.predict(X), average='micro')]
+        recall = [recall_score(y, ensemble_model.predict(X), average='macro')]
         models_name = ['Ensemble']
 
         X_transform = ensemble_model._state.task.preprocess(X, ensemble_model._transformer)
         for model in ensemble_models:
             y_pred_class = model.predict(X_transform)
             y_pred_class_name = ensemble_model._label_transformer.inverse_transform(y_pred_class)
-            recall.append(recall_score(y, y_pred_class_name, average='micro'))
+            recall.append(recall_score(y, y_pred_class_name, average='macro'))
             models_name.append(type(model).__name__)
     elif library == "AutoGluon":
         ensemble_models = ensemble_model.info()['model_info'][ensemble_model.get_model_best()]['stacker_info'][
             'base_model_names']
-        recall = [recall_score(y, ensemble_model.predict(X), average='micro')]
+        recall = [recall_score(y, ensemble_model.predict(X), average='macro')]
         models_name = ['Ensemble']
 
         final_model = ensemble_model.get_model_best()
         for model_name in ensemble_models:
             models_name.append(model_name)
             ensemble_model.set_model_best(model_name)
-            recall.append(recall_score(y, ensemble_model.predict(X), average='micro'))
+            recall.append(recall_score(y, ensemble_model.predict(X), average='macro'))
         ensemble_model.set_model_best(final_model)
     elif library == "AutoSklearn":
         class_names = list(y.unique())
         class_names.sort()
-        recall = [recall_score(y, ensemble_model.predict(X), average='micro')]
+        recall = [recall_score(y, ensemble_model.predict(X), average='macro')]
         models_name = ['Ensemble']
 
         for weight, model in ensemble_model.get_models_with_weights():
             models_name.append(str(type(model._final_estimator.choice)).split('.')[-1][:-2])
             prediction = model.predict(X)
             prediction_class = [class_names[idx] for idx in prediction]
-            recall.append(recall_score(y, prediction_class, average='micro'))
+            recall.append(recall_score(y, prediction_class, average='macro'))
 
     fig = empty_fig()
     for i in range(len(recall)):
@@ -278,38 +278,38 @@ def f1_score_plot(ensemble_model, X, y, library="Flaml"):
     """
     if library == "Flaml":
         ensemble_models = ensemble_model.model.estimators_
-        f1 = [f1_score(y, ensemble_model.predict(X), average='micro')]
+        f1 = [f1_score(y, ensemble_model.predict(X), average='macro')]
         models_name = ['Ensemble']
 
         X_transform = ensemble_model._state.task.preprocess(X, ensemble_model._transformer)
         for model in ensemble_models:
             y_pred_class = model.predict(X_transform)
             y_pred_class_name = ensemble_model._label_transformer.inverse_transform(y_pred_class)
-            f1.append(f1_score(y, y_pred_class_name, average='micro'))
+            f1.append(f1_score(y, y_pred_class_name, average='macro'))
             models_name.append(type(model).__name__)
     elif library == "AutoGluon":
         ensemble_models = ensemble_model.info()['model_info'][ensemble_model.get_model_best()]['stacker_info'][
             'base_model_names']
-        f1 = [f1_score(y, ensemble_model.predict(X), average='micro')]
+        f1 = [f1_score(y, ensemble_model.predict(X), average='macro')]
         models_name = ['Ensemble']
 
         final_model = ensemble_model.get_model_best()
         for model_name in ensemble_models:
             models_name.append(model_name)
             ensemble_model.set_model_best(model_name)
-            f1.append(f1_score(y, ensemble_model.predict(X), average='micro'))
+            f1.append(f1_score(y, ensemble_model.predict(X), average='macro'))
         ensemble_model.set_model_best(final_model)
     elif library == "AutoSklearn":
         class_names = list(y.unique())
         class_names.sort()
-        f1 = [f1_score(y, ensemble_model.predict(X), average='micro')]
+        f1 = [f1_score(y, ensemble_model.predict(X), average='macro')]
         models_name = ['Ensemble']
 
         for weight, model in ensemble_model.get_models_with_weights():
             models_name.append(str(type(model._final_estimator.choice)).split('.')[-1][:-2])
             prediction = model.predict(X)
             prediction_class = [class_names[idx] for idx in prediction]
-            f1.append(f1_score(y, prediction_class, average='micro'))
+            f1.append(f1_score(y, prediction_class, average='macro'))
 
     fig = empty_fig()
     for i in range(len(f1)):

@@ -1,6 +1,5 @@
 import dash
 from dash import html, dcc, callback, Input, Output, State
-from dash.exceptions import PreventUpdate
 import base64
 import io
 import dash_bootstrap_components as dbc
@@ -363,6 +362,11 @@ def update_compatimetrics_plot(predictions, model_to_compare, task, df, column):
                     dbc.Col([dcc.Graph(figure=compatimetrics_plots.rmsd_comparison(predictions, model_to_compare), className="plot")],
                             width=6),
                 ]),
+                dbc.Row(
+                    [dcc.Graph(
+                        figure=compatimetrics_plots.conjunctive_rmse_plot(predictions, y, model_to_compare),
+                        className='plot')
+                     ]),
                 dbc.Row([
                     dcc.Graph(figure=compatimetrics_plots.difference_distribution(predictions, model_to_compare), className="plot")
                 ]),

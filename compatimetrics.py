@@ -61,6 +61,30 @@ def root_mean_sqaured_error_error_penalty(pred1, pred2, y):
     """
     return np.sqrt(mse(pred1, pred2) + mse(pred1, y) / 2 + mse(pred2, y) / 2)
 
+def conjunctive_rmse(pred1, pred2, y):
+    """ Calculates Root Mean Squared Error between real values and prediction
+    being average of two model outputs.
+
+    Parameters
+    ----------
+    pred1 : list, numpy.array, pandas.series
+        numeric vector representing results of model prediction
+    pred2 : list, numpy.array, pandas.series
+        numeric vector representing results of model prediction
+    y: list, numpy.array, pandas.series
+        true values of predicted variable
+
+    Returns
+    -------
+    Numeric value
+        Conjunctive RMSE value of given predictions pair and true values vector
+    """
+    pred = []
+    for i in range(len(pred1)):
+        pred.append((pred1[i]+pred2[i])/2)
+    return np.sqrt(mse(pred, y))
+
+
 def strong_disagreement_ratio(pred1, pred2, y):
     """ Calculates percentage of observations that were predicted strongly
     different by two models.
@@ -180,8 +204,9 @@ def disagreement_postive_ratio(pred1, pred2, y, positive=None):
     Numeric value
         DPR value of given predictions pair and true values vector
     """
-    if not positive:
-        positive = y.unique()[1]
+    if positive is None:
+        positive = pd.Series(y).unique()[1]
+    print(positive)
     T = 0
     T_disagreement = 0
     for i in range(len(y)):
@@ -237,8 +262,8 @@ def conjunctive_precission(pred1, pred2, y, positive=None):
         Conjunctive precision value of given predictions pair
         and true values vector
     """
-    if not positive:
-        positive = y.unique()[1]
+    if positive is None:
+        positive = pd.Series(y).unique()[1]
     TTP = 0
     FFN = 0
     for i in range(len(y)):
@@ -272,8 +297,8 @@ def conjunctive_recall(pred1, pred2, y, positive=None):
         Conjunctive recall value of given predictions pair
         and true values vector
     """
-    if not positive:
-        positive = y.unique()[1]
+    if positive is None:
+        positive = pd.Series(y).unique()[1]
     TTP = 0
     P = 0
     for i in range(len(y)):
@@ -340,8 +365,8 @@ def average_collective_score(pred1, pred2, y, positive=None):
         and true values vector
 
     """
-    if not positive:
-        positive = y.unique()[1]
+    if positive is None:
+        positive = pd.Series(y).unique()[1]
     TTP_TTN = 0
     FFP_FFN = 0
     n_observations = len(y)
@@ -387,7 +412,7 @@ def macro_conjunctive_precission(pred1, pred2, y):
         Macro conjunctive precission value of given predictions pair
         and true values vector
     """
-    classes = y.unique()
+    classes = pd.Series(y).unique()
     precisions = []
     for clas in classes:
         precisions.append(conjunctive_precission(pred1, pred2, y, positive=clas))
@@ -412,7 +437,7 @@ def macro_conjunctive_recall(pred1, pred2, y):
             Macro conjunctive recall value of given predictions pair
             and true values vector
         """
-    classes = y.unique()
+    classes = pd.Series(y).unique()
     recalls = []
     for clas in classes:
         recalls.append(conjunctive_recall(pred1, pred2, y, positive=clas))
@@ -439,7 +464,7 @@ def weighted_conjunctive_precission(pred1, pred2, y):
         and true values vector
     """
     count = y.value_counts()
-    classes = y.unique()
+    classes = pd.Series(y).unique()
     result = 0
     for clas in classes:
         result += conjunctive_precission(pred1, pred2, y, positive=clas)*count[clas]
@@ -466,7 +491,7 @@ def weighted_conjunctive_recall(pred1, pred2, y):
         and true values vector
     """
     count = y.value_counts()
-    classes = y.unique()
+    classes = pd.Series(y).unique()
     result = 0
     for clas in classes:
         result += conjunctive_recall(pred1, pred2, y, positive=clas)*count[clas]
