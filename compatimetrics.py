@@ -206,7 +206,6 @@ def disagreement_postive_ratio(pred1, pred2, y, positive=None):
     """
     if positive is None:
         positive = pd.Series(y).unique()[1]
-    print(positive)
     T = 0
     T_disagreement = 0
     for i in range(len(y)):
