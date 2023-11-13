@@ -10,8 +10,8 @@ import compatimetrics_plots
 import metrics
 import shutil
 import pandas as pd
+from utils import get_predictions_from_model, get_task_from_model
 from autogluon.tabular import TabularPredictor
-from compatimetrics_plots import get_predictions_from_model
 
 sys.path.append("..")
 
@@ -217,11 +217,7 @@ def update_model(contents, filename, df, column, about_us):
         y = df.iloc[:, df.columns == column["name"]]
         y = y.squeeze()
 
-        if y.squeeze().nunique() > 10:
-            task = "regression"
-        else:
-            task = "classification"
-
+        task = get_task_from_model(model, y, library)
         predictions = get_predictions_from_model(model, X, y, library, task)
         model_names = list(predictions.keys())
 
@@ -261,11 +257,11 @@ def update_model(contents, filename, df, column, about_us):
                           className="plot"),
             ]
 
-        for plot in metrics.permutation_feature_importance_all(model, X, y, library=library, task=task):
-            plot_component.append(dcc.Graph(figure=plot, className="plot"))
-
-        for plot in metrics.partial_dependence_plots(model, X, library=library, autogluon_task=task):
-            plot_component.append(dcc.Graph(figure=plot, className="plot"))
+        # for plot in metrics.permutation_feature_importance_all(model, X, y, library=library, task=task):
+        #     plot_component.append(dcc.Graph(figure=plot, className="plot"))
+        #
+        # for plot in metrics.partial_dependence_plots(model, X, library=library, autogluon_task=task):
+        #     plot_component.append(dcc.Graph(figure=plot, className="plot"))
 
         # It may be necessary to keep the model for the code with weights,
         # for now we remove the model after making charts
@@ -273,7 +269,6 @@ def update_model(contents, filename, df, column, about_us):
             shutil.rmtree('./uploaded_model')
         except FileNotFoundError:
             pass
-
         children = html.Div(plot_component)
 
     return children, model_names, predictions, task
@@ -343,7 +338,7 @@ def update_compatimetrics_plot(predictions, model_to_compare, task, df, column):
                                className='plot')
                 ]),
             ]
-        else:
+        elif task == 'regression':
             children = [dbc.Row([
                 dbc.Col([dcc.Graph(figure=compatimetrics_plots.msd_matrix(predictions), className="plot")],
                         width=6),
@@ -374,6 +369,8 @@ def update_compatimetrics_plot(predictions, model_to_compare, task, df, column):
                     dcc.Graph(figure=compatimetrics_plots.difference_boxplot(predictions, y, model_to_compare), className="plot")
                 ])
             ]
+        else:
+            children.append(html.H2('MULTIKLASOWEJ JESZCZE NIE WŁANCZASZ JESZCZE'))
     return children
 
 
