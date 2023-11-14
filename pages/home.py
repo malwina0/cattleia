@@ -257,11 +257,11 @@ def update_model(contents, filename, df, column, about_us):
                           className="plot"),
             ]
 
-        # for plot in metrics.permutation_feature_importance_all(model, X, y, library=library, task=task):
-        #     plot_component.append(dcc.Graph(figure=plot, className="plot"))
-        #
-        # for plot in metrics.partial_dependence_plots(model, X, library=library, autogluon_task=task):
-        #     plot_component.append(dcc.Graph(figure=plot, className="plot"))
+        for plot in metrics.permutation_feature_importance_all(model, X, y, library=library, task=task):
+            plot_component.append(dcc.Graph(figure=plot, className="plot"))
+
+        for plot in metrics.partial_dependence_plots(model, X, library=library, autogluon_task=task):
+            plot_component.append(dcc.Graph(figure=plot, className="plot"))
 
         # It may be necessary to keep the model for the code with weights,
         # for now we remove the model after making charts
@@ -370,7 +370,39 @@ def update_compatimetrics_plot(predictions, model_to_compare, task, df, column):
                 ])
             ]
         else:
-            children.append(html.H2('MULTIKLASOWEJ JESZCZE NIE WŁANCZASZ JESZCZE'))
+            children = [dbc.Row([
+                dbc.Col([dcc.Graph(figure=compatimetrics_plots.uniformity_matrix(predictions),
+                                   className="plot")],
+                        width=6),
+                dbc.Col([dcc.Graph(figure=compatimetrics_plots.incompatibility_matrix(predictions),
+                                   className="plot")],
+                        width=6),
+            ]), dbc.Row([
+                dbc.Col([dcc.Graph(figure=compatimetrics_plots.acs_matrix(predictions, y),
+                                   className="plot")],
+                        width=6),
+                dbc.Col([dcc.Graph(figure=compatimetrics_plots.conjuntive_accuracy_matrix(predictions, y),
+                                   className="plot")],
+                        width=6),
+            ]), dbc.Row([
+                dbc.Col([dcc.Graph(
+                    figure=compatimetrics_plots.conjunctive_precision_multiclass_plot(predictions, y, model_to_compare),
+                    className="plot")],
+                    width=6),
+                dbc.Col([dcc.Graph(
+                    figure=compatimetrics_plots.conjunctive_recall_multiclass_plot(predictions, y, model_to_compare),
+                    className="plot")],
+                    width=6),
+            ]), dbc.Row(
+                [dcc.Graph(
+                    figure=compatimetrics_plots.prediction_correctness_plot(predictions, y, model_to_compare),
+                    className='plot')
+                ]), dbc.Row(
+                [dcc.Graph(
+                    figure=compatimetrics_plots.collective_cummulative_score_plot(predictions, y, model_to_compare),
+                    className='plot')
+                ])
+            ]
     return children
 
 

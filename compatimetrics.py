@@ -330,19 +330,18 @@ def correctness_counter(pred1, pred2, y):
     disagreement = 0
     double_wrong = 0
     n_observations = len(y)
+
     for i in range(n_observations):
-        if pred1[i] == y[i]:
-            if pred2[i] == y[i]:
-                double_correct += 1
-            else:
-                disagreement += 1
-        if pred2[i] == y[i]:
+        if pred1[i] == pred2[i]:
             if pred1[i] == y[i]:
                 double_correct += 1
             else:
+                double_wrong += 1
+        else:
+            if pred1[i] == y[i] or pred2[i] == y[i]:
                 disagreement += 1
-        if pred1[i] != y[i] and pred2[i] != y[i]:
-            double_wrong += 1
+            else:
+                double_wrong += 1
     return double_correct/n_observations, disagreement/n_observations, double_wrong/n_observations
 
 

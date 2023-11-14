@@ -6,7 +6,9 @@ from metrics import empty_fig
 from compatimetrics import mean_squared_difference, \
     root_mean_squared_difference, strong_disagreement_ratio, agreement_ratio, conjunctive_rmse, \
     uniformity, disagreement_ratio, disagreement_postive_ratio, correctness_counter, \
-    conjunctive_accuracy, conjunctive_precission, conjunctive_recall, average_collective_score
+    conjunctive_accuracy, conjunctive_precission, conjunctive_recall, average_collective_score, \
+    macro_conjunctive_precission, weighted_conjunctive_precission, macro_conjunctive_recall, \
+    weighted_conjunctive_recall
 
 
 def msd_matrix(predictions):
@@ -910,15 +912,118 @@ def collective_cummulative_score_plot(predictions, y, model_to_compare):
 
     return fig
 
-# def get_base_model_names(ensemble_model, library):
-#     model_names = []
-#     if library == "Flaml":
-#         ensemble_models = ensemble_model.model.estimators_
-#         for model in ensemble_models:
-#             model_names.append(type(model).__name__)
-#     elif library == "AutoGluon":
-#         model_names = ensemble_model.info()['model_info'][ensemble_model.get_model_best()]['stacker_info']['base_model_names']
-#     else:
-#         for weight, model in ensemble_model.get_models_with_weights():
-#             model_names.append(str(type(model._final_estimator.choice)).split('.')[-1][:-2])
-#     return model_names
+def conjunctive_precision_multiclass_plot(predictions, y, model_to_compare):
+    """Bar plot showing weighted and macro conjunctive precision
+        value for chosen model and remaining models.
+
+    Parameters
+    ----------
+    predictions: dictionary with predictions of ensemble component models
+        of form {'model_name': 'prediction_vector'}
+
+    y: list, numpy.array, pandas.series
+    true values of predicted variable
+
+    model_to_compare: string
+        name of model to compare with other models
+
+    Returns
+    -------
+    fig : plotly.graph_objs._figure.Figure
+        plotly plot
+
+    Examples
+    --------
+    conjunctive_precision_multiclass_plot(predictions, y, model_to_compare)
+    """
+    models = list(predictions.keys())
+    compare_prediction = predictions[model_to_compare]
+    models.remove(model_to_compare)
+    value = []
+    model_name = []
+    metric_type = []
+    for model in models:
+        value = value + [macro_conjunctive_precission(compare_prediction, predictions[model], y),
+                         weighted_conjunctive_precission(compare_prediction, predictions[model], y)]
+        model_name = model_name + [model] * 2
+        metric_type = metric_type + ['macro', 'weighted']
+    df = pd.DataFrame(list(zip(value, model_name, metric_type)),
+                      columns=['value', 'model_name', 'metric_type'])
+    fig = px.bar(df, x='model_name', y='value', color='metric_type', barmode='group')
+    fig.update_layout(
+        title='Conjunctive precision values of ' + model_to_compare + "<br> model and other models",
+        plot_bgcolor='rgba(44,47,56,255)',
+        paper_bgcolor='rgba(44,47,56,255)',
+        font_color="rgba(225, 225, 225, 255)",
+        font_size=15,
+        title_font_color="rgba(225, 225, 225, 255)",
+        title_font_size=17,
+        legend_title="Metric type"
+    )
+    fig.update_yaxes(
+        gridcolor='rgba(51,54,61,255)',
+        gridwidth=3,
+        title='Metric type'
+    )
+    fig.data[0].marker.color = 'rgba(0,114,239,255)'
+    fig.data[1].marker.color = 'purple'
+    fig.update_xaxes(title='')
+    return fig
+
+def conjunctive_recall_multiclass_plot(predictions, y, model_to_compare):
+    """Bar plot showing weighted and macro conjunctive recall
+        value for chosen model and remaining models.
+
+    Parameters
+    ----------
+    predictions: dictionary with predictions of ensemble component models
+        of form {'model_name': 'prediction_vector'}
+
+    y: list, numpy.array, pandas.series
+    true values of predicted variable
+
+    model_to_compare: string
+        name of model to compare with other models
+
+    Returns
+    -------
+    fig : plotly.graph_objs._figure.Figure
+        plotly plot
+
+    Examples
+    --------
+    conjunctive_recall_multiclass_plot(predictions, y, model_to_compare)
+    """
+    models = list(predictions.keys())
+    compare_prediction = predictions[model_to_compare]
+    models.remove(model_to_compare)
+    value = []
+    model_name = []
+    metric_type = []
+    for model in models:
+        value = value + [macro_conjunctive_recall(compare_prediction, predictions[model], y),
+                         weighted_conjunctive_recall(compare_prediction, predictions[model], y)]
+        model_name = model_name + [model] * 2
+        metric_type = metric_type + ['macro', 'weighted']
+    df = pd.DataFrame(list(zip(value, model_name, metric_type)),
+                      columns=['value', 'model_name', 'metric_type'])
+    fig = px.bar(df, x='model_name', y='value', color='metric_type', barmode='group')
+    fig.update_layout(
+        title='Conjunctive recall values of ' + model_to_compare + "<br> model and other models",
+        plot_bgcolor='rgba(44,47,56,255)',
+        paper_bgcolor='rgba(44,47,56,255)',
+        font_color="rgba(225, 225, 225, 255)",
+        font_size=15,
+        title_font_color="rgba(225, 225, 225, 255)",
+        title_font_size=17,
+        legend_title="Metric type"
+    )
+    fig.update_yaxes(
+        gridcolor='rgba(51,54,61,255)',
+        gridwidth=3,
+        title='Metric type'
+    )
+    fig.data[0].marker.color = 'rgba(0,114,239,255)'
+    fig.data[1].marker.color = 'purple'
+    fig.update_xaxes(title='')
+    return fig
