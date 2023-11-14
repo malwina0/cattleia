@@ -10,8 +10,10 @@ import compatimetrics_plots
 import metrics
 import shutil
 import pandas as pd
-from utils import get_predictions_from_model, get_task_from_model
+from utils import get_predictions_from_model, get_task_from_model, parse_data
 from autogluon.tabular import TabularPredictor
+from weights import slider_section, get_ensemble_names_weights, \
+    tbl_metrics, tbl_metrics_adj_ensemble, calculate_metrics, calculate_metrics_adj_ensemble
 
 sys.path.append("..")
 
@@ -97,35 +99,6 @@ layout = html.Div([
 ])
 
 
-# data loading function
-def parse_data(contents, filename):
-    content_type, content_string = contents.split(",")
-
-    decoded = base64.b64decode(content_string)
-    try:
-        if "csv" in filename:
-            df = pd.read_csv(io.StringIO(decoded.decode("utf-8")))
-            return df
-        elif "pkl" in filename:
-            model = pd.read_pickle(io.BytesIO(decoded))
-            if "<class 'flaml" in str(model.__class__).split("."):
-                library = "Flaml"
-            else:
-                library = "AutoSklearn"
-            return model, library
-        elif "zip" in filename:
-            with zipfile.ZipFile(io.BytesIO(decoded), 'r') as zip_ref:
-                zip_ref.extractall('./uploaded_model')
-
-            model = TabularPredictor.load('./uploaded_model', require_py_version_match=False)
-            library = "AutoGluon"
-            return model, library
-
-    except Exception as e:
-        print(e)
-        return html.Div(["There was an error processing this file."])
-
-
 # part responsible for adding csv file
 @callback(
     [Output('csv_data', 'data'),
@@ -150,10 +123,6 @@ def update_output(contents, filename):
                          options=[{'label': x, 'value': x} for x in df.columns]),
             html.Hr(),
         ])
-    try:
-        shutil.rmtree('./uploaded_model')
-    except FileNotFoundError:
-        pass
 
     return data, children
 
@@ -197,7 +166,6 @@ def select_columns(value):
 def update_model(contents, filename, df, column, about_us):
     model_names = []
     predictions = []
-    task = []
     children = about_us
     if contents:
         contents = contents[0]
@@ -210,6 +178,7 @@ def update_model(contents, filename, df, column, about_us):
             pass
 
         model, library = parse_data(contents, filename)
+        models_name, weights = get_ensemble_names_weights(model, library)
 
         df = pd.DataFrame.from_dict(df)
         df = df.dropna()
@@ -217,6 +186,7 @@ def update_model(contents, filename, df, column, about_us):
         y = df.iloc[:, df.columns == column["name"]]
         y = y.squeeze()
 
+        global task
         task = get_task_from_model(model, y, library)
         predictions = get_predictions_from_model(model, X, y, library, task)
         model_names = list(predictions.keys())
@@ -233,7 +203,7 @@ def update_model(contents, filename, df, column, about_us):
                 dcc.Graph(figure=metrics.correlation_plot(model, X, library=library, task=task, y=y),
                           className="plot"),
                 dcc.Graph(figure=metrics.prediction_compare_plot(model, X, y, library=library, task=task),
-                          className="plot"),
+                          className="plot")
             ]
         else:
             plot_component = [
@@ -254,8 +224,26 @@ def update_model(contents, filename, df, column, about_us):
                 dcc.Graph(figure=metrics.correlation_plot(model, X, library=library, task=task, y=y),
                           className="plot"),
                 dcc.Graph(figure=metrics.prediction_compare_plot(model, X, y, library=library, task=task),
-                          className="plot"),
+                          className="plot")
             ]
+        if library != "Flaml":
+            plot_component.append(
+                dbc.Row([
+                    dbc.Col([
+                        html.Div([], style={'height': '31px'}),  # placeholder to show metrics in the same line
+                        html.Div(
+                            [slider_section(model_name, weights[i], i) for i, model_name in enumerate(models_name)],
+                            style={'color': 'white'})
+                    ], width=7),
+                    dbc.Col([tbl_metrics(model, X, y, task, library, weights)
+                             ], width=4)
+                ])
+            )
+            plot_component.append(
+                dbc.Row([
+                    dbc.Col([tbl_metrics_adj_ensemble(model, X, y, task, library, weights)], width=4)
+                ], justify="center")
+            )
 
         for plot in metrics.permutation_feature_importance_all(model, X, y, library=library, task=task):
             plot_component.append(dcc.Graph(figure=plot, className="plot"))
@@ -404,6 +392,35 @@ def update_compatimetrics_plot(predictions, model_to_compare, task, df, column):
                 ])
             ]
     return children
+
+
+@callback(
+    Output('metrics-table', 'data', allow_duplicate=True),
+    Output('adj_weights-table', 'data'),
+    Input({"type": "weight_slider", "index": ALL}, 'value'),
+    Input('upload_model', 'contents'),
+    State('upload_model', 'filename'),
+    State('csv_data', 'data'),
+    State('y_label_column', 'data'),
+    prevent_initial_call=True
+)
+def display_output(values, contents, filename, df, column):
+    if contents:
+        contents = contents[0]
+        filename = filename[0]
+
+        ensemble_model, library = parse_data(contents, filename)
+        df = pd.DataFrame.from_dict(df).dropna()
+        X = df.iloc[:, df.columns != column["name"]]
+        y = df.iloc[:, df.columns == column["name"]].squeeze()
+
+        sum_slider_values = sum(values)
+        weights = [round((value / sum_slider_values), 2) for value in values]
+
+        df = calculate_metrics(ensemble_model, X, y, task, library, weights)
+        df_adj = calculate_metrics_adj_ensemble(ensemble_model, X, y, task, library, weights)
+
+        return df.to_dict('records'), df_adj.to_dict('records')
 
 
 # callback responsible for moving the menu
