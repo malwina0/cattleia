@@ -1,5 +1,5 @@
 import dash
-from dash import html, dcc, callback, Input, Output, State
+from dash import html, dcc, Output, Input, callback, State, ALL, dash_table
 import base64
 import io
 import dash_bootstrap_components as dbc
@@ -165,6 +165,7 @@ def select_columns(value):
 )
 def update_model(contents, filename, df, column, about_us):
     model_names = []
+    task = []
     predictions = []
     children = about_us
     if contents:
@@ -186,7 +187,6 @@ def update_model(contents, filename, df, column, about_us):
         y = df.iloc[:, df.columns == column["name"]]
         y = y.squeeze()
 
-        global task
         task = get_task_from_model(model, y, library)
         predictions = get_predictions_from_model(model, X, y, library, task)
         model_names = list(predictions.keys())
@@ -269,7 +269,7 @@ def update_model(contents, filename, df, column, about_us):
 def update_model_selector(model_names):
     children = []
     if model_names:
-        title = html.H2("Compatimetrics", className="compatimetrics_title", style={'color': 'white'})
+        title = html.H4("Choose model for compatimetrics analysis", className="compatimetrics_title", style={'color': 'white'})
         dropdown = dcc.Dropdown(id='model_select', className="dropdown-class",
                                 options=[{'label': x, 'value': x} for x in model_names],
                                 value=model_names[0], clearable=False)
@@ -402,9 +402,10 @@ def update_compatimetrics_plot(predictions, model_to_compare, task, df, column):
     State('upload_model', 'filename'),
     State('csv_data', 'data'),
     State('y_label_column', 'data'),
+    State('task', 'data'),
     prevent_initial_call=True
 )
-def display_output(values, contents, filename, df, column):
+def display_output(values, contents, filename, df, column, task):
     if contents:
         contents = contents[0]
         filename = filename[0]
