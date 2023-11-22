@@ -71,7 +71,7 @@ layout = html.Div([
     dcc.Store(id='y_label_column', data=[], storage_type='memory'),
     dcc.Store(id='metrics_plots', data=[], storage_type='memory'),
     dcc.Store(id='compatimetric_plots', data=[], storage_type='memory'),
-    dcc.Store(id='weight_pots', data=[], storage_type='memory'),
+    dcc.Store(id='weight_plots', data=[], storage_type='memory'),
     dcc.Store(id='predictions', data=[], storage_type='memory'),
     dcc.Store(id='model_names', data=[], storage_type='memory'),
     dcc.Store(id='task', data=[], storage_type='memory'),
@@ -99,8 +99,8 @@ layout = html.Div([
     html.Div([
         dcc.Loading(id="loading-1", type="default", children=html.Div(about_us, id="plots"), className="spin"),
     ], id="plots_div"),
-    html.Div(id='model_selection'),
-    html.Div(id='compatimetrics_container', children=html.Div(id='compatimetrics_plots'))
+    #html.Div(id='model_selection'),
+    #html.Div(id='compatimetrics_container', children=html.Div(id='compatimetrics_plots'))
 ])
 
 
@@ -171,6 +171,7 @@ def select_columns(value):
 @callback(
     Output('plots', 'children'),
     Output('metrics_plots', 'data'),
+    Output('weight_plots', 'data'),
     Output('model_names', 'data'),
     Output('predictions', 'data'),
     Output('task', 'data'),
@@ -209,7 +210,7 @@ def update_model(contents, filename, df, column, about_us):
         model_names = list(predictions.keys())
 
         if task == "regression":
-            plot_component = [
+            metrics_plots = [
                 dbc.Row([
                     dbc.Col([dcc.Graph(figure=metrics.mse_plot(model, X, y, library=library), className="plot")],
                             width=6),
@@ -230,7 +231,7 @@ def update_model(contents, filename, df, column, about_us):
                           className="plot")
             ]
         else:
-            plot_component = [
+            metrics_plots = [
                 dbc.Row([
                     dbc.Col([dcc.Graph(figure=metrics.accuracy_plot(model, X, y, library=library),
                                        className="plot")], width=6),
@@ -255,8 +256,9 @@ def update_model(contents, filename, df, column, about_us):
                 dcc.Graph(figure=metrics.prediction_compare_plot(model, X, y, library=library, task=task),
                           className="plot")
             ]
+        weights_plots = []
         if library != "Flaml":
-            plot_component.append(
+            weights_plots.append(
                 dbc.Row([
                     dbc.Col([
                         html.Div([], style={'height': '31px'}),  # placeholder to show metrics in the same line
@@ -268,17 +270,17 @@ def update_model(contents, filename, df, column, about_us):
                              ], width=4)
                 ])
             )
-            plot_component.append(
+            weights_plots.append(
                 dbc.Row([
                     dbc.Col([tbl_metrics_adj_ensemble(model, X, y, task, library, weights)], width=4)
                 ], justify="center")
             )
 
         for plot in metrics.permutation_feature_importance_all(model, X, y, library=library, task=task):
-            plot_component.append(dcc.Graph(figure=plot, className="plot"))
+            metrics_plots.append(dcc.Graph(figure=plot, className="plot"))
 
         for plot in metrics.partial_dependence_plots(model, X, library=library, autogluon_task=task):
-            plot_component.append(dcc.Graph(figure=plot, className="plot"))
+            metrics_plots.append(dcc.Graph(figure=plot, className="plot"))
 
         # It may be necessary to keep the model for the code with weights,
         # for now we remove the model after making charts
@@ -287,7 +289,14 @@ def update_model(contents, filename, df, column, about_us):
         except FileNotFoundError:
             pass
 
-        plot_component.insert(0, html.Div([
+        metrics_plots.insert(0, html.Div([
+            dbc.Row([
+                dbc.Col([html.Button('Weights', id="weights", className="button_1")], width=2),
+                dbc.Col([html.Button('Metrics', id="metrics", className="button_1")], width=2),
+                dbc.Col([html.Button('Compatimetrics', id="compatimetrics", className="button_1")],width=2),
+            ], justify="center"),
+        ], style={"display": "block", "position": "sticky"}))
+        weights_plots.insert(0, html.Div([
             dbc.Row([
                 dbc.Col([html.Button('Weights', id="weights", className="button_1")], width=2),
                 dbc.Col([html.Button('Metrics', id="metrics", className="button_1")], width=2),
@@ -295,31 +304,55 @@ def update_model(contents, filename, df, column, about_us):
             ], justify="center"),
         ], style={"display": "block", "position": "sticky"}))
 
-        children = html.Div(plot_component)
+        weights_plots = html.Div(weights_plots)
+        children = html.Div(metrics_plots)
 
-    return children, children, model_names, predictions, task
+    return children, children, weights_plots, model_names, predictions, task
 
 
 @callback(
     Output('plots', 'children', allow_duplicate=True),
     Input('weights', 'n_clicks'),
-    State('weight_pots', 'data'),
-    State('metrics_plots', 'data'),
+    State('weight_plots', 'data'),
+    State('plots', 'children'),
     prevent_initial_call=True
 )
-def show_metrics(n_clicks, data, metrics_plots):
+def show_weights(n_clicks, data, children):
+    print("weight")
+    print(n_clicks)
     if n_clicks >= 1:
         return data
-    return metrics_plots
+    return children
+
 
 @callback(
     Output('plots', 'children', allow_duplicate=True),
     Input('metrics', 'n_clicks'),
     State('metrics_plots', 'data'),
+    State('plots', 'children'),
     prevent_initial_call=True
 )
-def show_metrics(n_clicks, data):
-    return data
+def show_metrics(n_clicks, data, children):
+    print("metrics")
+    print(n_clicks)
+    if n_clicks >= 1:
+        return data
+    return children
+
+
+@callback(
+    Output('plots', 'children', allow_duplicate=True),
+    Input('compatimetrics', 'n_clicks'),
+    State('compatimetric_plots', 'data'),
+    State('plots', 'children'),
+    prevent_initial_call=True
+)
+def show_compatimetrics(n_clicks, data, children):
+    print("compati")
+    print(n_clicks)
+    if n_clicks >= 1:
+        return data
+    return children
 
 
 
@@ -336,8 +369,10 @@ def update_output(value):
 
 
 @callback(
-    Output('model_selection', 'children'),
-    Input('model_names', 'data')
+    #Output('model_selection', 'children'),
+    Output('compatimetric_plots', 'data', allow_duplicate=True),
+    Input('model_names', 'data'),
+    prevent_initial_call=True
 )
 def update_model_selector(model_names):
     children = []
@@ -346,7 +381,16 @@ def update_model_selector(model_names):
         dropdown = dcc.Dropdown(id='model_select', className="dropdown-class",
                                 options=[{'label': x, 'value': x} for x in model_names],
                                 value=model_names[0], clearable=False)
-        children = html.Div([title, dropdown])
+        elements = [title, dropdown]
+        elements.insert(0, html.Div([
+            dbc.Row([
+                dbc.Col([html.Button('Weights', id="weights", className="button_1")], width=2),
+                dbc.Col([html.Button('Metrics', id="metrics", className="button_1")], width=2),
+                dbc.Col([html.Button('Compatimetrics', id="compatimetrics", className="button_1")], width=2),
+            ], justify="center"),
+        ], style={"display": "block", "position": "sticky"}))
+        elements.append(html.Div(id='compatimetrics_container', children=html.Div(id='compatimetrics_plots')))
+        children = html.Div(elements)
     return children
 
 
@@ -356,7 +400,7 @@ def update_model_selector(model_names):
     Input('model_select', 'value'),
     State('task', 'data'),
     State('csv_data', 'data'),
-    State('y_label_column', 'data')
+    State('y_label_column', 'data'),
 )
 def update_compatimetrics_plot(predictions, model_to_compare, task, df, column):
     children = []
