@@ -1,0 +1,11 @@
+
+*.pyc
+*.pyc
+__pycache__/utils.cpython-310.pyc
+__pycache__/metrics.cpython-310.pyc
+__pycache__/utils.cpython-310.pyc
+*.pyc
+__pycache__/metrics.cpython-310.pyc
+pages/__pycache__/instruction.cpython-310.pyc
+*.iml
+*.xml

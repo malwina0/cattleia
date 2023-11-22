@@ -2,7 +2,6 @@ from dash import Dash, html, dcc
 import dash
 import dash_bootstrap_components as dbc
 
-
 app = Dash("CATTLEIA",
            use_pages=True,
            suppress_callback_exceptions=True,
@@ -25,7 +24,8 @@ navbar = dbc.Navbar(
                         style={"textDecoration": "none"},
                     ),
                 ], width='auto'),
-                dbc.Col(html.Img(src="assets/tittle.png", height="80px"), align="center", className="tittle", width='auto'),
+                dbc.Col(html.Img(src="assets/tittle.png", height="80px"), align="center", className="tittle",
+                        width='auto'),
                 dbc.Col([
                     html.A(
                         dbc.Row(
@@ -46,7 +46,6 @@ navbar = dbc.Navbar(
     dark=True,
     sticky='top',
 )
-
 
 app.layout = html.Div([
     html.Link(
