@@ -38,7 +38,7 @@ def root_mean_squared_difference(pred1, pred2):
     Numeric value
         RMSD value of given predictions pair
     """
-    return np.sqrt(mse(pred1, pred2))
+    return mse(pred1, pred2, squared=False)
 
 
 def root_mean_sqaured_error_error_penalty(pred1, pred2, y):
@@ -82,7 +82,7 @@ def conjunctive_rmse(pred1, pred2, y):
     pred = []
     for i in range(len(pred1)):
         pred.append((pred1[i]+pred2[i])/2)
-    return np.sqrt(mse(pred, y))
+    return mse(pred, y, squared=False)
 
 
 def strong_disagreement_ratio(pred1, pred2, y):
@@ -103,15 +103,10 @@ def strong_disagreement_ratio(pred1, pred2, y):
     Numeric value
         SDR value of given predictions pair and true values vector
     """
-    n = len(pred1)
     pred1, pred2 = np.array([pred1]), np.array([pred2])
     difference = np.abs(pred1 - pred2)
     standard_deviation = np.std(y)
-    count = 0
-    for i in difference[0]:
-        if i > standard_deviation:
-            count += 1
-    return count/n
+    return np.sum(difference > standard_deviation) / len(pred1)
 
 def agreement_ratio(pred1, pred2, y):
     """ Calculates percentage of observations that were predicted very
@@ -131,15 +126,11 @@ def agreement_ratio(pred1, pred2, y):
     Numeric value
         AR value of given predictions pair and true values vector
     """
-    n = len(pred1)
     pred1, pred2 = np.array([pred1]), np.array([pred2])
     difference = np.abs(pred1 - pred2)
     standard_deviation = np.std(y)
-    count = 0
-    for i in difference[0]:
-        if i < standard_deviation/50:
-            count += 1
-    return count/n
+    threshold = standard_deviation / 50
+    return np.sum(difference[0] < threshold) / len(pred1)
 
 def uniformity(pred1, pred2):
     """ Calculates uniformity of two prediction vectors, which is a measure
@@ -178,10 +169,7 @@ def disagreement_ratio(pred1, pred2):
     Numeric value
        DR value of given prediction vectors
     """
-    count = 0
-    for i in range(len(pred1)):
-        if pred1[i] != pred2[i]:
-            count += 1
+    count = sum(1 for p1, p2 in zip(pred1, pred2) if p1 != p2)
     return count/len(pred1)
 
 def disagreement_postive_ratio(pred1, pred2, y, positive=None):
@@ -234,10 +222,7 @@ def conjunctive_accuracy(pred1, pred2, y):
         Conjunctive accuracy value of given predictions pair
         and true values vector
     """
-    same = 0
-    for i in range(len(y)):
-        if pred1[i] == pred2[i] and pred2[i] == y[i]:
-            same += 1
+    same = sum(1 for p1, p2, yy in zip(pred1, pred2, y) if p1 == p2 == yy)
     return same/len(y)
 
 def conjunctive_precission(pred1, pred2, y, positive=None):
