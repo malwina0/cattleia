@@ -1,11 +1,17 @@
 import dash
 from dash import html, dcc, Output, Input, callback, State, ALL, dash_table
+import base64
+import io
 import dash_bootstrap_components as dbc
 import sys
+import zipfile
+import numpy as np
+import compatimetrics_plots
 import metrics
 import shutil
 import pandas as pd
-from utils import parse_data
+from utils import get_predictions_from_model, get_task_from_model, parse_data
+from autogluon.tabular import TabularPredictor
 from weights import slider_section, get_ensemble_names_weights, \
     tbl_metrics, tbl_metrics_adj_ensemble, calculate_metrics, calculate_metrics_adj_ensemble
 
@@ -54,7 +60,7 @@ about_us = html.Div([
         creating predictive models and extracting valuable insights from numerical information. 
         Our mission is to develop skills in this field and share our knowledge with others. 
         Cattleia is our project created as a Bachelor thesis.  
-        Our project co-ordinator and supervisor is Anna Kozak.
+        Our project co-ordinator and supervisor is Anna Kozak
     """, className="about_us_str", style={"max-width": "70%", "height": "auto"}),
 ])
 
@@ -62,6 +68,9 @@ about_us = html.Div([
 layout = html.Div([
     dcc.Store(id='csv_data', data=[], storage_type='memory'),
     dcc.Store(id='y_label_column', data=[], storage_type='memory'),
+    dcc.Store(id='predictions', data=[], storage_type='memory'),
+    dcc.Store(id='model_names', data=[], storage_type='memory'),
+    dcc.Store(id='task', data=[], storage_type='memory'),
     # side menu
     html.Div([
         dbc.Container([
@@ -83,8 +92,10 @@ layout = html.Div([
     ], id="side_menu_div"),
     # plots
     html.Div([
-        dcc.Loading(id="loading-1", type="default", children=html.Div(about_us, id="plots"), className="spin")
-    ], id="plots_div")
+        dcc.Loading(id="loading-1", type="default", children=html.Div(about_us, id="plots"), className="spin"),
+    ], id="plots_div"),
+    html.Div(id='model_selection'),
+    html.Div(id='compatimetrics_container', children=html.Div(id='compatimetrics_plots'))
 ])
 
 
@@ -143,6 +154,9 @@ def select_columns(value):
 # part responsible for adding model and showing plots
 @callback(
     Output('plots', 'children'),
+    Output('model_names', 'data'),
+    Output('predictions', 'data'),
+    Output('task', 'data'),
     Input('upload_model', 'contents'),
     State('upload_model', 'filename'),
     State('csv_data', 'data'),
@@ -150,6 +164,9 @@ def select_columns(value):
     State('plots', 'children'),
 )
 def update_model(contents, filename, df, column, about_us):
+    model_names = []
+    task = []
+    predictions = []
     children = about_us
     if contents:
         contents = contents[0]
@@ -170,11 +187,10 @@ def update_model(contents, filename, df, column, about_us):
         y = df.iloc[:, df.columns == column["name"]]
         y = y.squeeze()
 
-        global task
-        if y.squeeze().nunique() > 10:
-            task = "regression"
-        else:
-            task = "classification"
+        task = get_task_from_model(model, y, library)
+        predictions = get_predictions_from_model(model, X, y, library, task)
+        model_names = list(predictions.keys())
+
         if task == "regression":
             plot_component = [
                 dbc.Row([
@@ -241,9 +257,140 @@ def update_model(contents, filename, df, column, about_us):
             shutil.rmtree('./uploaded_model')
         except FileNotFoundError:
             pass
-
         children = html.Div(plot_component)
 
+    return children, model_names, predictions, task
+
+
+@callback(
+    Output('model_selection', 'children'),
+    Input('model_names', 'data')
+)
+def update_model_selector(model_names):
+    children = []
+    if model_names:
+        title = html.H4("Choose model for compatimetrics analysis", className="compatimetrics_title", style={'color': 'white'})
+        dropdown = dcc.Dropdown(id='model_select', className="dropdown-class",
+                                options=[{'label': x, 'value': x} for x in model_names],
+                                value=model_names[0], clearable=False)
+        children = html.Div([title, dropdown])
+    return children
+
+
+@callback(
+    Output('compatimetrics_plots', 'children'),
+    State('predictions', 'data'),
+    Input('model_select', 'value'),
+    State('task', 'data'),
+    State('csv_data', 'data'),
+    State('y_label_column', 'data')
+)
+def update_compatimetrics_plot(predictions, model_to_compare, task, df, column):
+    children = []
+    df = pd.DataFrame.from_dict(df)
+    df = df.dropna()
+    y = df.iloc[:, df.columns == column["name"]]
+    y = y.squeeze()
+    if model_to_compare:
+        if task == 'classification':
+            children = [dbc.Row([
+                dbc.Col([dcc.Graph(figure=compatimetrics_plots.uniformity_matrix(predictions),
+                                   className="plot")],
+                        width=6),
+                dbc.Col([dcc.Graph(figure=compatimetrics_plots.incompatibility_matrix(predictions),
+                                   className="plot")],
+                        width=6),
+                ]),
+                dbc.Row([
+                    dbc.Col([dcc.Graph(figure=compatimetrics_plots.acs_matrix(predictions, y),
+                                       className="plot")],
+                            width=6),
+                    dbc.Col([dcc.Graph(figure=compatimetrics_plots.conjuntive_accuracy_matrix(predictions, y),
+                                       className="plot")],
+                            width=6),
+                ]),
+                dbc.Row([
+                    dbc.Col([dcc.Graph(figure=compatimetrics_plots.disagreement_ratio_plot(predictions, y, model_to_compare),
+                                       className="plot")],
+                            width=6),
+                    dbc.Col([dcc.Graph(figure=compatimetrics_plots.conjunctive_metrics_plot(predictions, y, model_to_compare),
+                                       className="plot")],
+                            width=6),
+                ]),
+                dbc.Row(
+                    [dcc.Graph(figure=compatimetrics_plots.prediction_correctness_plot(predictions, y, model_to_compare),
+                               className='plot')
+                ]),
+                dbc.Row(
+                    [dcc.Graph(figure=compatimetrics_plots.collective_cummulative_score_plot(predictions, y, model_to_compare),
+                               className='plot')
+                ]),
+            ]
+        elif task == 'regression':
+            children = [dbc.Row([
+                dbc.Col([dcc.Graph(figure=compatimetrics_plots.msd_matrix(predictions), className="plot")],
+                        width=6),
+                dbc.Col([dcc.Graph(figure=compatimetrics_plots.rmsd_matrix(predictions), className="plot")],
+                        width=6),
+                ]),
+                dbc.Row([
+                    dbc.Col([dcc.Graph(figure=compatimetrics_plots.ar_matrix(predictions, y), className="plot")],
+                            width=6),
+                    dbc.Col([dcc.Graph(figure=compatimetrics_plots.sdr_matrix(predictions, y), className="plot"), ],
+                            width=6),
+                ]),
+                dbc.Row([
+                    dbc.Col([dcc.Graph(figure=compatimetrics_plots.msd_comparison(predictions, model_to_compare), className="plot")],
+                            width=6),
+                    dbc.Col([dcc.Graph(figure=compatimetrics_plots.rmsd_comparison(predictions, model_to_compare), className="plot")],
+                            width=6),
+                ]),
+                dbc.Row(
+                    [dcc.Graph(
+                        figure=compatimetrics_plots.conjunctive_rmse_plot(predictions, y, model_to_compare),
+                        className='plot')
+                     ]),
+                dbc.Row([
+                    dcc.Graph(figure=compatimetrics_plots.difference_distribution(predictions, model_to_compare), className="plot")
+                ]),
+                dbc.Row([
+                    dcc.Graph(figure=compatimetrics_plots.difference_boxplot(predictions, y, model_to_compare), className="plot")
+                ])
+            ]
+        else:
+            children = [dbc.Row([
+                dbc.Col([dcc.Graph(figure=compatimetrics_plots.uniformity_matrix(predictions),
+                                   className="plot")],
+                        width=6),
+                dbc.Col([dcc.Graph(figure=compatimetrics_plots.incompatibility_matrix(predictions),
+                                   className="plot")],
+                        width=6),
+            ]), dbc.Row([
+                dbc.Col([dcc.Graph(figure=compatimetrics_plots.acs_matrix(predictions, y),
+                                   className="plot")],
+                        width=6),
+                dbc.Col([dcc.Graph(figure=compatimetrics_plots.conjuntive_accuracy_matrix(predictions, y),
+                                   className="plot")],
+                        width=6),
+            ]), dbc.Row([
+                dbc.Col([dcc.Graph(
+                    figure=compatimetrics_plots.conjunctive_precision_multiclass_plot(predictions, y, model_to_compare),
+                    className="plot")],
+                    width=6),
+                dbc.Col([dcc.Graph(
+                    figure=compatimetrics_plots.conjunctive_recall_multiclass_plot(predictions, y, model_to_compare),
+                    className="plot")],
+                    width=6),
+            ]), dbc.Row(
+                [dcc.Graph(
+                    figure=compatimetrics_plots.prediction_correctness_plot(predictions, y, model_to_compare),
+                    className='plot')
+                ]), dbc.Row(
+                [dcc.Graph(
+                    figure=compatimetrics_plots.collective_cummulative_score_plot(predictions, y, model_to_compare),
+                    className='plot')
+                ])
+            ]
     return children
 
 
@@ -255,9 +402,10 @@ def update_model(contents, filename, df, column, about_us):
     State('upload_model', 'filename'),
     State('csv_data', 'data'),
     State('y_label_column', 'data'),
+    State('task', 'data'),
     prevent_initial_call=True
 )
-def display_output(values, contents, filename, df, column):
+def display_output(values, contents, filename, df, column, task):
     if contents:
         contents = contents[0]
         filename = filename[0]
