@@ -1,17 +1,12 @@
 import dash
 from dash import html, dcc, Output, Input, callback, State, ALL, dash_table
-import base64
-import io
 import dash_bootstrap_components as dbc
 import sys
-import zipfile
-import numpy as np
 import compatimetrics_plots
 import metrics
 import shutil
 import pandas as pd
 from utils import get_predictions_from_model, get_task_from_model, parse_data
-from autogluon.tabular import TabularPredictor
 from weights import slider_section, get_ensemble_names_weights, \
     tbl_metrics, tbl_metrics_adj_ensemble, calculate_metrics, calculate_metrics_adj_ensemble
 
@@ -34,19 +29,19 @@ about_us = html.Div([
     html.Br(),
     dbc.Row([
         dbc.Col([
-            dbc.Row([html.Img(src="assets/dominik.png",
+            dbc.Row([html.Img(src="assets/images/dominik.png",
                               style={"max-width": "50%", "height": "auto"},
                               className="about_us_img")]),
             dbc.Row([html.H2("Dominik Kędzierski", className="about_us_img")], align="center")
         ], width=4),
         dbc.Col([
-            dbc.Row([html.Img(src="assets/malwina.png",
+            dbc.Row([html.Img(src="assets/images/malwina.png",
                               style={"max-width": "50%", "height": "auto"},
                               className="about_us_img")]),
             dbc.Row([html.H2("Malwina Wojewoda", className="about_us_img")], align="center")
         ], width=4),
         dbc.Col([
-            dbc.Row([html.Img(src="assets/jakub.png",
+            dbc.Row([html.Img(src="assets/images/jakub.png",
                               style={"max-width": "50%", "height": "auto"},
                               className="about_us_img")]),
             dbc.Row([html.H2("Jakub Piwko", className="about_us_img")], align="center")
@@ -126,20 +121,11 @@ def update_output(contents, filename):
                 id='column_select',
                 options=options
             ),
-            html.Div(id='tooltip', style={'whitespace': 'pre-wrap'}),
             html.Hr(),
         ])
 
     return data, children
 
-@callback(
-    Output('tooltip', 'children'),
-    [Input('column_select', 'value')]
-)
-def display_full_label(value):
-    if value:
-        return value # Display the selected label
-    return ''
 
 # part responsible for choosing target column
 @callback(
