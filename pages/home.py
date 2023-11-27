@@ -115,17 +115,31 @@ def update_output(contents, filename):
         df = parse_data(contents, filename)
         data = df.to_dict()
 
+        # Creating the dropdown menu with full labels displayed as tooltips
+        options = [{'label': x[:20] + '...' if len(x) > 20 else x, 'value': x, 'title': x} for x in df.columns]
+
         children = html.Div([
             html.P(filename, className="sidepanel_text"),
             html.Hr(),
             html.H5("Select target colum", className="sidepanel_text"),
-            dcc.Dropdown(id='column_select', className="dropdown-class",
-                         options=[{'label': x, 'value': x} for x in df.columns]),
+            dcc.Dropdown(
+                id='column_select',
+                options=options
+            ),
+            html.Div(id='tooltip', style={'whitespace': 'pre-wrap'}),
             html.Hr(),
         ])
 
     return data, children
 
+@callback(
+    Output('tooltip', 'children'),
+    [Input('column_select', 'value')]
+)
+def display_full_label(value):
+    if value:
+        return value # Display the selected label
+    return ''
 
 # part responsible for choosing target column
 @callback(
