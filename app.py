@@ -24,7 +24,7 @@ navbar = dbc.Navbar(
                         style={"textDecoration": "none"},
                     ),
                 ], width='auto'),
-                dbc.Col(html.Img(src="assets/images/tittle.png", height="80px"), align="center", className="tittle",
+                dbc.Col(html.Img(src="assets/images/title.png", height="80px"), align="center", className="tittle",
                         width='auto'),
                 dbc.Col([
                     html.A(
