@@ -119,6 +119,7 @@ def update_output(contents, filename):
             html.H5("Select target colum", className="sidepanel_text"),
             dcc.Dropdown(
                 id='column_select',
+                className="dropdown-class",
                 options=options
             ),
             html.Hr(),
