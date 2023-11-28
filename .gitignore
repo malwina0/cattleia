@@ -9,3 +9,4 @@ __pycache__/metrics.cpython-310.pyc
 pages/__pycache__/instruction.cpython-310.pyc
 *.iml
 *.xml
+.idea

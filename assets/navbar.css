@@ -210,3 +210,7 @@ button:hover {
 button:hover::before {
  width: 100%;
 }
+
+.row{
+    --bs-gutter-x: 0 !important;
+}
