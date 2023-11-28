@@ -113,14 +113,18 @@ def tbl_metrics(ensemble_model, X, y, task, library, weights):
         columns=[
             {'name': col, 'id': col} for col in df.columns
         ],
-        style_table={'backgroundColor': '#2c2f38', 'border': '1px solid #2c2f38'},
+        style_table={
+            'backgroundColor': '#3a3e4a',
+            'border': '3px solid #1e1e1e',
+        },
         style_cell={
             'textAlign': 'center',
             'color': 'white',
-            'border': '1px solid #2c2f38',
-            'backgroundColor': '#1e1e1e',
+            'border': '1.5px solid #1e1e1e',
+            'backgroundColor': '#3a3e4a',
             'height': '30px'
         },
+        style_header={'fontWeight': 'bold'},
         id='metrics-table'
     )
 
@@ -192,15 +196,6 @@ def calculate_metrics_adj_ensemble(ensemble_model, X, y, task, library, weights)
     return df_metrics
 
 
-# def set_cell_colors(row):
-#     if row['Original model'] > row['Adjusted model']:
-#         return {'backgroundColor': 'green', 'color': 'black'}
-#     elif row['Original model'] < row['Adjusted model']:
-#         return {'backgroundColor': 'yellow', 'color': 'black'}
-#     else:
-#         return {'backgroundColor': '', 'color': 'black'}
-
-
 def tbl_metrics_adj_ensemble(ensemble_model, X, y, task, library, weights):
     df = calculate_metrics_adj_ensemble(ensemble_model, X, y, task, library, weights)
     style_data_conditional = []
@@ -211,20 +206,14 @@ def tbl_metrics_adj_ensemble(ensemble_model, X, y, task, library, weights):
                     'filter_query': '{Original model} > {Adjusted model}',
                     'column_id': 'Adjusted model'
                 },
-                'color': 'black',
-                'fontWeight': 'bold',
-                'textDecoration': 'underline',
-                'backgroundColor': 'green',
+                'backgroundColor': '#2b5c35',
             },
             {
                 'if': {
                     'filter_query': '{Original model} < {Adjusted model}',
                     'column_id': 'Adjusted model'
                 },
-                'color': 'black',
-                'fontWeight': 'bold',
-                'textDecoration': 'underline',
-                'backgroundColor': 'yellow',
+                'backgroundColor': '#662f2f',
             }
         ])
     else:
@@ -234,35 +223,34 @@ def tbl_metrics_adj_ensemble(ensemble_model, X, y, task, library, weights):
                     'filter_query': '{Original model} > {Adjusted model}',
                     'column_id': 'Adjusted model'
                 },
-                'color': 'black',
-                'fontWeight': 'bold',
-                'textDecoration': 'underline',
-                'backgroundColor': 'blue',
+                'backgroundColor': '#662f2f',
             },
             {
                 'if': {
                     'filter_query': '{Original model} < {Adjusted model}',
                     'column_id': 'Adjusted model'
                 },
-                'color': 'black',
-                'fontWeight': 'bold',
-                'textDecoration': 'underline',
-                'backgroundColor': 'red',
+                'backgroundColor': '#2b5c35',
             }
         ])
     return dash_table.DataTable(
-        data=df.to_dict('records'),  # Konwersja DataFrame do formatu obsługiwanego przez dash
+        data=df.to_dict('records'),
         columns=[
             {'name': col, 'id': col} for col in df.columns
         ],
-        style_table={'backgroundColor': '#2c2f38', 'border': '1px solid #2c2f38'},
+        style_table={
+            'backgroundColor': '#3a3e4a',
+            'border': '3px solid #1e1e1e',
+            'marginTop': '30px'
+        },
         style_cell={
             'textAlign': 'center',
             'color': 'white',
-            'border': '1px solid #2c2f38',
-            'backgroundColor': '#1e1e1e',
+            'border': '1.5px solid #1e1e1e',
+            'backgroundColor': '#3a3e4a',
             'height': '30px'
         },
+        style_header={'fontWeight': 'bold'},
         style_data_conditional=style_data_conditional,
         id='adj_weights-table'
     )
