@@ -7,6 +7,27 @@ from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_sc
 
 
 def get_ensemble_names_weights(ensemble_model, library):
+    """
+    Retrieves model names and their corresponding weights from an ensemble model.
+
+    Parameters
+    ----------
+    ensemble_model : object
+        The ensemble model object from which to extract model names and weights.
+
+    library : {'AutoSklearn', 'AutoGluon'}
+        The library type used for the ensemble model. It specifies how to retrieve
+        model names and weights accordingly.
+
+    Returns
+    -------
+    tuple
+        A tuple containing two lists:
+        - model_names : list of str
+            List of model names included in the ensemble.
+        - weights : list of float
+            List of weights corresponding to each model in the ensemble.
+    """
     weights, model_names = ([] for _ in range(2))
 
     if library == "AutoSklearn":
@@ -24,6 +45,27 @@ def get_ensemble_names_weights(ensemble_model, library):
 
 
 def slider_section(model_name, weight, i):
+    """
+    Creates an HTML Div containing a slider and model name.
+
+    Parameters
+    ----------
+    model_name : str
+        The name of the model to display.
+
+    weight : float
+        The initial value for the slider representing the weight of the model.
+
+    i : int
+        Index used to identify the slider.
+
+    Returns
+    -------
+    dash_html_components.Div
+        An HTML Div element containing a row with two columns:
+        - The first column displays the model name.
+        - The second column contains a Dash Slider component for adjusting the weight.
+    """
     return html.Div([
         dbc.Row([
             dbc.Col(
@@ -51,6 +93,45 @@ def slider_section(model_name, weight, i):
 
 
 def calculate_metrics(ensemble_model, X, y, task, library, weights):
+    """
+    Calculates evaluation metrics for the ensemble model based on the specified task.
+
+    Parameters
+    ----------
+    ensemble_model : object
+        The ensemble model object for which metrics are calculated.
+
+    X : array-like of shape (n_samples, n_features)
+        The input data.
+
+    y : array-like of shape (n_samples,)
+        The target values.
+
+    task : {'regression', 'classification'}
+        The type of task, either regression or classification, to determine which metrics to calculate.
+
+    library : {'AutoSklearn', 'AutoGluon'}
+        The library type used for the ensemble model.
+
+    weights : array-like
+        List of weights corresponding to each model in the ensemble.
+
+    Returns
+    -------
+    pandas.DataFrame
+        A DataFrame containing calculated metrics based on the task:
+        - For regression task:
+            'weight': weights,
+            'MAPE': Mean Absolute Percentage Error,
+            'MAE': Mean Absolute Error,
+            'MSE': Mean Squared Error
+        - For classification task:
+            'weight': weights,
+            'accuracy': Accuracy,
+            'precision': Precision,
+            'recall': Recall,
+            'f1 score': F1 Score
+    """
     if task == "regression":
         mape, mae, mse = ([] for _ in range(3))
         if library == "AutoSklearn":
@@ -107,6 +188,34 @@ def calculate_metrics(ensemble_model, X, y, task, library, weights):
 
 
 def tbl_metrics(ensemble_model, X, y, task, library, weights):
+    """
+    Generates a Dash DataTable displaying evaluation metrics for the ensemble model.
+
+    Parameters
+    ----------
+    ensemble_model : object
+        The ensemble model object for which metrics are displayed.
+
+    X : array-like of shape (n_samples, n_features)
+        The input data.
+
+    y : array-like of shape (n_samples,)
+        The target values.
+
+    task : {'regression', 'classification'}
+        The type of task, either regression or classification, to determine which metrics to display.
+
+    library : {'AutoSklearn', 'AutoGluon'}
+        The library type used for the ensemble model.
+
+    weights : array-like
+        List of weights corresponding to each model in the ensemble.
+
+    Returns
+    -------
+    dash_table.DataTable
+        A Dash DataTable displaying calculated metrics based on the task and library.
+    """
     df = calculate_metrics(ensemble_model, X, y, task, library, weights)
     return dash_table.DataTable(
         data=df.to_dict('records'),  # convert DataFrame to format compatible with dash
@@ -130,6 +239,42 @@ def tbl_metrics(ensemble_model, X, y, task, library, weights):
 
 
 def calculate_metrics_adj_ensemble(ensemble_model, X, y, task, library, weights):
+    """
+    Calculates evaluation metrics for an adjusted ensemble model based on the specified task.
+
+    Parameters
+    ----------
+    ensemble_model : object
+        The ensemble model object for which metrics are calculated.
+
+    X : array-like of shape (n_samples, n_features)
+        The input data.
+
+    y : array-like of shape (n_samples,)
+        The target values.
+
+    task : {'regression', 'classification'}
+        The type of task, either regression or classification, to determine which metrics to calculate.
+
+    library : {'AutoSklearn', 'AutoGluon'}
+        The library type used for the ensemble model.
+
+    weights : array-like
+        List of weights corresponding to each model in the ensemble.
+
+    Returns
+    -------
+    pandas.DataFrame
+        A DataFrame containing calculated metrics for the original and adjusted models based on the task:
+        - For regression task:
+            'metric': ['MSE', 'MAE', 'MAPE'],
+            'Original model': [mse, mae, mape],
+            'Adjusted model': [mse_adj, mae_adj, mape_adj]
+        - For classification task:
+            'metric': ['accuracy', 'precision', 'recall', 'f1 score'],
+            'Original model': [accuracy, precision, recall, f1],
+            'Adjusted model': [accuracy_adj, precision_adj, recall_adj, f1_adj]
+    """
     if task == "regression":
         mse = round(mean_squared_error(y, ensemble_model.predict(X)))
         mae = float('%.*g' % (3, mean_absolute_error(y, ensemble_model.predict(X))))
@@ -197,6 +342,35 @@ def calculate_metrics_adj_ensemble(ensemble_model, X, y, task, library, weights)
 
 
 def tbl_metrics_adj_ensemble(ensemble_model, X, y, task, library, weights):
+    """
+    Generates a Dash DataTable displaying evaluation metrics for the adjusted ensemble model.
+
+    Parameters
+    ----------
+    ensemble_model : object
+      The ensemble model object for which metrics are displayed.
+
+    X : array-like of shape (n_samples, n_features)
+      The input data.
+
+    y : array-like of shape (n_samples,)
+      The target values.
+
+    task : {'regression', 'classification'}
+      The type of task, either regression or classification, to determine which metrics to display.
+
+    library : {'AutoSklearn', 'AutoGluon'}
+      The library type used for the ensemble model.
+
+    weights : array-like
+      List of weights corresponding to each model in the ensemble.
+
+    Returns
+    -------
+    dash_table.DataTable
+      A Dash DataTable displaying calculated metrics for the original and adjusted models based on the task.
+      The table contains conditional styling highlighting differences between original and adjusted models.
+    """
     df = calculate_metrics_adj_ensemble(ensemble_model, X, y, task, library, weights)
     style_data_conditional = []
     if task == 'regression':
