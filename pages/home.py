@@ -1,17 +1,12 @@
 import dash
-from dash import html, dcc, Output, Input, callback, State, ALL, dash_table
-import base64
-import io
+from dash import html, dcc, Output, Input, callback, State, ALL
 import dash_bootstrap_components as dbc
 import sys
-import zipfile
-import numpy as np
 import compatimetrics_plots
 import metrics
 import shutil
 import pandas as pd
 from utils import get_predictions_from_model, get_task_from_model, parse_data
-from autogluon.tabular import TabularPredictor
 import dash_daq as daq
 from weights import slider_section, get_ensemble_names_weights, \
     tbl_metrics, tbl_metrics_adj_ensemble, calculate_metrics, calculate_metrics_adj_ensemble
@@ -35,19 +30,19 @@ about_us = html.Div([
     html.Br(),
     dbc.Row([
         dbc.Col([
-            dbc.Row([html.Img(src="assets/dominik.png",
+            dbc.Row([html.Img(src="assets/images/dominik.png",
                               style={"max-width": "50%", "height": "auto"},
                               className="about_us_img")]),
             dbc.Row([html.H2("Dominik Kędzierski", className="about_us_img")], align="center")
         ], width=4),
         dbc.Col([
-            dbc.Row([html.Img(src="assets/malwina.png",
+            dbc.Row([html.Img(src="assets/images/malwina.png",
                               style={"max-width": "50%", "height": "auto"},
                               className="about_us_img")]),
             dbc.Row([html.H2("Malwina Wojewoda", className="about_us_img")], align="center")
         ], width=4),
         dbc.Col([
-            dbc.Row([html.Img(src="assets/jakub.png",
+            dbc.Row([html.Img(src="assets/images/jakub.png",
                               style={"max-width": "50%", "height": "auto"},
                               className="about_us_img")]),
             dbc.Row([html.H2("Jakub Piwko", className="about_us_img")], align="center")
@@ -99,8 +94,6 @@ layout = html.Div([
     html.Div([
         dcc.Loading(id="loading-1", type="default", children=html.Div(about_us, id="plots"), className="spin"),
     ], id="plots_div"),
-    #html.Div(id='model_selection'),
-    #html.Div(id='compatimetrics_container', children=html.Div(id='compatimetrics_plots'))
 ])
 
 
@@ -120,12 +113,18 @@ def update_output(contents, filename):
         df = parse_data(contents, filename)
         data = df.to_dict()
 
+        # Creating the dropdown menu with full labels displayed as tooltips
+        options = [{'label': x[:20] + '...' if len(x) > 20 else x, 'value': x, 'title': x} for x in df.columns]
+
         children = html.Div([
             html.P(filename, className="sidepanel_text"),
             html.Hr(),
             html.H5("Select target colum", className="sidepanel_text"),
-            dcc.Dropdown(id='column_select', className="dropdown-class",
-                         options=[{'label': x, 'value': x} for x in df.columns]),
+            dcc.Dropdown(
+                id='column_select',
+                className="dropdown-class",
+                options=options
+            ),
             html.Hr(),
         ])
 

@@ -15,7 +15,7 @@ navbar = dbc.Navbar(
                     dcc.Link(
                         dbc.Row(
                             [
-                                dbc.Col(html.Img(src="assets/cattleia.png", height="80px"), ),
+                                dbc.Col(html.Img(src="assets/images/cattleia.png", height="80px"), ),
                             ],
                             align="center",
                             className="g-0",
@@ -24,13 +24,13 @@ navbar = dbc.Navbar(
                         style={"textDecoration": "none"},
                     ),
                 ], width='auto'),
-                dbc.Col(html.Img(src="assets/tittle.png", height="80px"), align="center", className="tittle",
+                dbc.Col(html.Img(src="assets/images/title.png", height="80px"), align="center", className="tittle",
                         width='auto'),
                 dbc.Col([
                     html.A(
                         dbc.Row(
                             [
-                                dbc.Col(html.Img(src="assets/github.png", height="70px"), ),
+                                dbc.Col(html.Img(src="assets/images/github.png", height="70px"), ),
                             ],
                             align="center",
                             className="g-0",

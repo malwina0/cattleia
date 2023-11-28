@@ -14,7 +14,7 @@ def parse_data(contents, filename):
     decoded = base64.b64decode(content_string)
     try:
         if "csv" in filename:
-            df = pd.read_csv(io.StringIO(decoded.decode("utf-8")))
+            df = pd.read_csv(io.StringIO(decoded.decode("utf-8")), sep = ',|;', engine='python')
             return df
         elif "pkl" in filename:
             model = pd.read_pickle(io.BytesIO(decoded))
