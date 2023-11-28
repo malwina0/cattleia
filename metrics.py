@@ -129,38 +129,38 @@ def precision_plot(ensemble_model, X, y, library="Flaml"):
     """
     if library == "Flaml":
         ensemble_models = ensemble_model.model.estimators_
-        precision = [precision_score(y, ensemble_model.predict(X), average='micro')]
+        precision = [precision_score(y, ensemble_model.predict(X), average='macro')]
         models_name = ['Ensemble']
 
         X_transform = ensemble_model._state.task.preprocess(X, ensemble_model._transformer)
         for model in ensemble_models:
             y_pred_class = model.predict(X_transform)
             y_pred_class_name = ensemble_model._label_transformer.inverse_transform(y_pred_class)
-            precision.append(precision_score(y, y_pred_class_name, average='micro'))
+            precision.append(precision_score(y, y_pred_class_name, average='macro'))
             models_name.append(type(model).__name__)
     elif library == "AutoGluon":
         ensemble_models = ensemble_model.info()['model_info'][ensemble_model.get_model_best()]['stacker_info'][
             'base_model_names']
-        precision = [precision_score(y, ensemble_model.predict(X), average='micro')]
+        precision = [precision_score(y, ensemble_model.predict(X), average='macro')]
         models_name = ['Ensemble']
 
         final_model = ensemble_model.get_model_best()
         for model_name in ensemble_models:
             models_name.append(model_name)
             ensemble_model.set_model_best(model_name)
-            precision.append(precision_score(y, ensemble_model.predict(X), average='micro'))
+            precision.append(precision_score(y, ensemble_model.predict(X), average='macro'))
         ensemble_model.set_model_best(final_model)
     elif library == "AutoSklearn":
         class_names = list(y.unique())
         class_names.sort()
-        precision = [precision_score(y, ensemble_model.predict(X), average='micro')]
+        precision = [precision_score(y, ensemble_model.predict(X), average='macro')]
         models_name = ['Ensemble']
 
         for weight, model in ensemble_model.get_models_with_weights():
             models_name.append(str(type(model._final_estimator.choice)).split('.')[-1][:-2])
             prediction = model.predict(X)
             prediction_class = [class_names[idx] for idx in prediction]
-            precision.append(precision_score(y, prediction_class, average='micro'))
+            precision.append(precision_score(y, prediction_class, average='macro'))
 
     fig = empty_fig()
     for i in range(len(precision)):
@@ -204,38 +204,38 @@ def recall_plot(ensemble_model, X, y, library="Flaml"):
     if library == "Flaml":
         ensemble_models = ensemble_model.model.estimators_
 
-        recall = [recall_score(y, ensemble_model.predict(X), average='micro')]
+        recall = [recall_score(y, ensemble_model.predict(X), average='macro')]
         models_name = ['Ensemble']
 
         X_transform = ensemble_model._state.task.preprocess(X, ensemble_model._transformer)
         for model in ensemble_models:
             y_pred_class = model.predict(X_transform)
             y_pred_class_name = ensemble_model._label_transformer.inverse_transform(y_pred_class)
-            recall.append(recall_score(y, y_pred_class_name, average='micro'))
+            recall.append(recall_score(y, y_pred_class_name, average='macro'))
             models_name.append(type(model).__name__)
     elif library == "AutoGluon":
         ensemble_models = ensemble_model.info()['model_info'][ensemble_model.get_model_best()]['stacker_info'][
             'base_model_names']
-        recall = [recall_score(y, ensemble_model.predict(X), average='micro')]
+        recall = [recall_score(y, ensemble_model.predict(X), average='macro')]
         models_name = ['Ensemble']
 
         final_model = ensemble_model.get_model_best()
         for model_name in ensemble_models:
             models_name.append(model_name)
             ensemble_model.set_model_best(model_name)
-            recall.append(recall_score(y, ensemble_model.predict(X), average='micro'))
+            recall.append(recall_score(y, ensemble_model.predict(X), average='macro'))
         ensemble_model.set_model_best(final_model)
     elif library == "AutoSklearn":
         class_names = list(y.unique())
         class_names.sort()
-        recall = [recall_score(y, ensemble_model.predict(X), average='micro')]
+        recall = [recall_score(y, ensemble_model.predict(X), average='macro')]
         models_name = ['Ensemble']
 
         for weight, model in ensemble_model.get_models_with_weights():
             models_name.append(str(type(model._final_estimator.choice)).split('.')[-1][:-2])
             prediction = model.predict(X)
             prediction_class = [class_names[idx] for idx in prediction]
-            recall.append(recall_score(y, prediction_class, average='micro'))
+            recall.append(recall_score(y, prediction_class, average='macro'))
 
     fig = empty_fig()
     for i in range(len(recall)):
@@ -278,38 +278,38 @@ def f1_score_plot(ensemble_model, X, y, library="Flaml"):
     """
     if library == "Flaml":
         ensemble_models = ensemble_model.model.estimators_
-        f1 = [f1_score(y, ensemble_model.predict(X), average='micro')]
+        f1 = [f1_score(y, ensemble_model.predict(X), average='macro')]
         models_name = ['Ensemble']
 
         X_transform = ensemble_model._state.task.preprocess(X, ensemble_model._transformer)
         for model in ensemble_models:
             y_pred_class = model.predict(X_transform)
             y_pred_class_name = ensemble_model._label_transformer.inverse_transform(y_pred_class)
-            f1.append(f1_score(y, y_pred_class_name, average='micro'))
+            f1.append(f1_score(y, y_pred_class_name, average='macro'))
             models_name.append(type(model).__name__)
     elif library == "AutoGluon":
         ensemble_models = ensemble_model.info()['model_info'][ensemble_model.get_model_best()]['stacker_info'][
             'base_model_names']
-        f1 = [f1_score(y, ensemble_model.predict(X), average='micro')]
+        f1 = [f1_score(y, ensemble_model.predict(X), average='macro')]
         models_name = ['Ensemble']
 
         final_model = ensemble_model.get_model_best()
         for model_name in ensemble_models:
             models_name.append(model_name)
             ensemble_model.set_model_best(model_name)
-            f1.append(f1_score(y, ensemble_model.predict(X), average='micro'))
+            f1.append(f1_score(y, ensemble_model.predict(X), average='macro'))
         ensemble_model.set_model_best(final_model)
     elif library == "AutoSklearn":
         class_names = list(y.unique())
         class_names.sort()
-        f1 = [f1_score(y, ensemble_model.predict(X), average='micro')]
+        f1 = [f1_score(y, ensemble_model.predict(X), average='macro')]
         models_name = ['Ensemble']
 
         for weight, model in ensemble_model.get_models_with_weights():
             models_name.append(str(type(model._final_estimator.choice)).split('.')[-1][:-2])
             prediction = model.predict(X)
             prediction_class = [class_names[idx] for idx in prediction]
-            f1.append(f1_score(y, prediction_class, average='micro'))
+            f1.append(f1_score(y, prediction_class, average='macro'))
 
     fig = empty_fig()
     for i in range(len(f1)):
@@ -565,7 +565,7 @@ def permutation_feature_importance_all(ensemble_model, X, y, library="Flaml", ta
         for model in ensemble_models:
             if task == "regression":
                 plots.append(permutation_feature_importance(model, X_transform, y, type(model).__name__))
-            if task == "classification":
+            if task == "classification" or task == 'multiclass':
                 plots.append(permutation_feature_importance(model,
                                                             X_transform,
                                                             ensemble_model._label_transformer.transform(y),
@@ -586,14 +586,14 @@ def permutation_feature_importance_all(ensemble_model, X, y, library="Flaml", ta
         ensemble_model.set_model_best(final_model)
     elif library == "AutoSklearn":
         plots = [permutation_feature_importance(ensemble_model, X, y, 'Ensemble')]
-        if task == "classification":
+        if task == "classification" or "multiclass":
             class_name = y.unique()
             class_index = {name: idx for idx, name in enumerate(class_name)}
             y_class_index = [class_index[y_elem] for y_elem in y]
 
         for weight, model in ensemble_model.get_models_with_weights():
             model_name = str(type(model._final_estimator.choice)).split('.')[-1][:-2]
-            if task == "classification":
+            if task == "classification" or task == "multiclass":
                 plots.append(permutation_feature_importance(model, X, y_class_index, model_name, task))
             else:
                 plots.append(permutation_feature_importance(model, X, y, model_name, task))
@@ -629,7 +629,7 @@ def permutation_feature_importance(model, X, y, name, task=False):
         r = permutation_importance(model, X, y)
     elif task == "regression":
         r = permutation_importance(model, X, y, scoring='r2')
-    elif task == "classification":
+    elif task == "classification" or task == "multiclass":
         r = permutation_importance(model, X, y, scoring='accuracy')
     importance = r.importances_mean
 
@@ -686,7 +686,7 @@ def correlation_plot(ensemble_model, X, library="Flaml", task="regression", y=No
         for model in ensemble_models:
             if task == "regression":
                 predict_data[type(model).__name__] = model.predict(X_transform)
-            if task == "classification":
+            if task == "classification" or task == "multiclass":
                 y_pred_class = model.predict(X_transform)
                 y_pred_class_name = ensemble_model._label_transformer.inverse_transform(y_pred_class)
                 predict_data[type(model).__name__] = y_pred_class_name
@@ -701,7 +701,7 @@ def correlation_plot(ensemble_model, X, library="Flaml", task="regression", y=No
             predict_data[model_name] = ensemble_model.predict(X)
         ensemble_model.set_model_best(final_model)
     elif library == "AutoSklearn":
-        if task == "classification":
+        if task == "classification" or task == "multiclass":
             class_names = list(y.unique())
             class_names.sort()
         predict_data = {'Ensemble': ensemble_model.predict(X)}
@@ -709,7 +709,7 @@ def correlation_plot(ensemble_model, X, library="Flaml", task="regression", y=No
         for weight, model in ensemble_model.get_models_with_weights():
             name = str(type(model._final_estimator.choice)).split('.')[-1][:-2]
             prediction = model.predict(X)
-            if task == "classification":
+            if task == "classification" or task == "multiclass":
                 prediction = [class_names[idx] for idx in prediction]
             # this part is responsible for the fact that the names of the models can be repeated
             if name in predict_data:
@@ -725,7 +725,7 @@ def correlation_plot(ensemble_model, X, library="Flaml", task="regression", y=No
     predict_data = pd.DataFrame(predict_data)
     if task == "regression":
         corr_matrix = predict_data.corr().round(2)
-    if task == "classification":
+    if task == "classification" or task == "multiclass":
         variables = predict_data.columns
         n_variables = len(variables)
         correlation_matrix = np.zeros((n_variables, n_variables))
@@ -800,7 +800,7 @@ def prediction_compare_plot(ensemble_model, X, y, library="Flaml", task="regress
         for model in ensemble_models:
             if task == "regression":
                 predict_data[type(model).__name__] = model.predict(X_transform)
-            if task == "classification":
+            if task == "classification" or task == "multiclass":
                 y_pred_class = model.predict(X_transform)
 
                 y_pred_class_name = ensemble_model._label_transformer.inverse_transform(y_pred_class)
@@ -816,7 +816,7 @@ def prediction_compare_plot(ensemble_model, X, y, library="Flaml", task="regress
             predict_data[model_name] = ensemble_model.predict(X)
         ensemble_model.set_model_best(final_model)
     if library == "AutoSklearn":
-        if task == "classification":
+        if task == "classification" or task == "multiclass":
             class_names = list(y.unique())
             class_names.sort()
         predict_data = {'Ensemble': ensemble_model.predict(X)}
@@ -824,7 +824,7 @@ def prediction_compare_plot(ensemble_model, X, y, library="Flaml", task="regress
         for weight, model in ensemble_model.get_models_with_weights():
             name = str(type(model._final_estimator.choice)).split('.')[-1][:-2]
             prediction = model.predict(X)
-            if task == "classification":
+            if task == "classification" or task == "multiclass":
                 prediction = [class_names[idx] for idx in prediction]
             # ta czesc odpowada za to że nazwy modeli moga się powtarzać w autosklearnie
             if name in predict_data:
@@ -841,7 +841,7 @@ def prediction_compare_plot(ensemble_model, X, y, library="Flaml", task="regress
     if task == "regression":
         for name, pred in predict_data.items():
             plot_value[name] = [(i - j) / (j + 0.0000001) * 100 for i, j in zip(pred, y)]
-    if task == "classification":
+    if task == "classification" or task == "multiclass":
         for name, pred in predict_data.items():
             plot_value[name] = [1 if i == j else 0 for i, j in zip(pred, y)]
 
@@ -858,7 +858,7 @@ def prediction_compare_plot(ensemble_model, X, y, library="Flaml", task="regress
                                [0.75, 'rgb(3,169,245)'],
                                [0.75, 'rgb(93,53,175)'],
                                [1, 'rgb(93,53,175)']]
-    if task == "classification":
+    if task == "classification" or task == "multiclass":
         discrete_nonuniform = [[0, 'rgb(242,26,155)'],
                                [0.5, 'rgb(242,26,155)'],
                                [0.5, 'rgb(125,179,67)'],
@@ -879,7 +879,7 @@ def prediction_compare_plot(ensemble_model, X, y, library="Flaml", task="regress
     )
     if task == "regression":
         fig.update_layout(coloraxis=dict(cmin=-100, cmax=100))
-    if task == "classification":
+    if task == "classification" or task == "multiclass":
         fig.update_coloraxes(showscale=False)
         fig.update_layout(margin=dict(l=150, r=200, t=100, b=20))
         fig.add_annotation(dict(font=dict(color='rgba(225, 225, 225, 255)', size=20),
