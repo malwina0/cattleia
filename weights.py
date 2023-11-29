@@ -69,9 +69,9 @@ def calculate_metrics(predictions, y, task, weights):
         for model_name, prediction in predictions.items():
             if model_name != 'Ensemble':
                 accuracy.append(round(accuracy_score(y, prediction), 2))
-                precision.append(round(precision_score(y, prediction, average='micro'), 2))
-                recall.append(round(recall_score(y, prediction, average='micro'), 2))
-                f1.append(round(f1_score(y, prediction, average='micro'), 2))
+                precision.append(round(precision_score(y, prediction, average='macro'), 2))
+                recall.append(round(recall_score(y, prediction, average='macro'), 2))
+                f1.append(round(f1_score(y, prediction, average='macro'), 2))
         data = {
             'weight': weights,
             'accuracy': accuracy,
@@ -119,9 +119,9 @@ def calculate_metrics_adj_ensemble(predictions, proba_predictions, y, task, weig
         })
     else:
         accuracy = round(accuracy_score(y, predictions['Ensemble']), 2)
-        precision = round(precision_score(y, predictions['Ensemble'], average='micro'), 2)
-        recall = round(recall_score(y, predictions['Ensemble'], average='micro'), 2)
-        f1 = round(f1_score(y, predictions['Ensemble'], average='micro'), 2)
+        precision = round(precision_score(y, predictions['Ensemble'], average='macro'), 2)
+        recall = round(recall_score(y, predictions['Ensemble'], average='macro'), 2)
+        f1 = round(f1_score(y, predictions['Ensemble'], average='macro'), 2)
 
         y_proba_adj = [
             [sum(w * x for x, w in zip(elements, weights)) for elements in zip(*rows)]
@@ -133,9 +133,9 @@ def calculate_metrics_adj_ensemble(predictions, proba_predictions, y, task, weig
         y_class_adj = [class_names[idx] for idx in y_adj]
 
         accuracy_adj = round(accuracy_score(y, y_class_adj), 2)
-        precision_adj = round(precision_score(y, y_class_adj, average='micro'), 2)
-        recall_adj = round(recall_score(y, y_class_adj, average='micro'), 2)
-        f1_adj = round(f1_score(y, y_class_adj, average='micro'), 2)
+        precision_adj = round(precision_score(y, y_class_adj, average='macro'), 2)
+        recall_adj = round(recall_score(y, y_class_adj, average='macro'), 2)
+        f1_adj = round(f1_score(y, y_class_adj, average='macro'), 2)
 
         df_metrics = pd.DataFrame({
             'metric': ['accuracy', 'precision', 'recall', 'f1 score'],
