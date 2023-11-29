@@ -185,6 +185,7 @@ def update_model(contents, filename, df, column, about_us):
     task = []
     predictions = []
     children = about_us
+    weights_plots = []
     if contents:
         contents = contents[0]
         filename = filename[0]
@@ -328,10 +329,11 @@ def update_model(contents, filename, df, column, about_us):
     prevent_initial_call=True
 )
 def show_weights(n_clicks, data, children):
+    if n_clicks is None:
+        return children
     if n_clicks >= 1:
         return data
     return children
-
 
 @callback(
     Output('plots', 'children', allow_duplicate=True),
@@ -341,6 +343,8 @@ def show_weights(n_clicks, data, children):
     prevent_initial_call=True
 )
 def show_metrics(n_clicks, data, children):
+    if n_clicks is None:
+        return children
     if n_clicks >= 1:
         return data
     return children
@@ -354,6 +358,8 @@ def show_metrics(n_clicks, data, children):
     prevent_initial_call=True
 )
 def show_compatimetrics(n_clicks, data, children):
+    if n_clicks is None:
+        return children
     if n_clicks >= 1:
         return data
     return children
