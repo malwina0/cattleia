@@ -288,8 +288,12 @@ def update_model(contents, filename, df, column, about_us):
                 className="annotation_str", id="ann_1")
         )
 
-        for plot in metrics.partial_dependence_plots(model, X, library=library, autogluon_task=task):
-            metrics_plots.append(dcc.Graph(figure=plot, className="plot"))
+        if len(X) < 2000:
+            for plot in metrics.partial_dependence_plots(model, X, library=library, autogluon_task=task):
+                metrics_plots.append(dcc.Graph(figure=plot, className="plot"))
+        else:
+            for plot in metrics.partial_dependence_plots(model, X.sample(2000), library=library, autogluon_task=task):
+                metrics_plots.append(dcc.Graph(figure=plot, className="plot"))
 
         # It may be necessary to keep the model for the code with weights,
         # for now we remove the model after making charts
