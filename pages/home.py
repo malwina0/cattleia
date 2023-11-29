@@ -212,42 +212,42 @@ def update_model(contents, filename, df, column, about_us):
         if task == "regression":
             metrics_plots = [
                 dbc.Row([
-                    dbc.Col([dcc.Graph(figure=metrics.mse_plot(model, X, y, library=library), className="plot")],
+                    dbc.Col([dcc.Graph(figure=metrics.mse_plot(predictions, y), className="plot")],
                             width=6),
-                    dbc.Col([dcc.Graph(figure=metrics.mape_plot(model, X, y, library=library), className="plot")],
+                    dbc.Col([dcc.Graph(figure=metrics.mape_plot(predictions, y), className="plot")],
                             width=6),
                 ]),
                 dbc.Row([
-                    dbc.Col([dcc.Graph(figure=metrics.rmse_plot(model, X, y, library=library), className="plot")],
+                    dbc.Col([dcc.Graph(figure=metrics.rmse_plot(predictions, y), className="plot")],
                             width=6),
-                    dbc.Col([dcc.Graph(figure=metrics.r_2_plot(model, X, y, library=library), className="plot")],
+                    dbc.Col([dcc.Graph(figure=metrics.r_2_plot(predictions, y), className="plot")],
                             width=6),
                 ]),
-                dcc.Graph(figure=metrics.mae_plot(model, X, y, library=library), className="plot"),
-                dcc.Graph(figure=metrics.correlation_plot(model, X, library=library, task=task, y=y),
+                dcc.Graph(figure=metrics.mae_plot(predictions, y), className="plot"),
+                dcc.Graph(figure=metrics.correlation_plot(predictions, task=task, y=y),
                           className="plot"),
-                dcc.Graph(figure=metrics.prediction_compare_plot(model, X, y, library=library, task=task),
+                dcc.Graph(figure=metrics.prediction_compare_plot(predictions, y, task=task),
                           className="plot")
             ]
         else:
             metrics_plots = [
                 dbc.Row([
-                    dbc.Col([dcc.Graph(figure=metrics.accuracy_plot(model, X, y, library=library),
+                    dbc.Col([dcc.Graph(figure=metrics.accuracy_plot(predictions, y),
                                        className="plot")], width=6),
-                    dbc.Col([dcc.Graph(figure=metrics.precision_plot(model, X, y, library=library),
+                    dbc.Col([dcc.Graph(figure=metrics.precision_plot(predictions, y),
                                        className="plot")], width=6),
                 ]),
                 dbc.Row([
                     dbc.Col(
-                        [dcc.Graph(figure=metrics.recall_plot(model, X, y, library=library), className="plot")],
+                        [dcc.Graph(figure=metrics.recall_plot(predictions, y), className="plot")],
                         width=6),
                     dbc.Col(
-                        [dcc.Graph(figure=metrics.f1_score_plot(model, X, y, library=library), className="plot")],
+                        [dcc.Graph(figure=metrics.f1_score_plot(predictions, y), className="plot")],
                         width=6),
                 ]),
-                dcc.Graph(figure=metrics.correlation_plot(model, X, library=library, task=task, y=y),
+                dcc.Graph(figure=metrics.correlation_plot(predictions, task=task, y=y),
                           className="plot"),
-                dcc.Graph(figure=metrics.prediction_compare_plot(model, X, y, library=library, task=task),
+                dcc.Graph(figure=metrics.prediction_compare_plot(predictions, y, task=task),
                           className="plot")
             ]
         weights_plots = []
