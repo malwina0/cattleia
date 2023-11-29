@@ -153,7 +153,7 @@ def select_columns(value):
     ])
     switch = html.Div([
         html.Hr(),
-        html.H5("Annotation OFF", className="sidepanel_text", id="switch_text"),
+        html.H5("Annotation", className="sidepanel_text", id="switch_text"),
         daq.ToggleSwitch(
             id='my-toggle-switch',
             value=False,
@@ -225,7 +225,6 @@ def update_model(contents, filename, df, column, about_us):
                 dcc.Graph(figure=metrics.mae_plot(model, X, y, library=library), className="plot"),
                 dcc.Graph(figure=metrics.correlation_plot(model, X, library=library, task=task, y=y),
                           className="plot"),
-                html.H2("asdasdasdasdasdaaaaaaaaaaaaaaaaaaasadasda", className="about_us_str", id="ann_1"),
                 dcc.Graph(figure=metrics.prediction_compare_plot(model, X, y, library=library, task=task),
                           className="plot")
             ]
@@ -247,16 +246,18 @@ def update_model(contents, filename, df, column, about_us):
                 ]),
                 dcc.Graph(figure=metrics.correlation_plot(model, X, library=library, task=task, y=y),
                           className="plot"),
-                html.H2("""
-                    Partial Dependence isolate one specific feature's effect on the model's output while maintaining 
-                    all other features at fixed values. It capturing how the model's output changes as the chosen 
-                    feature varies. 
-                    """, className="annotation_str", id="ann_1"),
                 dcc.Graph(figure=metrics.prediction_compare_plot(model, X, y, library=library, task=task),
                           className="plot")
             ]
         weights_plots = []
         if library != "Flaml":
+            weights_plots.append(
+                html.H2("""
+                Malwina tutaj dodaj swój tekst
+                """,
+                className="annotation_str", id="ann_2")
+            )
+            weights_plots.append(html.Br())
             weights_plots.append(
                 dbc.Row([
                     dbc.Col([
@@ -278,6 +279,15 @@ def update_model(contents, filename, df, column, about_us):
         for plot in metrics.permutation_feature_importance_all(model, X, y, library=library, task=task):
             metrics_plots.append(dcc.Graph(figure=plot, className="plot"))
 
+        metrics_plots.append(
+            html.H2("""
+                Partial Dependence isolate one specific feature's effect on the model's output while maintaining 
+                all other features at fixed values. It capturing how the model's output changes as the chosen 
+                feature varies. 
+                """,
+                className="annotation_str", id="ann_1")
+        )
+
         for plot in metrics.partial_dependence_plots(model, X, library=library, autogluon_task=task):
             metrics_plots.append(dcc.Graph(figure=plot, className="plot"))
 
@@ -292,14 +302,14 @@ def update_model(contents, filename, df, column, about_us):
             dbc.Row([
                 dbc.Col([html.Button('Weights', id="weights", className="button_1")], width=2),
                 dbc.Col([html.Button('Metrics', id="metrics", className="button_1")], width=2),
-                dbc.Col([html.Button('Compatimetrics', id="compatimetrics", className="button_1")],width=2),
+                dbc.Col([html.Button('Compatimetrics', id="compatimetrics", className="button_1")], width=2),
             ], justify="center"),
         ], style={"display": "block", "position": "sticky"}))
         weights_plots.insert(0, html.Div([
             dbc.Row([
                 dbc.Col([html.Button('Weights', id="weights", className="button_1")], width=2),
                 dbc.Col([html.Button('Metrics', id="metrics", className="button_1")], width=2),
-                dbc.Col([html.Button('Compatimetrics', id="compatimetrics", className="button_1")],width=2),
+                dbc.Col([html.Button('Compatimetrics', id="compatimetrics", className="button_1")], width=2),
             ], justify="center"),
         ], style={"display": "block", "position": "sticky"}))
 
@@ -309,6 +319,7 @@ def update_model(contents, filename, df, column, about_us):
     return children, children, weights_plots, model_names, predictions, task
 
 
+# callbacks for buttons to change plots categories
 @callback(
     Output('plots', 'children', allow_duplicate=True),
     Input('weights', 'n_clicks'),
@@ -317,8 +328,6 @@ def update_model(contents, filename, df, column, about_us):
     prevent_initial_call=True
 )
 def show_weights(n_clicks, data, children):
-    print("weight")
-    print(n_clicks)
     if n_clicks >= 1:
         return data
     return children
@@ -332,8 +341,6 @@ def show_weights(n_clicks, data, children):
     prevent_initial_call=True
 )
 def show_metrics(n_clicks, data, children):
-    print("metrics")
-    print(n_clicks)
     if n_clicks >= 1:
         return data
     return children
@@ -347,28 +354,13 @@ def show_metrics(n_clicks, data, children):
     prevent_initial_call=True
 )
 def show_compatimetrics(n_clicks, data, children):
-    print("compati")
-    print(n_clicks)
     if n_clicks >= 1:
         return data
     return children
 
 
-
+# callback display compatimetric part
 @callback(
-    [Output('ann_1', 'style'),
-     Output('switch_text', 'children')],
-    Input('my-toggle-switch', 'value')
-)
-def update_output(value):
-    if value:
-        return {}, "Annotation ON"
-    else:
-        return {"display": "none"}, "Annotation OFF"
-
-
-@callback(
-    #Output('model_selection', 'children'),
     Output('compatimetric_plots', 'data', allow_duplicate=True),
     Input('model_names', 'data'),
     prevent_initial_call=True
@@ -393,6 +385,7 @@ def update_model_selector(model_names):
     return children
 
 
+# callback to update compatimetric plots
 @callback(
     Output('compatimetrics_plots', 'children'),
     State('predictions', 'data'),
@@ -449,6 +442,15 @@ def update_compatimetrics_plot(predictions, model_to_compare, task, df, column):
                 dbc.Col([dcc.Graph(figure=compatimetrics_plots.rmsd_matrix(predictions), className="plot")],
                         width=6),
                 ]),
+
+                html.H2("""
+                    Tutaj miejsce dla Ciebie Jakub aby dodać adnotacje, trzeba pamiętać o tym
+                    aby każda annotacja miała unikalne ID, oraz miała odpowiedni callback,
+                    Jeśli adnotacje będą się pojawiać zawsze razem, np tutaj w regresji, mogą mieć jeden callback
+                    z odpowiednią ilością outputów 
+                    """,
+                    className="annotation_str", id="ann_3"),
+
                 dbc.Row([
                     dbc.Col([dcc.Graph(figure=compatimetrics_plots.ar_matrix(predictions, y), className="plot")],
                             width=6),
@@ -510,6 +512,7 @@ def update_compatimetrics_plot(predictions, model_to_compare, task, df, column):
     return children
 
 
+# callback to changing model weights
 @callback(
     Output('metrics-table', 'data', allow_duplicate=True),
     Output('adj_weights-table', 'data'),
@@ -568,3 +571,37 @@ dash.clientside_callback(
     Input('upload_csv_data', 'contents'),
     prevent_initial_call=False
 )
+
+
+# callbacks to display annotations
+@callback(
+    Output('ann_1', 'style'),
+    Input('my-toggle-switch', 'value'),
+)
+def update_output(value):
+    if value:
+        return {}
+    else:
+        return {"display": "none"}
+
+
+@callback(
+    Output('ann_2', 'style'),
+    Input('my-toggle-switch', 'value'),
+)
+def update_output(value):
+    if value:
+        return {}
+    else:
+        return {"display": "none"}
+
+
+@callback(
+    Output('ann_3', 'style'),
+    Input('my-toggle-switch', 'value'),
+)
+def update_output(value):
+    if value:
+        return {}
+    else:
+        return {"display": "none"}

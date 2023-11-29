@@ -168,7 +168,14 @@ body {
 
 .annotation_str{
     color: rgba(225, 225, 225, 255);
-    font-size: 35px;
+    font-size: 25px;
+    border: 6px solid rgba(44,47,56,255);
+    border-radius: 25px;
+    background-color: rgba(44,47,56,255);
+    margin-top: 5px;
+    margin-bottom: 20px;
+    margin-left: 5px;
+    margin-right: 10px;
 }
 
 
