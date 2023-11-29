@@ -535,8 +535,6 @@ def update_compatimetrics_plot(predictions, model_to_compare, task, df, column):
 )
 def display_output(values, contents, filename, df, column, task, predictions, proba_predictions):
     if contents:
-        contents = contents[0]
-        filename = filename[0]
 
         df = pd.DataFrame.from_dict(df).dropna()
         y = df.iloc[:, df.columns == column["name"]].squeeze()
