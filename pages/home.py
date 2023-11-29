@@ -6,7 +6,7 @@ import compatimetrics_plots
 import metrics
 import shutil
 import pandas as pd
-from utils import get_predictions_from_model, get_task_from_model, parse_data
+from utils import get_predictions_from_model, get_task_from_model, parse_data, get_probabilty_pred_from_model
 import dash_daq as daq
 from weights import slider_section, get_ensemble_names_weights, \
     tbl_metrics, tbl_metrics_adj_ensemble, calculate_metrics, calculate_metrics_adj_ensemble
@@ -67,9 +67,10 @@ layout = html.Div([
     dcc.Store(id='metrics_plots', data=[], storage_type='memory'),
     dcc.Store(id='compatimetric_plots', data=[], storage_type='memory'),
     dcc.Store(id='weight_plots', data=[], storage_type='memory'),
-    dcc.Store(id='predictions', data=[], storage_type='memory'),
+    dcc.Store(id='predictions', data={}, storage_type='memory'),
     dcc.Store(id='model_names', data=[], storage_type='memory'),
     dcc.Store(id='task', data=[], storage_type='memory'),
+    dcc.Store(id='proba_predictions', data=[], storage_type='memory'),
     # side menu
     html.Div([
         dbc.Container([
@@ -174,6 +175,7 @@ def select_columns(value):
     Output('model_names', 'data'),
     Output('predictions', 'data'),
     Output('task', 'data'),
+    Output('proba_predictions', 'data'),
     Input('upload_model', 'contents'),
     State('upload_model', 'filename'),
     State('csv_data', 'data'),
@@ -184,6 +186,7 @@ def update_model(contents, filename, df, column, about_us):
     model_names = []
     task = []
     predictions = []
+    proba_predictions = []
     weights_plots = []
     children = about_us
     if contents:
@@ -230,6 +233,7 @@ def update_model(contents, filename, df, column, about_us):
                           className="plot")
             ]
         else:
+            proba_predictions = get_probabilty_pred_from_model(model, X, library)
             metrics_plots = [
                 dbc.Row([
                     dbc.Col([dcc.Graph(figure=metrics.accuracy_plot(predictions, y),
@@ -267,13 +271,13 @@ def update_model(contents, filename, df, column, about_us):
                             [slider_section(model_name, weights[i], i) for i, model_name in enumerate(models_name)],
                             style={'color': 'white'})
                     ], width=7),
-                    dbc.Col([tbl_metrics(model, X, y, task, library, weights)
+                    dbc.Col([tbl_metrics(predictions, y, task, weights)
                              ], width=4)
                 ])
             )
             weights_plots.append(
                 dbc.Row([
-                    dbc.Col([tbl_metrics_adj_ensemble(model, X, y, task, library, weights)], width=4)
+                    dbc.Col([tbl_metrics_adj_ensemble(predictions, proba_predictions, y, task, weights)], width=4)
                 ], justify="center")
             )
 
@@ -317,7 +321,7 @@ def update_model(contents, filename, df, column, about_us):
         weights_plots = html.Div(weights_plots)
         children = html.Div(metrics_plots)
 
-    return children, children, weights_plots, model_names, predictions, task
+    return children, children, weights_plots, model_names, predictions, task, proba_predictions
 
 
 # callbacks for buttons to change plots categories
@@ -525,23 +529,23 @@ def update_compatimetrics_plot(predictions, model_to_compare, task, df, column):
     State('csv_data', 'data'),
     State('y_label_column', 'data'),
     State('task', 'data'),
+    State('predictions', 'data'),
+    State('proba_predictions', 'data'),
     prevent_initial_call=True
 )
-def display_output(values, contents, filename, df, column, task):
+def display_output(values, contents, filename, df, column, task, predictions, proba_predictions):
     if contents:
         contents = contents[0]
         filename = filename[0]
 
-        ensemble_model, library = parse_data(contents, filename)
         df = pd.DataFrame.from_dict(df).dropna()
-        X = df.iloc[:, df.columns != column["name"]]
         y = df.iloc[:, df.columns == column["name"]].squeeze()
 
         sum_slider_values = sum(values)
         weights = [round((value / sum_slider_values), 2) for value in values]
 
-        df = calculate_metrics(ensemble_model, X, y, task, library, weights)
-        df_adj = calculate_metrics_adj_ensemble(ensemble_model, X, y, task, library, weights)
+        df = calculate_metrics(predictions, y, task, weights)
+        df_adj = calculate_metrics_adj_ensemble(predictions, proba_predictions, y, task, weights)
 
         return df.to_dict('records'), df_adj.to_dict('records')
 
