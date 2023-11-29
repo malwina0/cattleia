@@ -29,6 +29,7 @@ def msd_matrix(predictions):
     msd_matrix(predictions)
     """
     models = list(predictions.keys())
+    models.pop(0)
     n_models = len(models)
     matrix = np.zeros((n_models, n_models))
     for i in range(n_models):
@@ -80,6 +81,7 @@ def rmsd_matrix(predictions):
     rmsd_matrix(predictions)
     """
     models = list(predictions.keys())
+    models.pop(0)
     n_models = len(models)
     matrix = np.zeros((n_models, n_models))
     for i in range(n_models):
@@ -135,6 +137,7 @@ def sdr_matrix(predictions, y):
     sdr_matrix(predictions, y)
     """
     models = list(predictions.keys())
+    models.pop(0)
     n_models = len(models)
     matrix = np.zeros((n_models, n_models))
     for i in range(n_models):
@@ -192,6 +195,7 @@ def ar_matrix(predictions, y):
     ar_matrix(predictions, y)
     """
     models = list(predictions.keys())
+    models.pop(0)
     n_models = len(models)
     matrix = np.zeros((n_models, n_models))
     for i in range(n_models):
@@ -250,6 +254,7 @@ def msd_comparison(predictions, model_to_compare):
     msd_comparison(predictions, model_to_compare)
     """
     models = list(predictions.keys())
+    models.pop(0)
     compare_prediction = predictions[model_to_compare]
     models.remove(model_to_compare)
     MSD = []
@@ -297,6 +302,7 @@ def rmsd_comparison(predictions, model_to_compare):
     rmsd_comparison(predictions, model_to_compare)
     """
     models = list(predictions.keys())
+    models.pop(0)
     compare_prediction = predictions[model_to_compare]
     models.remove(model_to_compare)
     RMSD = []
@@ -347,6 +353,7 @@ def conjunctive_rmse_plot(predictions, y, model_to_compare):
     conjunctive_rmse_plot(predictions, y, model_to_compare)
     """
     models = list(predictions.keys())
+    models.pop(0)
     compare_prediction = predictions[model_to_compare]
     models.remove(model_to_compare)
     color_map = {}
@@ -392,6 +399,7 @@ def difference_distribution(predictions, model_to_compare):
     difference_distribution(predictions, model_to_compare)
     """
     models = list(predictions.keys())
+    models.pop(0)
     compare_models = np.array(predictions[model_to_compare])
     models.remove(model_to_compare)
     difference = []
@@ -441,6 +449,7 @@ def difference_boxplot(predictions, y, model_to_compare):
     difference_boxplot(predictions, y, model_to_compare)
     """
     models = list(predictions.keys())
+    models.pop(0)
     compare_models = predictions[model_to_compare]
     models.remove(model_to_compare)
     n_observation = len(compare_models)
@@ -494,6 +503,7 @@ def uniformity_matrix(predictions):
     uniformity_matrix(predictions)
     """
     models = list(predictions.keys())
+    models.pop(0)
     n_models = len(models)
     matrix = np.zeros((n_models, n_models))
     for i in range(n_models):
@@ -545,6 +555,7 @@ def incompatibility_matrix(predictions):
     incompatibilty_matrix(predictions)
     """
     models = list(predictions.keys())
+    models.pop(0)
     n_models = len(models)
     matrix = np.zeros((n_models, n_models))
     for i in range(n_models):
@@ -599,6 +610,7 @@ def acs_matrix(predictions, y):
     acs_matrix(predictions, y)
     """
     models = list(predictions.keys())
+    models.pop(0)
     n_models = len(models)
     matrix = np.zeros((n_models, n_models))
     for i in range(n_models):
@@ -653,6 +665,7 @@ def conjuntive_accuracy_matrix(predictions, y):
     conjunctive_accuracy_matrix(predictions, y)
     """
     models = list(predictions.keys())
+    models.pop(0)
     n_models = len(models)
     matrix = np.zeros((n_models, n_models))
     for i in range(n_models):
@@ -711,6 +724,7 @@ def disagreement_ratio_plot(predictions, y, model_to_compare):
     disagreement_ratio_plot(predictions, y, model_to_compare)
     """
     models = list(predictions.keys())
+    models.pop(0)
     compare_prediction = predictions[model_to_compare]
     models.remove(model_to_compare)
     classes = np.unique(y)
@@ -770,6 +784,7 @@ def conjunctive_metrics_plot(predictions, y, model_to_compare):
     conjunctive_metrics_plot(predictions, y, model_to_compare)
     """
     models = list(predictions.keys())
+    models.pop(0)
     compare_prediction = predictions[model_to_compare]
     models.remove(model_to_compare)
     value = []
@@ -831,6 +846,7 @@ def prediction_correctness_plot(predictions, y, model_to_compare):
     prediction_correctness_plot(predictions, y, model_to_compare)
     """
     models = list(predictions.keys())
+    models.pop(0)
     compare_prediction = predictions[model_to_compare]
     models.remove(model_to_compare)
     value = []
@@ -891,6 +907,7 @@ def collective_cummulative_score_plot(predictions, y, model_to_compare):
     collective_cummulative_score_plot(predictions, y, model_to_compare)
     """
     models = list(predictions.keys())
+    models.pop(0)
     compare_models = predictions[model_to_compare]
     models.remove(model_to_compare)
     score = []
@@ -937,6 +954,7 @@ def conjunctive_precision_multiclass_plot(predictions, y, model_to_compare):
     conjunctive_precision_multiclass_plot(predictions, y, model_to_compare)
     """
     models = list(predictions.keys())
+    models.pop(0)
     compare_prediction = predictions[model_to_compare]
     models.remove(model_to_compare)
     value = []
@@ -995,6 +1013,7 @@ def conjunctive_recall_multiclass_plot(predictions, y, model_to_compare):
     conjunctive_recall_multiclass_plot(predictions, y, model_to_compare)
     """
     models = list(predictions.keys())
+    models.pop(0)
     compare_prediction = predictions[model_to_compare]
     models.remove(model_to_compare)
     value = []

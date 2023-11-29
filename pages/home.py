@@ -184,6 +184,7 @@ def update_model(contents, filename, df, column, about_us):
     model_names = []
     task = []
     predictions = []
+    weights_plots = []
     children = about_us
     if contents:
         contents = contents[0]
@@ -366,6 +367,8 @@ def show_compatimetrics(n_clicks, data, children):
     prevent_initial_call=True
 )
 def update_model_selector(model_names):
+    if len(model_names) > 0:
+        model_names.pop(0)
     children = []
     if model_names:
         title = html.H4("Choose model for compatimetrics analysis", className="compatimetrics_title", style={'color': 'white'})
