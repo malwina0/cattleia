@@ -224,10 +224,6 @@ def update_model(contents, filename, df, column, about_us):
                             width=6),
                 ]),
                 dcc.Graph(figure=metrics.mae_plot(model, X, y, library=library), className="plot"),
-                dcc.Graph(figure=metrics.correlation_plot(model, X, library=library, task=task, y=y),
-                          className="plot"),
-                dcc.Graph(figure=metrics.prediction_compare_plot(model, X, y, library=library, task=task),
-                          className="plot")
             ]
         else:
             metrics_plots = [
@@ -245,11 +241,21 @@ def update_model(contents, filename, df, column, about_us):
                         [dcc.Graph(figure=metrics.f1_score_plot(model, X, y, library=library), className="plot")],
                         width=6),
                 ]),
-                dcc.Graph(figure=metrics.correlation_plot(model, X, library=library, task=task, y=y),
-                          className="plot"),
-                dcc.Graph(figure=metrics.prediction_compare_plot(model, X, y, library=library, task=task),
-                          className="plot")
             ]
+
+        metrics_plots += [
+            dcc.Graph(figure=metrics.correlation_plot(model, X, library=library, task=task, y=y),
+                className="plot"),
+            html.H2("""
+                Prediction compare plot shows the differences between model predictions and true values. 
+                The x-axis shows observations and the y-axis shows models. For classification, the color on the 
+                plot indicates whether a given prediction is correct, while for regression tasks the percentage 
+                difference between the true and predicted value is shown.
+                """,
+                className="annotation_str", id="ann_0"),
+            dcc.Graph(figure=metrics.prediction_compare_plot(model, X, y, library=library, task=task),
+                className="plot")]
+
         weights_plots = []
         if library != "Flaml":
             weights_plots.append(
@@ -284,7 +290,8 @@ def update_model(contents, filename, df, column, about_us):
             html.H2("""
                 Partial Dependence isolate one specific feature's effect on the model's output while maintaining 
                 all other features at fixed values. It capturing how the model's output changes as the chosen 
-                feature varies. 
+                feature varies. When the number of observations is large, in order to speed up the generation of 
+                graphs, only a subset of the data is used for calculations.
                 """,
                 className="annotation_str", id="ann_1")
         )
@@ -586,13 +593,15 @@ dash.clientside_callback(
 # callbacks to display annotations
 @callback(
     Output('ann_1', 'style'),
+    Output('ann_0', 'style'),
     Input('my-toggle-switch', 'value'),
 )
 def update_output(value):
     if value:
-        return {}
+        return {}, {}
     else:
-        return {"display": "none"}
+        return {"display": "none"}, {"display": "none"}
+
 
 
 @callback(
