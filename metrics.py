@@ -37,12 +37,10 @@ def accuracy_plot(predictions, y):
 
     Parameters
     ----------
-    ensemble_model : Flaml, AutoGluon or AutoSklearn ensemble model.
+    predictions: dictionary with predictions of ensemble component models
+        of form {'model_name': 'prediction_vector'}
 
-    X, y : dataframe
-
-    library : {'Flaml', 'AutoGluon', 'AutoSklearn'}
-            string that specifies the model library
+    y : target variable vector
 
     Returns
     -------
@@ -51,7 +49,7 @@ def accuracy_plot(predictions, y):
 
     Examples
     --------
-    accuracy_plot(model_class, X_class, y_class)
+    accuracy_plot(predictions, y_class)
     """
     accuracy = []
     models_name = []
@@ -82,12 +80,10 @@ def precision_plot(predictions, y):
 
     Parameters
     ----------
-    ensemble_model : Flaml, AutoGluon or AutoSklearn ensemble model.
+    predictions: dictionary with predictions of ensemble component models
+        of form {'model_name': 'prediction_vector'}
 
-    X, y : dataframe
-
-    library : {'Flaml', 'AutoGluon', 'AutoSklearn'}
-            string that specifies the model library
+    y : target variable vector
 
     Returns
     -------
@@ -96,7 +92,7 @@ def precision_plot(predictions, y):
 
     Examples
     --------
-    precision_plot(model_class, X_class, y_class)
+    precision_plot(predictions, y_class)
     """
     precision = []
     models_name = []
@@ -127,12 +123,10 @@ def recall_plot(predictions, y):
 
     Parameters
     ----------
-    ensemble_model : Flaml, AutoGluon or AutoSklearn ensemble model.
+    predictions: dictionary with predictions of ensemble component models
+        of form {'model_name': 'prediction_vector'}
 
-    X, y : dataframe
-
-    library : {'Flaml', 'AutoGluon', 'AutoSklearn'}
-            string that specifies the model library
+    y : target variable vector
 
     Returns
     -------
@@ -141,7 +135,7 @@ def recall_plot(predictions, y):
 
     Examples
     --------
-    recall_plot(model_class, X_class, y_class)
+    recall_plot(predictions, y_class)
     """
     recall = []
     models_name = []
@@ -172,12 +166,10 @@ def f1_score_plot(predictions, y):
 
     Parameters
     ----------
-    ensemble_model : Flaml, AutoGluon or AutoSklearn ensemble model.
+    predictions: dictionary with predictions of ensemble component models
+        of form {'model_name': 'prediction_vector'}
 
-    X, y : dataframe
-
-    library : {'Flaml', 'AutoGluon', 'AutoSklearn'}
-            string that specifies the model library
+    y : target variable vector
 
     Returns
     -------
@@ -186,7 +178,7 @@ def f1_score_plot(predictions, y):
 
     Examples
     --------
-    f1_score_plot(model_class, X_class, y_class)
+    f1_score_plot(predictions, y_class)
     """
     f1 = []
     models_name = []
@@ -217,12 +209,10 @@ def mape_plot(predictions, y):
 
     Parameters
     ----------
-    ensemble_model : Flaml, AutoGluon or AutoSklearn ensemble model.
+    predictions: dictionary with predictions of ensemble component models
+        of form {'model_name': 'prediction_vector'}
 
-    X, y : dataframe
-
-    library : {'Flaml', 'AutoGluon', 'AutoSklearn'}
-            string that specifies the model library
+    y : target variable vector
 
     Returns
     -------
@@ -231,7 +221,7 @@ def mape_plot(predictions, y):
 
     Examples
     --------
-    mape_plot(model_reg, X_reg, y_reg)
+    mape_plot(predictions, y_reg)
     """
     mape = []
     models_name = []
@@ -262,12 +252,10 @@ def mae_plot(predictions, y):
 
     Parameters
     ----------
-    ensemble_model : Flaml, AutoGluon or AutoSklearn ensemble model.
+    predictions: dictionary with predictions of ensemble component models
+        of form {'model_name': 'prediction_vector'}
 
-    X, y : dataframe
-
-    library : {'Flaml', 'AutoGluon', 'AutoSklearn'}
-            string that specifies the model library
+    y : target variable vector
 
     Returns
     -------
@@ -276,7 +264,7 @@ def mae_plot(predictions, y):
 
     Examples
     --------
-    mae_plot(model_reg, X_reg, y_reg)
+    mae_plot(predictions, y_reg)
     """
     mae = []
     models_name = []
@@ -307,12 +295,10 @@ def mse_plot(predictions, y):
 
     Parameters
     ----------
-    ensemble_model : Flaml, AutoGluon or AutoSklearn ensemble model.
+    predictions: dictionary with predictions of ensemble component models
+        of form {'model_name': 'prediction_vector'}
 
-    X, y : dataframe
-
-    library : {'Flaml', 'AutoGluon', 'AutoSklearn'}
-            string that specifies the model library
+    y : target variable vector
 
     Returns
     -------
@@ -321,7 +307,7 @@ def mse_plot(predictions, y):
 
     Examples
     --------
-    mse_plot(model_reg, X_reg, y_reg)
+    mse_plot(predictions, y_reg)
     """
     mse = []
     models_name = []
@@ -352,12 +338,10 @@ def rmse_plot(predictions, y):
 
     Parameters
     ----------
-    ensemble_model : Flaml, AutoGluon or AutoSklearn ensemble model.
+    predictions: dictionary with predictions of ensemble component models
+        of form {'model_name': 'prediction_vector'}
 
-    X, y : dataframe
-
-    library : {'Flaml', 'AutoGluon', 'AutoSklearn'}
-            string that specifies the model library
+    y : target variable vector
 
     Returns
     -------
@@ -366,7 +350,7 @@ def rmse_plot(predictions, y):
 
     Examples
     --------
-    rmse_plot(model_reg, X_reg, y_reg)
+    rmse_plot(predictions, y_reg)
     """
     rmse = []
     models_name = []
@@ -397,12 +381,10 @@ def r_2_plot(predictions, y):
 
     Parameters
     ----------
-    ensemble_model : Flaml, AutoGluon or AutoSklearn ensemble model.
+    predictions: dictionary with predictions of ensemble component models
+        of form {'model_name': 'prediction_vector'}
 
-    X, y : dataframe
-
-    library : {'Flaml', 'AutoGluon', 'AutoSklearn'}
-            string that specifies the model library
+    y : target variable vector
 
     Returns
     -------
@@ -411,7 +393,7 @@ def r_2_plot(predictions, y):
 
     Examples
     --------
-    r_2_plot(model_reg, X_reg, y_reg)
+    r_2_plot(predictions, y_reg)
     """
     r2 = []
     models_name = []
@@ -560,12 +542,8 @@ def correlation_plot(predictions, task="regression", y=None):
 
     Parameters
     ----------
-    ensemble_model : Flaml, AutoGluon or AutoSklearn ensemble model.
-
-    X : dataframe
-
-    library : {'Flaml', 'AutoGluon', 'AutoSklearn'}
-            string that specifies the model library
+    predictions: dictionary with predictions of ensemble component models
+        of form {'model_name': 'prediction_vector'}
 
     task : {'regression', 'classification'}
             string that specifies the model task
@@ -580,7 +558,7 @@ def correlation_plot(predictions, task="regression", y=None):
 
     Examples
     --------
-    correlation_plot(model_reg, X_reg, y_reg, task="regression")
+    correlation_plot(predictions, y_reg, task="regression")
     """
     predict_data = pd.DataFrame(predictions)
     if task == "regression":
@@ -633,12 +611,10 @@ def prediction_compare_plot(predictions, y, task="regression"):
 
     Parameters
     ----------
-    ensemble_model : Flaml, AutoGluon or AutoSklearn ensemble model.
+   predictions: dictionary with predictions of ensemble component models
+        of form {'model_name': 'prediction_vector'}
 
-    X, y : dataframe
-
-    library : {'Flaml', 'AutoGluon', 'AutoSklearn'}
-            string that specifies the model library
+    y : target variable vector
 
     task : {'regression', 'classification'}
             string that specifies the model task
@@ -650,7 +626,7 @@ def prediction_compare_plot(predictions, y, task="regression"):
 
     Examples
     --------
-    prediction_compare_plot(model_reg, X_reg, y_reg, library="Flaml", task="regression")
+    prediction_compare_plot(predictions, y_reg, task="regression")
     """
     plot_value = {}
     if task == "regression":
