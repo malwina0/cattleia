@@ -44,7 +44,7 @@ def msd_matrix(predictions):
                      'rgba(255,168,0,255)',
                      'rgba(125,179,67,255)',
                      'rgba(3,169,245,255)']
-    fig = px.imshow(matrix, color_continuous_scale=custom_colors)
+    fig = px.imshow(matrix, color_continuous_scale=[[0, 'lightblue'], [0.5, 'blue'], [1, 'purple']])
     fig.update_layout(
         title="Mean Squared Difference",
         plot_bgcolor='rgba(44,47,56,255)',
@@ -97,7 +97,7 @@ def rmsd_matrix(predictions):
                      'rgba(255,168,0,255)',
                      'rgba(125,179,67,255)',
                      'rgba(3,169,245,255)']
-    fig = px.imshow(matrix, text_auto=True, color_continuous_scale=custom_colors)
+    fig = px.imshow(matrix, text_auto=True, color_continuous_scale=[[0, 'lightblue'], [0.5, 'blue'], [1, 'purple']])
     fig.update_layout(
         title="Root Mean Squared Difference",
         plot_bgcolor='rgba(44,47,56,255)',
@@ -153,7 +153,7 @@ def sdr_matrix(predictions, y):
                      'rgba(255,168,0,255)',
                      'rgba(125,179,67,255)',
                      'rgba(3,169,245,255)']
-    fig = px.imshow(matrix, text_auto=True, color_continuous_scale=custom_colors,
+    fig = px.imshow(matrix, text_auto=True, color_continuous_scale=[[0, 'lightblue'], [0.5, 'blue'], [1, 'purple']],
                     zmin=0,
                     zmax=1)
     fig.update_layout(
@@ -211,7 +211,7 @@ def ar_matrix(predictions, y):
                      'rgba(255,168,0,255)',
                      'rgba(125,179,67,255)',
                      'rgba(3,169,245,255)']
-    fig = px.imshow(matrix, text_auto=True, color_continuous_scale=custom_colors,
+    fig = px.imshow(matrix, text_auto=True, color_continuous_scale=[[0, 'lightblue'], [0.5, 'blue'], [1, 'purple']],
                     zmin=0,
                     zmax=1
                     )
@@ -518,7 +518,8 @@ def uniformity_matrix(predictions):
                      'rgba(255,168,0,255)',
                      'rgba(125,179,67,255)',
                      'rgba(3,169,245,255)']
-    fig = px.imshow(matrix, text_auto=True, color_continuous_scale=custom_colors, zmin=0, zmax=1)
+    fig = px.imshow(matrix, text_auto=True, color_continuous_scale=[[0, 'lightblue'], [0.5, 'blue'], [1, 'purple']],
+                    zmin=0, zmax=1)
     fig.update_layout(
         title="Uniformity",
         plot_bgcolor='rgba(44,47,56,255)',
@@ -570,7 +571,8 @@ def incompatibility_matrix(predictions):
                      'rgba(255,168,0,255)',
                      'rgba(125,179,67,255)',
                      'rgba(3,169,245,255)']
-    fig = px.imshow(matrix, text_auto=True, color_continuous_scale=custom_colors, zmin=0, zmax=1)
+    fig = px.imshow(matrix, text_auto=True, color_continuous_scale=[[0, 'lightblue'], [0.5, 'blue'], [1, 'purple']],
+                    zmin=0, zmax=1)
     fig.update_layout(
         title="Incompatibility",
         plot_bgcolor='rgba(44,47,56,255)',
@@ -625,7 +627,8 @@ def acs_matrix(predictions, y):
                      'rgba(255,168,0,255)',
                      'rgba(125,179,67,255)',
                      'rgba(3,169,245,255)']
-    fig = px.imshow(matrix, text_auto=True, color_continuous_scale=custom_colors, zmin=0, zmax=1)
+    fig = px.imshow(matrix, text_auto=True, color_continuous_scale=[[0, 'lightblue'], [0.5, 'blue'], [1, 'purple']],
+                    zmin=0, zmax=1)
     fig.update_layout(
         title="Average Collective Score",
         plot_bgcolor='rgba(44,47,56,255)',
@@ -680,7 +683,8 @@ def conjuntive_accuracy_matrix(predictions, y):
                      'rgba(255,168,0,255)',
                      'rgba(125,179,67,255)',
                      'rgba(3,169,245,255)']
-    fig = px.imshow(matrix, text_auto=True, color_continuous_scale=custom_colors, zmin=0, zmax=1)
+    fig = px.imshow(matrix, text_auto=True, color_continuous_scale=[[0, 'lightblue'], [0.5, 'blue'], [1, 'purple']],
+                    zmin=0, zmax=1)
     fig.update_layout(
         title="Conjunctive Accuracy",
         plot_bgcolor='rgba(44,47,56,255)',

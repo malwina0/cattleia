@@ -606,7 +606,7 @@ def correlation_plot(predictions, task="regression", y=None):
                      'rgba(255,168,0,255)',
                      'rgba(125,179,67,255)',
                      'rgba(3,169,245,255)']
-    fig = px.imshow(corr_matrix, text_auto=True, color_continuous_scale=custom_colors)
+    fig = px.imshow(corr_matrix, text_auto=True, color_continuous_scale=[[0, 'lightblue'], [0.5, 'blue'], [1, 'purple']])
     fig.update_layout(
         title="Predictions models correlation",
         plot_bgcolor='rgba(44,47,56,255)',
