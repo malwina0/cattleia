@@ -5,24 +5,6 @@ import numpy as np
 from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, mean_absolute_percentage_error, \
     mean_absolute_error, mean_squared_error
 
-
-def get_ensemble_names_weights(ensemble_model, library):
-    weights, model_names = ([] for _ in range(2))
-
-    if library == "AutoSklearn":
-        for weight, model in ensemble_model.get_models_with_weights():
-            model_names.append(str(type(model._final_estimator.choice)).split('.')[-1][:-2])
-            weights.append(weight)
-    elif library == "AutoGluon":
-        model_names = ensemble_model.info()['model_info'][ensemble_model.get_model_best()]['stacker_info'][
-            'base_model_names']
-        # TODO: test if needed and handle cases when there is more layers (not 'S1F1')
-        weights = list(ensemble_model.info()['model_info'][ensemble_model.get_model_best()]['children_info']['S1F1'][
-                           'model_weights'].values())
-
-    return model_names, weights
-
-
 def slider_section(model_name, weight, i):
     return html.Div([
         dbc.Row([

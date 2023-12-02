@@ -6,9 +6,9 @@ import compatimetrics_plots
 import metrics
 import shutil
 import pandas as pd
-from utils import get_predictions_from_model, get_task_from_model, parse_data, get_probabilty_pred_from_model
+from utils import get_predictions_from_model, get_task_from_model, parse_data, get_probabilty_pred_from_model, get_ensemble_weights
 import dash_daq as daq
-from weights import slider_section, get_ensemble_names_weights, \
+from weights import slider_section, \
     tbl_metrics, tbl_metrics_adj_ensemble, calculate_metrics, calculate_metrics_adj_ensemble
 
 sys.path.append("..")
@@ -71,6 +71,7 @@ layout = html.Div([
     dcc.Store(id='model_names', data=[], storage_type='memory'),
     dcc.Store(id='task', data=[], storage_type='memory'),
     dcc.Store(id='proba_predictions', data=[], storage_type='memory'),
+    dcc.Store(id='weights_list', data=[], storage_type='memory'),
     # side menu
     html.Div([
         dbc.Container([
@@ -176,6 +177,7 @@ def select_columns(value):
     Output('predictions', 'data'),
     Output('task', 'data'),
     Output('proba_predictions', 'data'),
+    Output('weights_list', 'data'),
     Input('upload_model', 'contents'),
     State('upload_model', 'filename'),
     State('csv_data', 'data'),
@@ -183,11 +185,7 @@ def select_columns(value):
     State('plots', 'children'),
 )
 def update_model(contents, filename, df, column, about_us):
-    model_names = []
-    task = []
-    predictions = []
-    proba_predictions = []
-    weights_plots = []
+    model_names, weights, task, predictions, proba_predictions, weights_plots = ([] for _ in range(6))
     children = about_us
     if contents:
         contents = contents[0]
@@ -200,7 +198,7 @@ def update_model(contents, filename, df, column, about_us):
             pass
 
         model, library = parse_data(contents, filename)
-        models_name, weights = get_ensemble_names_weights(model, library)
+        weights = get_ensemble_weights(model, library)
 
         df = pd.DataFrame.from_dict(df)
         df = df.dropna()
@@ -211,7 +209,7 @@ def update_model(contents, filename, df, column, about_us):
         task = get_task_from_model(model, y, library)
         predictions = get_predictions_from_model(model, X, y, library, task)
         model_names = list(predictions.keys())
-
+        base_models = model_names[1:len(model_names)]
         if task == "regression":
             metrics_plots = [
                 dbc.Row([
@@ -268,7 +266,7 @@ def update_model(contents, filename, df, column, about_us):
                     dbc.Col([
                         html.Div([], style={'height': '31px'}),  # placeholder to show metrics in the same line
                         html.Div(
-                            [slider_section(model_name, weights[i], i) for i, model_name in enumerate(models_name)],
+                            [slider_section(model_name, weights[i], i) for i, model_name in enumerate(base_models)],
                             style={'color': 'white'})
                     ], width=7),
                     dbc.Col([tbl_metrics(predictions, y, task, weights)
@@ -321,7 +319,7 @@ def update_model(contents, filename, df, column, about_us):
         weights_plots = html.Div(weights_plots)
         children = html.Div(metrics_plots)
 
-    return children, children, weights_plots, model_names, predictions, task, proba_predictions
+    return children, children, weights_plots, model_names, predictions, task, proba_predictions, weights
 
 
 # callbacks for buttons to change plots categories

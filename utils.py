@@ -189,3 +189,16 @@ def get_probabilty_pred_from_model(ensemble_model, X, library):
             proba_predictions.append(ensemble_model.predict_proba(X).values.tolist())
         ensemble_model.set_model_best(final_model)
     return proba_predictions
+
+def get_ensemble_weights(ensemble_model, library):
+    weights = []
+
+    if library == "AutoSklearn":
+        for weight, model in ensemble_model.get_models_with_weights():
+            weights.append(weight)
+    elif library == "AutoGluon":
+        # TODO: test if needed and handle cases when there is more layers (not 'S1F1')
+        weights = list(ensemble_model.info()['model_info'][ensemble_model.get_model_best()]['children_info']['S1F1'][
+                           'model_weights'].values())
+
+    return weights
