@@ -108,10 +108,6 @@ def get_task_from_model(ensemble_model, y, library):
     -------
     task {'regression', 'classification', 'multiclass'}
         string that specifies the model task
-
-    Examples
-    --------
-    get_task_from_model(ensemble_model, y, library)
     """
     if library == 'AutoGluon':
         task = ensemble_model.info()['problem_type']
@@ -152,10 +148,6 @@ def get_predictions_from_model(ensemble_model, X, y, library, task):
     -------
     predictions: dictionary
         of form {'model_name' : 'prediction_vector'}
-
-    Examples
-    --------
-    get_predictions_from_model(ensemble_model, X, y, library, task)
     """
     predictions = {}
     if library == "Flaml":
@@ -230,10 +222,6 @@ def get_probability_pred_from_model(ensemble_model, X, library):
     Returns
     -------
     predictions: list containing vectors of probability of belonging to a class
-
-    Examples
-    --------
-    get_probabilty_pred_from_model(ensemble_model, X, library)
     """
     proba_predictions = []
     if library == "AutoSklearn":

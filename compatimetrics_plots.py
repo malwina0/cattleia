@@ -38,10 +38,6 @@ def msd_matrix(predictions):
     -------
     fig : plotly.graph_objs._figure.Figure
         plotly plot
-
-    Examples
-    --------
-    msd_matrix(predictions)
     """
     models = list(predictions.keys())
     models.pop(0)
@@ -76,10 +72,6 @@ def rmsd_matrix(predictions):
     -------
     fig : plotly.graph_objs._figure.Figure
         plotly plot
-
-    Examples
-    --------
-    rmsd_matrix(predictions)
     """
     models = list(predictions.keys())
     models.pop(0)
@@ -118,10 +110,6 @@ def sdr_matrix(predictions, y):
     -------
     fig : plotly.graph_objs._figure.Figure
         plotly plot
-
-    Examples
-    --------
-    sdr_matrix(predictions, y)
     """
     models = list(predictions.keys())
     models.pop(0)
@@ -163,10 +151,6 @@ def ar_matrix(predictions, y):
     -------
     fig : plotly.graph_objs._figure.Figure
         plotly plot
-
-    Examples
-    --------
-    ar_matrix(predictions, y)
     """
     models = list(predictions.keys())
     models.pop(0)
@@ -209,10 +193,6 @@ def msd_comparison(predictions, model_to_compare):
     -------
     fig : plotly.graph_objs._figure.Figure
         plotly plot
-
-    Examples
-    --------
-    msd_comparison(predictions, model_to_compare)
     """
     models = list(predictions.keys())
     models.pop(0)
@@ -257,10 +237,6 @@ def rmsd_comparison(predictions, model_to_compare):
     -------
     fig : plotly.graph_objs._figure.Figure
         plotly plot
-
-    Examples
-    --------
-    rmsd_comparison(predictions, model_to_compare)
     """
     models = list(predictions.keys())
     models.pop(0)
@@ -308,10 +284,6 @@ def conjunctive_rmse_plot(predictions, y, model_to_compare):
     -------
     fig : plotly.graph_objs._figure.Figure
         plotly plot
-
-    Examples
-    --------
-    conjunctive_rmse_plot(predictions, y, model_to_compare)
     """
     models = list(predictions.keys())
     models.pop(0)
@@ -354,10 +326,6 @@ def difference_distribution(predictions, model_to_compare):
     -------
     fig : plotly.graph_objs._figure.Figure
         plotly plot
-
-    Examples
-    --------
-    difference_distribution(predictions, model_to_compare)
     """
     models = list(predictions.keys())
     models.pop(0)
@@ -404,10 +372,6 @@ def difference_boxplot(predictions, y, model_to_compare):
     -------
     fig : plotly.graph_objs._figure.Figure
         plotly plot
-
-    Examples
-    --------
-    difference_boxplot(predictions, y, model_to_compare)
     """
     models = list(predictions.keys())
     models.pop(0)
@@ -452,10 +416,6 @@ def uniformity_matrix(predictions):
     -------
     fig : plotly.graph_objs._figure.Figure
         plotly plot
-
-    Examples
-    --------
-    uniformity_matrix(predictions)
     """
     models = list(predictions.keys())
     models.pop(0)
@@ -492,10 +452,6 @@ def incompatibility_matrix(predictions):
     -------
     fig : plotly.graph_objs._figure.Figure
         plotly plot
-
-    Examples
-    --------
-    incompatibilty_matrix(predictions)
     """
     models = list(predictions.keys())
     models.pop(0)
@@ -535,10 +491,6 @@ def acs_matrix(predictions, y):
     -------
     fig : plotly.graph_objs._figure.Figure
         plotly plot
-
-    Examples
-    --------
-    acs_matrix(predictions, y)
     """
     models = list(predictions.keys())
     models.pop(0)
@@ -578,10 +530,6 @@ def conjuntive_accuracy_matrix(predictions, y):
     -------
     fig : plotly.graph_objs._figure.Figure
         plotly plot
-
-    Examples
-    --------
-    conjunctive_accuracy_matrix(predictions, y)
     """
     models = list(predictions.keys())
     models.pop(0)
@@ -625,10 +573,6 @@ def disagreement_ratio_plot(predictions, y, model_to_compare):
     -------
     fig : plotly.graph_objs._figure.Figure
         plotly plot
-
-    Examples
-    --------
-    disagreement_ratio_plot(predictions, y, model_to_compare)
     """
     models = list(predictions.keys())
     models.pop(0)
@@ -679,10 +623,6 @@ def conjunctive_metrics_plot(predictions, y, model_to_compare):
     -------
     fig : plotly.graph_objs._figure.Figure
         plotly plot
-
-    Examples
-    --------
-    conjunctive_metrics_plot(predictions, y, model_to_compare)
     """
     models = list(predictions.keys())
     models.pop(0)
@@ -735,10 +675,6 @@ def prediction_correctness_plot(predictions, y, model_to_compare):
     -------
     fig : plotly.graph_objs._figure.Figure
         plotly plot
-
-    Examples
-    --------
-    prediction_correctness_plot(predictions, y, model_to_compare)
     """
     models = list(predictions.keys())
     models.pop(0)
@@ -790,10 +726,6 @@ def collective_cummulative_score_plot(predictions, y, model_to_compare):
     -------
     fig : plotly.graph_objs._figure.Figure
         plotly plot
-
-    Examples
-    --------
-    collective_cummulative_score_plot(predictions, y, model_to_compare)
     """
     models = list(predictions.keys())
     models.pop(0)
@@ -837,10 +769,6 @@ def conjunctive_precision_multiclass_plot(predictions, y, model_to_compare):
     -------
     fig : plotly.graph_objs._figure.Figure
         plotly plot
-
-    Examples
-    --------
-    conjunctive_precision_multiclass_plot(predictions, y, model_to_compare)
     """
     models = list(predictions.keys())
     models.pop(0)
@@ -890,10 +818,6 @@ def conjunctive_recall_multiclass_plot(predictions, y, model_to_compare):
     -------
     fig : plotly.graph_objs._figure.Figure
         plotly plot
-
-    Examples
-    --------
-    conjunctive_recall_multiclass_plot(predictions, y, model_to_compare)
     """
     models = list(predictions.keys())
     models.pop(0)
