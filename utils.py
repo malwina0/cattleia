@@ -4,8 +4,6 @@ import pandas as pd
 import zipfile
 from autogluon.tabular import TabularPredictor
 from dash import html
-import numpy as np
-import pandas as pd
 
 # data loading function
 def parse_data(contents, filename):
@@ -103,6 +101,7 @@ def get_predictions_from_model(ensemble_model, X, y, library, task):
     predictions = {}
     if library == "Flaml":
         ensemble_models = ensemble_model.model.estimators_
+        predictions['Ensemble'] = ensemble_model.predict(X)
         X_transform = ensemble_model._state.task.preprocess(X, ensemble_model._transformer)
         if task == 'regression':
             for model in ensemble_models:
@@ -115,6 +114,7 @@ def get_predictions_from_model(ensemble_model, X, y, library, task):
     elif library == "AutoGluon":
         ensemble_models = ensemble_model.info()['model_info'][ensemble_model.get_model_best()]['stacker_info'][
             'base_model_names']
+        predictions['Ensemble'] = ensemble_model.predict(X)
         final_model = ensemble_model.get_model_best()
         for model_name in ensemble_models:
             ensemble_model.set_model_best(model_name)
@@ -122,6 +122,7 @@ def get_predictions_from_model(ensemble_model, X, y, library, task):
         ensemble_model.set_model_best(final_model)
 
     elif library == "AutoSklearn":
+        predictions['Ensemble'] = ensemble_model.predict(X)
         if task == 'regression':
             for weight, model in ensemble_model.get_models_with_weights():
                 prediction = model.predict(X)
@@ -153,3 +154,51 @@ def get_predictions_from_model(ensemble_model, X, y, library, task):
                     predictions[name] = prediction_class
 
     return predictions
+
+def get_probabilty_pred_from_model(ensemble_model, X, library):
+    """Function that calculates probability of belonging to a class from
+     component models from given ensemble model
+
+   Parameters
+    ----------
+    ensemble_model : Flaml, AutoGluon or AutoSklearn ensemble model.
+
+    X : dataframe without target variable
+
+    library : {'Flaml', 'AutoGluon', 'AutoSklearn'}
+            string that specifies the model library
+
+    Returns
+    -------
+    predictions: list containing vectors of probability of belonging to a class
+
+    Examples
+    --------
+    gget_probabilty_pred_from_model(ensemble_model, X, library)
+    """
+    proba_predictions = []
+    if library == "AutoSklearn":
+        for weight, model in ensemble_model.get_models_with_weights():
+            prediction = model.predict_proba(X)
+            proba_predictions.append(prediction.tolist())
+    elif library == "AutoGluon":
+        final_model = ensemble_model.get_model_best()
+        for model_name in ensemble_model.info()['model_info'][ensemble_model.get_model_best()]['stacker_info'][
+            'base_model_names']:
+            ensemble_model.set_model_best(model_name)
+            proba_predictions.append(ensemble_model.predict_proba(X).values.tolist())
+        ensemble_model.set_model_best(final_model)
+    return proba_predictions
+
+def get_ensemble_weights(ensemble_model, library):
+    weights = []
+
+    if library == "AutoSklearn":
+        for weight, model in ensemble_model.get_models_with_weights():
+            weights.append(weight)
+    elif library == "AutoGluon":
+        # TODO: test if needed and handle cases when there is more layers (not 'S1F1')
+        weights = list(ensemble_model.info()['model_info'][ensemble_model.get_model_best()]['children_info']['S1F1'][
+                           'model_weights'].values())
+
+    return weights
