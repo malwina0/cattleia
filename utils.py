@@ -6,6 +6,31 @@ from autogluon.tabular import TabularPredictor
 from dash import html
 
 def parse_data(contents):
+    """
+    Parse data from a base64 encoded string.
+
+    Parameters
+    ----------
+    contents : str
+        A string containing the content type and content separated by a comma.
+        The content should be base64 encoded data representing a CSV file.
+
+    Returns
+    -------
+    pandas.DataFrame
+        A DataFrame parsed from the decoded CSV content.
+
+    Notes
+    -----
+    This function expects the contents parameter to be in the format: "content_type, content_string",
+    where content_type specifies the type of content and content_string is a base64 encoded CSV data.
+
+    Raises
+    ------
+    Exception
+        If there is an error while processing the file, an error message will be printed, and
+        an HTML Div with an error message will be returned.
+    """
     content_type, content_string = contents.split(",")
     decoded = base64.b64decode(content_string)
     try:
@@ -17,6 +42,35 @@ def parse_data(contents):
         return html.Div(["There was an error processing this file."])
 
 def parse_model(contents, filename):
+    """
+    Parse a machine learning model from a base64 encoded string.
+
+    Parameters
+    ----------
+    contents : str
+        A string containing the content type and content separated by a comma.
+        The content should be base64 encoded data representing a machine learning model file.
+
+    filename : str
+        The filename associated with the contents.
+
+    Returns
+    -------
+    tuple
+        A tuple containing the parsed machine learning model and the library used to create the model.
+
+    Notes
+    -----
+    This function expects the contents parameter to be in the format: "content_type, content_string",
+    where content_type specifies the type of content and content_string is a base64 encoded machine learning model.
+    The filename parameter is used to determine the appropriate action based on the file extension.
+
+    Raises
+    ------
+    Exception
+        If there is an error while processing the file, an error message will be printed, and
+        an HTML Div with an error message will be returned.
+    """
     content_type, content_string = contents.split(",")
     decoded = base64.b64decode(content_string)
     try:
@@ -41,7 +95,7 @@ def parse_model(contents, filename):
 def get_task_from_model(ensemble_model, y, library):
     """Function that recognise machine learning task performed by ensemble model.
 
-   Parameters
+    Parameters
     ----------
     ensemble_model : Flaml, AutoGluon or AutoSklearn ensemble model.
 
@@ -82,7 +136,7 @@ def get_predictions_from_model(ensemble_model, X, y, library, task):
     """Function that calculates predictions of component models from given ensemble
     model
 
-   Parameters
+    Parameters
     ----------
     ensemble_model : Flaml, AutoGluon or AutoSklearn ensemble model.
 
@@ -164,7 +218,7 @@ def get_probability_pred_from_model(ensemble_model, X, library):
     """Function that calculates probability of belonging to a class from
      component models from given ensemble model
 
-   Parameters
+    Parameters
     ----------
     ensemble_model : Flaml, AutoGluon or AutoSklearn ensemble model.
 
@@ -196,6 +250,22 @@ def get_probability_pred_from_model(ensemble_model, X, library):
     return proba_predictions
 
 def get_ensemble_weights(ensemble_model, library):
+    """
+    Retrieve the weights of individual models in an ensemble.
+
+    Parameters
+    ----------
+    ensemble_model : object
+      The ensemble model object containing multiple models.
+
+    library : str
+      The name of the library/framework used to create the ensemble model.
+      Supported values are "AutoSklearn" or "AutoGluon".
+
+    Returns
+    -------
+    list: A list containing the weights of individual models in the ensemble.
+    """
     weights = []
 
     if library == "AutoSklearn":
