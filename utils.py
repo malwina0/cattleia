@@ -5,26 +5,31 @@ import zipfile
 from autogluon.tabular import TabularPredictor
 from dash import html
 
-# data loading function
-def parse_data(contents, filename):
+def parse_data(contents):
     content_type, content_string = contents.split(",")
-
     decoded = base64.b64decode(content_string)
     try:
-        if "csv" in filename:
-            df = pd.read_csv(io.StringIO(decoded.decode("utf-8")), sep = ',|;|\t', engine='python')
-            return df
-        elif "pkl" in filename:
+        df = pd.read_csv(io.StringIO(decoded.decode("utf-8")), sep = ',|;|\t', engine='python')
+        return df
+
+    except Exception as e:
+        print(e)
+        return html.Div(["There was an error processing this file."])
+
+def parse_model(contents, filename):
+    content_type, content_string = contents.split(",")
+    decoded = base64.b64decode(content_string)
+    try:
+        if ".pkl" in filename:
             model = pd.read_pickle(io.BytesIO(decoded))
             if "<class 'flaml" in str(model.__class__).split("."):
                 library = "Flaml"
             else:
                 library = "AutoSklearn"
             return model, library
-        elif "zip" in filename:
+        elif ".zip" in filename:
             with zipfile.ZipFile(io.BytesIO(decoded), 'r') as zip_ref:
                 zip_ref.extractall('./uploaded_model')
-
             model = TabularPredictor.load('./uploaded_model', require_py_version_match=False)
             library = "AutoGluon"
             return model, library
@@ -155,7 +160,7 @@ def get_predictions_from_model(ensemble_model, X, y, library, task):
 
     return predictions
 
-def get_probabilty_pred_from_model(ensemble_model, X, library):
+def get_probability_pred_from_model(ensemble_model, X, library):
     """Function that calculates probability of belonging to a class from
      component models from given ensemble model
 
@@ -174,7 +179,7 @@ def get_probabilty_pred_from_model(ensemble_model, X, library):
 
     Examples
     --------
-    gget_probabilty_pred_from_model(ensemble_model, X, library)
+    get_probabilty_pred_from_model(ensemble_model, X, library)
     """
     proba_predictions = []
     if library == "AutoSklearn":
@@ -197,7 +202,6 @@ def get_ensemble_weights(ensemble_model, library):
         for weight, model in ensemble_model.get_models_with_weights():
             weights.append(weight)
     elif library == "AutoGluon":
-        # TODO: test if needed and handle cases when there is more layers (not 'S1F1')
         weights = list(ensemble_model.info()['model_info'][ensemble_model.get_model_best()]['children_info']['S1F1'][
                            'model_weights'].values())
 

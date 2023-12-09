@@ -6,7 +6,8 @@ import compatimetrics_plots
 import metrics
 import shutil
 import pandas as pd
-from utils import get_predictions_from_model, get_task_from_model, parse_data, get_probabilty_pred_from_model, get_ensemble_weights
+from utils import get_predictions_from_model, get_task_from_model, parse_data, parse_model, \
+    get_probability_pred_from_model, get_ensemble_weights
 import dash_daq as daq
 from weights import slider_section, \
     tbl_metrics, tbl_metrics_adj_ensemble, calculate_metrics, calculate_metrics_adj_ensemble
@@ -112,23 +113,25 @@ def update_output(contents, filename):
     if contents:
         contents = contents[0]
         filename = filename[0]
-        df = parse_data(contents, filename)
-        data = df.to_dict()
+        if ".csv" in filename:
+            df = parse_data(contents)
+            data = df.to_dict()
+            # Creating the dropdown menu with full labels displayed as tooltips
+            options = [{'label': x[:20] + '...' if len(x) > 20 else x, 'value': x, 'title': x} for x in df.columns]
 
-        # Creating the dropdown menu with full labels displayed as tooltips
-        options = [{'label': x[:20] + '...' if len(x) > 20 else x, 'value': x, 'title': x} for x in df.columns]
-
-        children = html.Div([
-            html.P(filename, className="sidepanel_text"),
-            html.Hr(),
-            html.H5("Select target colum", className="sidepanel_text"),
-            dcc.Dropdown(
-                id='column_select',
-                className="dropdown-class",
-                options=options
-            ),
-            html.Hr(),
-        ])
+            children = html.Div([
+                html.P(filename, className="sidepanel_text"),
+                html.Hr(),
+                html.H5("Select target colum", className="sidepanel_text"),
+                dcc.Dropdown(
+                    id='column_select',
+                    className="dropdown-class",
+                    options=options
+                ),
+                html.Hr(),
+            ])
+        else:
+            children = input
 
     return data, children
 
@@ -197,138 +200,141 @@ def update_model(contents, filename, df, column, about_us):
         except FileNotFoundError:
             pass
 
-        model, library = parse_data(contents, filename)
-        weights = get_ensemble_weights(model, library)
+        if ('.pkl' in filename) or ('.zip' in filename):
+            model, library = parse_model(contents, filename)
+            weights = get_ensemble_weights(model, library)
 
-        df = pd.DataFrame.from_dict(df)
-        df = df.dropna()
-        X = df.iloc[:, df.columns != column["name"]]
-        y = df.iloc[:, df.columns == column["name"]]
-        y = y.squeeze()
+            df = pd.DataFrame.from_dict(df)
+            df = df.dropna()
+            X = df.iloc[:, df.columns != column["name"]]
+            y = df.iloc[:, df.columns == column["name"]]
+            y = y.squeeze()
 
-        task = get_task_from_model(model, y, library)
-        predictions = get_predictions_from_model(model, X, y, library, task)
-        model_names = list(predictions.keys())
-        base_models = model_names[1:len(model_names)]
-        if task == "regression":
-            metrics_plots = [
-                dbc.Row([
-                    dbc.Col([dcc.Graph(figure=metrics.mse_plot(predictions, y), className="plot")],
+            task = get_task_from_model(model, y, library)
+            predictions = get_predictions_from_model(model, X, y, library, task)
+            model_names = list(predictions.keys())
+            base_models = model_names[1:len(model_names)]
+            if task == "regression":
+                metrics_plots = [
+                    dbc.Row([
+                        dbc.Col([dcc.Graph(figure=metrics.mse_plot(predictions, y), className="plot")],
+                                width=6),
+                        dbc.Col([dcc.Graph(figure=metrics.mape_plot(predictions, y), className="plot")],
+                                width=6),
+                    ]),
+                    dbc.Row([
+                        dbc.Col([dcc.Graph(figure=metrics.rmse_plot(predictions, y), className="plot")],
+                                width=6),
+                        dbc.Col([dcc.Graph(figure=metrics.r_2_plot(predictions, y), className="plot")],
+                                width=6),
+                    ]),
+                    dcc.Graph(figure=metrics.mae_plot(predictions, y), className="plot"),
+                ]
+            else:
+                proba_predictions = get_probability_pred_from_model(model, X, library)
+                metrics_plots = [
+                    dbc.Row([
+                        dbc.Col([dcc.Graph(figure=metrics.accuracy_plot(predictions, y),
+                                           className="plot")], width=6),
+                        dbc.Col([dcc.Graph(figure=metrics.precision_plot(predictions, y),
+                                           className="plot")], width=6),
+                    ]),
+                    dbc.Row([
+                        dbc.Col(
+                            [dcc.Graph(figure=metrics.recall_plot(predictions, y), className="plot")],
                             width=6),
-                    dbc.Col([dcc.Graph(figure=metrics.mape_plot(predictions, y), className="plot")],
+                        dbc.Col(
+                            [dcc.Graph(figure=metrics.f1_score_plot(predictions, y), className="plot")],
                             width=6),
-                ]),
-                dbc.Row([
-                    dbc.Col([dcc.Graph(figure=metrics.rmse_plot(predictions, y), className="plot")],
-                            width=6),
-                    dbc.Col([dcc.Graph(figure=metrics.r_2_plot(predictions, y), className="plot")],
-                            width=6),
-                ]),
-                dcc.Graph(figure=metrics.mae_plot(predictions, y), className="plot"),
-            ]
-        else:
-            proba_predictions = get_probabilty_pred_from_model(model, X, library)
-            metrics_plots = [
-                dbc.Row([
-                    dbc.Col([dcc.Graph(figure=metrics.accuracy_plot(predictions, y),
-                                       className="plot")], width=6),
-                    dbc.Col([dcc.Graph(figure=metrics.precision_plot(predictions, y),
-                                       className="plot")], width=6),
-                ]),
-                dbc.Row([
-                    dbc.Col(
-                        [dcc.Graph(figure=metrics.recall_plot(predictions, y), className="plot")],
-                        width=6),
-                    dbc.Col(
-                        [dcc.Graph(figure=metrics.f1_score_plot(predictions, y), className="plot")],
-                        width=6),
-                ]),
-            ]
+                    ]),
+                ]
 
-        metrics_plots += [
-            dcc.Graph(figure=metrics.correlation_plot(predictions, task=task, y=y),
-                className="plot"),
-            html.H2("""
-                Prediction compare plot shows the differences between model predictions and true values. 
-                The x-axis shows observations and the y-axis shows models. For classification, the color on the 
-                plot indicates whether a given prediction is correct, while for regression tasks the percentage 
-                difference between the true and predicted value is shown.
-                """,
-                className="annotation_str", id="ann_0"),
-            dcc.Graph(figure=metrics.prediction_compare_plot(predictions, y, task=task),
-                className="plot")]
-
-        weights_plots = []
-        if library != "Flaml":
-            weights_plots.append(
+            metrics_plots += [
+                dcc.Graph(figure=metrics.correlation_plot(predictions, task=task, y=y),
+                          className="plot"),
                 html.H2("""
-                Malwina tutaj dodaj swój tekst
-                """,
-                className="annotation_str", id="ann_2")
-            )
-            weights_plots.append(html.Br())
-            weights_plots.append(
-                dbc.Row([
-                    dbc.Col([
-                        html.Div([], style={'height': '31px'}),  # placeholder to show metrics in the same line
-                        html.Div(
-                            [slider_section(model_name, weights[i], i) for i, model_name in enumerate(base_models)],
-                            style={'color': 'white'})
-                    ], width=7),
-                    dbc.Col([tbl_metrics(predictions, y, task, weights)
-                             ], width=4)
-                ])
-            )
-            weights_plots.append(
-                dbc.Row([
-                    dbc.Col([tbl_metrics_adj_ensemble(predictions, proba_predictions, y, task, weights)], width=4)
-                ], justify="center")
-            )
+                    Prediction compare plot shows the differences between model predictions and true values. 
+                    The x-axis shows observations and the y-axis shows models. For classification, the color on the 
+                    plot indicates whether a given prediction is correct, while for regression tasks the percentage 
+                    difference between the true and predicted value is shown.
+                    """,
+                        className="annotation_str", id="ann_0"),
+                dcc.Graph(figure=metrics.prediction_compare_plot(predictions, y, task=task),
+                          className="plot")]
 
-        for plot in metrics.permutation_feature_importance_all(model, X, y, library=library, task=task):
-            metrics_plots.append(dcc.Graph(figure=plot, className="plot"))
+            weights_plots = []
+            if library != "Flaml":
+                weights_plots.append(
+                    html.H2("""
+                    Malwina tutaj dodaj swój tekst
+                    """,
+                            className="annotation_str", id="ann_2")
+                )
+                weights_plots.append(html.Br())
+                weights_plots.append(
+                    dbc.Row([
+                        dbc.Col([
+                            html.Div([], style={'height': '31px'}),  # placeholder to show metrics in the same line
+                            html.Div(
+                                [slider_section(model_name, weights[i], i) for i, model_name in enumerate(base_models)],
+                                style={'color': 'white'})
+                        ], width=7),
+                        dbc.Col([tbl_metrics(predictions, y, task, weights)
+                                 ], width=4)
+                    ])
+                )
+                weights_plots.append(
+                    dbc.Row([
+                        dbc.Col([tbl_metrics_adj_ensemble(predictions, proba_predictions, y, task, weights)], width=4)
+                    ], justify="center")
+                )
 
-        metrics_plots.append(
-            html.H2("""
-                Partial Dependence isolate one specific feature's effect on the model's output while maintaining 
-                all other features at fixed values. It capturing how the model's output changes as the chosen 
-                feature varies. When the number of observations is large, in order to speed up the generation of 
-                graphs, only a subset of the data is used for calculations.
-                """,
-                className="annotation_str", id="ann_1")
-        )
-
-        if len(X) < 2000:
-            for plot in metrics.partial_dependence_plots(model, X, library=library, autogluon_task=task):
+            for plot in metrics.permutation_feature_importance_all(model, X, y, library=library, task=task):
                 metrics_plots.append(dcc.Graph(figure=plot, className="plot"))
+
+            metrics_plots.append(
+                html.H2("""
+                    Partial Dependence isolate one specific feature's effect on the model's output while maintaining 
+                    all other features at fixed values. It capturing how the model's output changes as the chosen 
+                    feature varies. When the number of observations is large, in order to speed up the generation of 
+                    graphs, only a subset of the data is used for calculations.
+                    """,
+                        className="annotation_str", id="ann_1")
+            )
+
+            if len(X) < 2000:
+                for plot in metrics.partial_dependence_plots(model, X, library=library, autogluon_task=task):
+                    metrics_plots.append(dcc.Graph(figure=plot, className="plot"))
+            else:
+                for plot in metrics.partial_dependence_plots(model, X.sample(2000), library=library, autogluon_task=task):
+                    metrics_plots.append(dcc.Graph(figure=plot, className="plot"))
+
+            # It may be necessary to keep the model for the code with weights,
+            # for now we remove the model after making charts
+            try:
+                shutil.rmtree('./uploaded_model')
+            except FileNotFoundError:
+                pass
+
+            metrics_plots.insert(0, html.Div([
+                dbc.Row([
+                    dbc.Col([html.Button('Weights', id="weights", className="button_1")], width=2),
+                    dbc.Col([html.Button('Metrics', id="metrics", className="button_1")], width=2),
+                    dbc.Col([html.Button('Compatimetrics', id="compatimetrics", className="button_1")], width=2),
+                ], justify="center"),
+            ], style={"display": "block", "position": "sticky"}))
+            weights_plots.insert(0, html.Div([
+                dbc.Row([
+                    dbc.Col([html.Button('Weights', id="weights", className="button_1")], width=2),
+                    dbc.Col([html.Button('Metrics', id="metrics", className="button_1")], width=2),
+                    dbc.Col([html.Button('Compatimetrics', id="compatimetrics", className="button_1")], width=2),
+                ], justify="center"),
+            ], style={"display": "block", "position": "sticky"}))
+
+            weights_plots = html.Div(weights_plots)
+            children = html.Div(metrics_plots)
         else:
-            for plot in metrics.partial_dependence_plots(model, X.sample(2000), library=library, autogluon_task=task):
-                metrics_plots.append(dcc.Graph(figure=plot, className="plot"))
-
-        # It may be necessary to keep the model for the code with weights,
-        # for now we remove the model after making charts
-        try:
-            shutil.rmtree('./uploaded_model')
-        except FileNotFoundError:
-            pass
-
-        metrics_plots.insert(0, html.Div([
-            dbc.Row([
-                dbc.Col([html.Button('Weights', id="weights", className="button_1")], width=2),
-                dbc.Col([html.Button('Metrics', id="metrics", className="button_1")], width=2),
-                dbc.Col([html.Button('Compatimetrics', id="compatimetrics", className="button_1")], width=2),
-            ], justify="center"),
-        ], style={"display": "block", "position": "sticky"}))
-        weights_plots.insert(0, html.Div([
-            dbc.Row([
-                dbc.Col([html.Button('Weights', id="weights", className="button_1")], width=2),
-                dbc.Col([html.Button('Metrics', id="metrics", className="button_1")], width=2),
-                dbc.Col([html.Button('Compatimetrics', id="compatimetrics", className="button_1")], width=2),
-            ], justify="center"),
-        ], style={"display": "block", "position": "sticky"}))
-
-        weights_plots = html.Div(weights_plots)
-        children = html.Div(metrics_plots)
+            children = html.Div(["Please provide the file in .pkl or .zip format."], style={"color": "white"})
 
     return children, children, weights_plots, model_names, predictions, task, proba_predictions, weights
 
@@ -390,7 +396,8 @@ def update_model_selector(model_names):
         model_names.pop(0)
     children = []
     if model_names:
-        title = html.H4("Choose model for compatimetrics analysis:", className="compatimetrics_title", style={'color': 'white'})
+        title = html.H4("Choose model for compatimetrics analysis:", className="compatimetrics_title",
+                        style={'color': 'white'})
         dropdown = dcc.Dropdown(id='model_select', className="dropdown-class",
                                 options=[{'label': x, 'value': x} for x in model_names],
                                 value=model_names[0], clearable=False)
@@ -431,19 +438,19 @@ def update_compatimetrics_plot(predictions, model_to_compare, task, df, column):
                        """,
                         className="annotation_str", id="ann_comp_6"),
                 dbc.Row([
-                dbc.Col([dcc.Graph(figure=compatimetrics_plots.uniformity_matrix(predictions),
-                                   className="plot")],
-                        width=6),
-                dbc.Col([dcc.Graph(figure=compatimetrics_plots.incompatibility_matrix(predictions),
-                                   className="plot")],
-                        width=6),
-                html.H3("""
+                    dbc.Col([dcc.Graph(figure=compatimetrics_plots.uniformity_matrix(predictions),
+                                       className="plot")],
+                            width=6),
+                    dbc.Col([dcc.Graph(figure=compatimetrics_plots.incompatibility_matrix(predictions),
+                                       className="plot")],
+                            width=6),
+                    html.H3("""
                     Matrix below on the right shows value of Average Collective Score which is a metric that 
                     sums number of doubly correct predictions and number of disagreements with coefficient 0.5 and
                     then dividing it by number of observations. It measures joined performance with consideration
                     of double correct prediction and disagreements.
                    """,
-                        className="annotation_str", id="ann_comp_7"),
+                            className="annotation_str", id="ann_comp_7"),
                 ]),
                 dbc.Row([
                     dbc.Col([dcc.Graph(figure=compatimetrics_plots.acs_matrix(predictions, y),
@@ -458,7 +465,7 @@ def update_compatimetrics_plot(predictions, model_to_compare, task, df, column):
                 predicted differently by two models regarding to the class of the record. It can show which class
                 was more difficult to predict when joining models. 
                """,
-                        className="annotation_str", id="ann_comp_9"),], width=6),
+                                          className="annotation_str", id="ann_comp_9"), ], width=6),
                          dbc.Col([html.H3("""
                 Conjunctive metrics are analogous to standard evaluation metrics, but instead of comparing target
                 variable with one prediction vector, we use two prediction vectors at the same time. Simply we
@@ -468,14 +475,16 @@ def update_compatimetrics_plot(predictions, model_to_compare, task, df, column):
                 metrics. Worth mentioning - conjunctive recall is generally lower and conjunctive precision 
                 is generally higher, which is related to their definition. 
                                """,
-                        className="annotation_str", id="ann_comp_8"),], width=6)]),
+                                          className="annotation_str", id="ann_comp_8"), ], width=6)]),
 
                 dbc.Row([
-                    dbc.Col([dcc.Graph(figure=compatimetrics_plots.disagreement_ratio_plot(predictions, y, model_to_compare),
-                                       className="plot")],
+                    dbc.Col([dcc.Graph(
+                        figure=compatimetrics_plots.disagreement_ratio_plot(predictions, y, model_to_compare),
+                        className="plot")],
                             width=6),
-                    dbc.Col([dcc.Graph(figure=compatimetrics_plots.conjunctive_metrics_plot(predictions, y, model_to_compare),
-                                       className="plot")],
+                    dbc.Col([dcc.Graph(
+                        figure=compatimetrics_plots.conjunctive_metrics_plot(predictions, y, model_to_compare),
+                        className="plot")],
                             width=6),
                 ]),
                 html.H3("""
@@ -485,9 +494,10 @@ def update_compatimetrics_plot(predictions, model_to_compare, task, df, column):
                        """,
                         className="annotation_str", id="ann_comp_10"),
                 dbc.Row(
-                    [dcc.Graph(figure=compatimetrics_plots.prediction_correctness_plot(predictions, y, model_to_compare),
-                               className='plot')
-                ]),
+                    [dcc.Graph(
+                        figure=compatimetrics_plots.prediction_correctness_plot(predictions, y, model_to_compare),
+                        className='plot')
+                     ]),
                 html.H3("""
                         On the plot below one can observe the progess of incresing average collective score 
                         through the whole data set. This plot can be helpful when searching for areas of data set
@@ -495,9 +505,10 @@ def update_compatimetrics_plot(predictions, model_to_compare, task, df, column):
                        """,
                         className="annotation_str", id="ann_comp_11"),
                 dbc.Row(
-                    [dcc.Graph(figure=compatimetrics_plots.collective_cummulative_score_plot(predictions, y, model_to_compare),
-                               className='plot')
-                ]),
+                    [dcc.Graph(
+                        figure=compatimetrics_plots.collective_cummulative_score_plot(predictions, y, model_to_compare),
+                        className='plot')
+                     ]),
             ]
         elif task == 'regression':
             children = [dbc.Row([
@@ -511,7 +522,7 @@ def update_compatimetrics_plot(predictions, model_to_compare, task, df, column):
                         width=6),
                 dbc.Col([dcc.Graph(figure=compatimetrics_plots.rmsd_matrix(predictions), className="plot")],
                         width=6),
-                ]),
+            ]),
                 html.H3("""
                     Matrices below show ratio of agreement and strong disagreement between two models. Agreement ratio 
                     calculates the percentage of observations that two models predicted closer than fiftieth part of 
@@ -527,9 +538,11 @@ def update_compatimetrics_plot(predictions, model_to_compare, task, df, column):
                             width=6),
                 ]),
                 dbc.Row([
-                    dbc.Col([dcc.Graph(figure=compatimetrics_plots.msd_comparison(predictions, model_to_compare), className="plot")],
+                    dbc.Col([dcc.Graph(figure=compatimetrics_plots.msd_comparison(predictions, model_to_compare),
+                                       className="plot")],
                             width=6),
-                    dbc.Col([dcc.Graph(figure=compatimetrics_plots.rmsd_comparison(predictions, model_to_compare), className="plot")],
+                    dbc.Col([dcc.Graph(figure=compatimetrics_plots.rmsd_comparison(predictions, model_to_compare),
+                                       className="plot")],
                             width=6),
                 ]),
                 html.H3("""
@@ -542,14 +555,15 @@ def update_compatimetrics_plot(predictions, model_to_compare, task, df, column):
                     [dcc.Graph(
                         figure=compatimetrics_plots.conjunctive_rmse_plot(predictions, y, model_to_compare),
                         className='plot')
-                     ]),
+                    ]),
                 html.H3("""
                         Plot below shows actual difference of predictions between chosen model 
                         and other models in ensemble through the whole data set.
                         """,
                         className="annotation_str", id="ann_comp_4"),
                 dbc.Row([
-                    dcc.Graph(figure=compatimetrics_plots.difference_distribution(predictions, model_to_compare), className="plot")
+                    dcc.Graph(figure=compatimetrics_plots.difference_distribution(predictions, model_to_compare),
+                              className="plot")
                 ]),
                 html.H3("""
                             Plot below shows distribution of absolute prediction differences of chosen model and 
@@ -559,7 +573,8 @@ def update_compatimetrics_plot(predictions, model_to_compare, task, df, column):
                             """,
                         className="annotation_str", id="ann_comp_5"),
                 dbc.Row([
-                    dcc.Graph(figure=compatimetrics_plots.difference_boxplot(predictions, y, model_to_compare), className="plot")
+                    dcc.Graph(figure=compatimetrics_plots.difference_boxplot(predictions, y, model_to_compare),
+                              className="plot")
                 ])
             ]
         else:
@@ -570,20 +585,20 @@ def update_compatimetrics_plot(predictions, model_to_compare, task, df, column):
                        """,
                         className="annotation_str", id="ann_comp_12"),
                 dbc.Row([
-                dbc.Col([dcc.Graph(figure=compatimetrics_plots.uniformity_matrix(predictions),
-                                   className="plot")],
-                        width=6),
-                dbc.Col([dcc.Graph(figure=compatimetrics_plots.incompatibility_matrix(predictions),
-                                   className="plot")],
-                        width=6),
-            ]), dbc.Row([
-                dbc.Col([dcc.Graph(figure=compatimetrics_plots.acs_matrix(predictions, y),
-                                   className="plot")],
-                        width=6),
-                dbc.Col([dcc.Graph(figure=compatimetrics_plots.conjuntive_accuracy_matrix(predictions, y),
-                                   className="plot")],
-                        width=6),
-            ]),
+                    dbc.Col([dcc.Graph(figure=compatimetrics_plots.uniformity_matrix(predictions),
+                                       className="plot")],
+                            width=6),
+                    dbc.Col([dcc.Graph(figure=compatimetrics_plots.incompatibility_matrix(predictions),
+                                       className="plot")],
+                            width=6),
+                ]), dbc.Row([
+                    dbc.Col([dcc.Graph(figure=compatimetrics_plots.acs_matrix(predictions, y),
+                                       className="plot")],
+                            width=6),
+                    dbc.Col([dcc.Graph(figure=compatimetrics_plots.conjuntive_accuracy_matrix(predictions, y),
+                                       className="plot")],
+                            width=6),
+                ]),
                 html.H3("""
                         Conjunctive metrics are analogous to standard evaluation metrics, but instead of comparing target
                         variable with one prediction vector, we use two prediction vectors at the same time. Simply we
@@ -596,15 +611,17 @@ def update_compatimetrics_plot(predictions, model_to_compare, task, df, column):
                                    """,
                         className="annotation_str", id="ann_comp_14"),
                 dbc.Row([
-                dbc.Col([dcc.Graph(
-                    figure=compatimetrics_plots.conjunctive_precision_multiclass_plot(predictions, y, model_to_compare),
-                    className="plot")],
-                    width=6),
-                dbc.Col([dcc.Graph(
-                    figure=compatimetrics_plots.conjunctive_recall_multiclass_plot(predictions, y, model_to_compare),
-                    className="plot")],
-                    width=6),
-            ]),
+                    dbc.Col([dcc.Graph(
+                        figure=compatimetrics_plots.conjunctive_precision_multiclass_plot(predictions, y,
+                                                                                          model_to_compare),
+                        className="plot")],
+                        width=6),
+                    dbc.Col([dcc.Graph(
+                        figure=compatimetrics_plots.conjunctive_recall_multiclass_plot(predictions, y,
+                                                                                       model_to_compare),
+                        className="plot")],
+                        width=6),
+                ]),
                 html.H3("""
                      Plot below is showing ratio of predictions on different level of correctness. Doubly correct
                      prediction occurs when two models predicted observation right, disagreement when one of models
@@ -612,10 +629,10 @@ def update_compatimetrics_plot(predictions, model_to_compare, task, df, column):
                      """,
                         className="annotation_str", id="ann_comp_15"),
                 dbc.Row(
-                [dcc.Graph(
-                    figure=compatimetrics_plots.prediction_correctness_plot(predictions, y, model_to_compare),
-                    className='plot')
-                ]),
+                    [dcc.Graph(
+                        figure=compatimetrics_plots.prediction_correctness_plot(predictions, y, model_to_compare),
+                        className='plot')
+                    ]),
                 html.H3("""
                       On the plot below one can observe the progress of increasing average collective score 
                       through the whole data set. This plot can be helpful when searching for areas of data set
@@ -623,10 +640,10 @@ def update_compatimetrics_plot(predictions, model_to_compare, task, df, column):
                      """,
                         className="annotation_str", id="ann_comp_16"),
                 dbc.Row(
-                [dcc.Graph(
-                    figure=compatimetrics_plots.collective_cummulative_score_plot(predictions, y, model_to_compare),
-                    className='plot')
-                ])
+                    [dcc.Graph(
+                        figure=compatimetrics_plots.collective_cummulative_score_plot(predictions, y, model_to_compare),
+                        className='plot')
+                    ])
             ]
     return children
 
@@ -646,7 +663,6 @@ def update_compatimetrics_plot(predictions, model_to_compare, task, df, column):
 )
 def display_output(values, contents, df, column, task, predictions, proba_predictions):
     if contents:
-
         df = pd.DataFrame.from_dict(df).dropna()
         y = df.iloc[:, df.columns == column["name"]].squeeze()
 
@@ -702,7 +718,6 @@ def update_output(value):
         return {"display": "none"}, {"display": "none"}
 
 
-
 @callback(
     Output('ann_2', 'style'),
     Input('my-toggle-switch', 'value'),
@@ -724,9 +739,10 @@ def update_output(value):
 )
 def update_output(value):
     if value:
-        return 5*[{}]
+        return 5 * [{}]
     else:
-        return 5*[{"display": "none"}]
+        return 5 * [{"display": "none"}]
+
 
 @callback(
     Output('ann_comp_6', 'style'),
@@ -739,9 +755,10 @@ def update_output(value):
 )
 def update_output(value):
     if value:
-        return 6*[{}]
+        return 6 * [{}]
     else:
         return {"display": "none"}
+
 
 @callback(
     Output('ann_comp_12', 'style'),
@@ -753,6 +770,6 @@ def update_output(value):
 )
 def update_output(value):
     if value:
-        return 5*[{}]
+        return 5 * [{}]
     else:
-        return 5*[{"display": "none"}]
+        return 5 * [{"display": "none"}]
