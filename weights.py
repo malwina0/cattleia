@@ -6,6 +6,24 @@ from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_sc
     mean_absolute_error, mean_squared_error
 
 def slider_section(model_name, weight, i):
+    """Generate a slider section for a model's weight adjustment.
+
+    Parameters
+    ----------
+    model_name : str
+        The name of the model for which the slider section is being created.
+
+    weight : float
+        The initial weight value of the model.
+
+    i : int
+        The index or identifier of the model.
+
+    Returns
+    -------
+    dash_html_components.Div
+        A Dash Div component containing the slider section for the specified model.
+    """
     return html.Div([
         dbc.Row([
             dbc.Col(
@@ -33,6 +51,27 @@ def slider_section(model_name, weight, i):
 
 
 def calculate_metrics(predictions, y, task, weights):
+    """Calculate evaluation metrics for models' predictions.
+
+    Parameters
+    ----------
+    predictions : dict
+        A dictionary containing model names as keys and their corresponding predictions as values.
+
+    y : array-like
+        The true labels or values.
+
+    task : str {"regression", "classification"}
+        The type of task, either "regression" or "classification".
+
+    weights : array-like
+        The weights associated with the models.
+
+    Returns
+    -------
+    pandas.DataFrame
+        A DataFrame containing calculated evaluation metrics for each model.
+    """
     if task == "regression":
         mape, mae, mse = ([] for _ in range(3))
         for model_name, prediction in predictions.items():
@@ -66,9 +105,32 @@ def calculate_metrics(predictions, y, task, weights):
 
 
 def tbl_metrics(predictions, y, task, weights):
+    """Create a Dash DataTable displaying evaluation metrics for models such as MAPE, MAE, MSE for
+    regression tasks, or accuracy, precision, recall, and F1 score for classification tasks. It uses the
+    `calculate_metrics` function to compute these metrics based on provided predictions, true labels, and weights.
+
+    Parameters
+    ----------
+    predictions : dict
+        A dictionary containing model names as keys and their corresponding predictions as values.
+
+    y : array-like
+        The true labels or values.
+
+    task : str
+        The type of task, either "regression" or "classification".
+
+    weights : array-like
+        The weights associated with the models.
+
+    Returns
+    -------
+    dash_table.DataTable
+        A Dash DataTable containing evaluation metrics for each model.
+    """
     df = calculate_metrics(predictions, y, task, weights)
     return dash_table.DataTable(
-        data=df.to_dict('records'),  # convert DataFrame to format compatible with dash
+        data=df.to_dict('records'),
         columns=[
             {'name': col, 'id': col} for col in df.columns
         ],
@@ -85,6 +147,33 @@ def tbl_metrics(predictions, y, task, weights):
 
 
 def calculate_metrics_adj_ensemble(predictions, proba_predictions, y, task, weights):
+    """Calculate adjusted evaluation metrics for an ensemble model. For regression tasks,
+    it computes MSE, MAE, and MAPE for both the original and adjusted ensemble predictions based on
+    provided predictions, true labels, and weights. For classification tasks, it computes accuracy,
+    precision, recall, and F1 score for both the original and adjusted ensemble predictions.
+
+    Parameters
+    ----------
+    predictions : dict
+        A dictionary containing model names as keys and their corresponding predictions as values.
+
+    proba_predictions : list
+        A list containing probability predictions.
+
+    y : array-like
+        The true labels or values.
+
+    task : str
+        The type of task, either "regression" or "classification".
+
+    weights : array-like
+        The weights associated with the models.
+
+    Returns
+    -------
+    pandas.DataFrame
+        A DataFrame containing calculated evaluation metrics for the ensemble model, both original and adjusted.
+    """
     if task == "regression":
         mse = round(mean_squared_error(y, predictions['Ensemble']))
         mae = float('%.*g' % (3, mean_absolute_error(y, predictions['Ensemble'])))
@@ -128,9 +217,36 @@ def calculate_metrics_adj_ensemble(predictions, proba_predictions, y, task, weig
 
 
 def tbl_metrics_adj_ensemble(predictions, proba_predictions, y, task, weights):
+    """
+    Create a Dash DataTable displaying adjusted evaluation metrics for an ensemble model. It uses
+    the `calculate_metrics_adj_ensemble` function to compute these metrics based on provided predictions,
+    probability predictions, true labels, and weights.
+
+    Parameters
+    ----------
+    predictions : dict
+      A dictionary containing model names as keys and their corresponding predictions as values.
+
+    proba_predictions : list
+      A list containing probability predictions.
+
+    y : array-like
+      The true labels or values.
+
+    task : str
+      The type of task, either "regression" or "classification".
+
+    weights : array-like
+      The weights associated with the models.
+
+    Returns
+    -------
+    dash_table.DataTable
+      A Dash DataTable containing adjusted evaluation metrics for the ensemble model.
+    """
     df = calculate_metrics_adj_ensemble(predictions, proba_predictions, y, task, weights)
     return dash_table.DataTable(
-        data=df.to_dict('records'),  # convert DataFrame to format compatible with dash
+        data=df.to_dict('records'),
         columns=[
             {'name': col, 'id': col} for col in df.columns
         ],
