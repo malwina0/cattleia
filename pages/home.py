@@ -187,7 +187,6 @@ def select_columns(value):
 def update_model(contents, filename, df, column, about_us):
     model_names, weights, task, predictions, proba_predictions, weights_plots = ([] for _ in range(6))
     children = about_us
-    weights_plots = []
     if contents:
         contents = contents[0]
         filename = filename[0]
@@ -226,10 +225,6 @@ def update_model(contents, filename, df, column, about_us):
                             width=6),
                 ]),
                 dcc.Graph(figure=metrics.mae_plot(predictions, y), className="plot"),
-                dcc.Graph(figure=metrics.correlation_plot(predictions, task=task, y=y),
-                          className="plot"),
-                dcc.Graph(figure=metrics.prediction_compare_plot(predictions, y, task=task),
-                          className="plot")
             ]
         else:
             proba_predictions = get_probabilty_pred_from_model(model, X, library)
@@ -248,15 +243,10 @@ def update_model(contents, filename, df, column, about_us):
                         [dcc.Graph(figure=metrics.f1_score_plot(predictions, y), className="plot")],
                         width=6),
                 ]),
-                dcc.Graph(figure=metrics.correlation_plot(predictions, task=task, y=y),
-                          className="plot"),
-                dcc.Graph(figure=metrics.prediction_compare_plot(predictions, y, task=task),
-                          className="plot")
-            ]
             ]
 
         metrics_plots += [
-            dcc.Graph(figure=metrics.correlation_plot(model, X, library=library, task=task, y=y),
+            dcc.Graph(figure=metrics.correlation_plot(predictions, task=task, y=y),
                 className="plot"),
             html.H2("""
                 Prediction compare plot shows the differences between model predictions and true values. 
@@ -265,7 +255,7 @@ def update_model(contents, filename, df, column, about_us):
                 difference between the true and predicted value is shown.
                 """,
                 className="annotation_str", id="ann_0"),
-            dcc.Graph(figure=metrics.prediction_compare_plot(model, X, y, library=library, task=task),
+            dcc.Graph(figure=metrics.prediction_compare_plot(predictions, y, task=task),
                 className="plot")]
 
         weights_plots = []
