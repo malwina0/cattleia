@@ -1,5 +1,5 @@
 import dash
-from dash import html, dcc, Output, Input, callback, State, ALL, dash_table
+from dash import html, dcc, Output, Input, callback, State, ALL
 import dash_bootstrap_components as dbc
 import sys
 import compatimetrics_plots
@@ -7,6 +7,7 @@ import metrics
 import shutil
 import pandas as pd
 from utils import get_predictions_from_model, get_task_from_model, parse_data
+import dash_daq as daq
 from weights import slider_section, get_ensemble_names_weights, \
     tbl_metrics, tbl_metrics_adj_ensemble, calculate_metrics, calculate_metrics_adj_ensemble
 
@@ -63,6 +64,9 @@ about_us = html.Div([
 layout = html.Div([
     dcc.Store(id='csv_data', data=[], storage_type='memory'),
     dcc.Store(id='y_label_column', data=[], storage_type='memory'),
+    dcc.Store(id='metrics_plots', data=[], storage_type='memory'),
+    dcc.Store(id='compatimetric_plots', data=[], storage_type='memory'),
+    dcc.Store(id='weight_plots', data=[], storage_type='memory'),
     dcc.Store(id='predictions', data=[], storage_type='memory'),
     dcc.Store(id='model_names', data=[], storage_type='memory'),
     dcc.Store(id='task', data=[], storage_type='memory'),
@@ -83,14 +87,13 @@ layout = html.Div([
             ),
             html.Div(id='select_y_label_column'),
             html.Div(id='upload_model_section'),
+            html.Div(id="switch_annotation")
         ], className="px-3 sidepanel")
     ], id="side_menu_div"),
     # plots
     html.Div([
         dcc.Loading(id="loading-1", type="default", children=html.Div(about_us, id="plots"), className="spin"),
     ], id="plots_div"),
-    html.Div(id='model_selection'),
-    html.Div(id='compatimetrics_container', children=html.Div(id='compatimetrics_plots'))
 ])
 
 
@@ -131,7 +134,8 @@ def update_output(contents, filename):
 # part responsible for choosing target column
 @callback(
     [Output('y_label_column', 'data'),
-     Output('upload_model_section', 'children')],
+     Output('upload_model_section', 'children'),
+     Output('switch_annotation', 'children')],
     Input('column_select', 'value')
 )
 def select_columns(value):
@@ -147,14 +151,26 @@ def select_columns(value):
             multiple=True
         ),
     ])
+    switch = html.Div([
+        html.Hr(),
+        html.H5("Annotation", className="sidepanel_text", id="switch_text"),
+        daq.ToggleSwitch(
+            id='my-toggle-switch',
+            value=False,
+            color="#0072ef"
+        )
+    ])
+
     data = {'name': value}
 
-    return data, children
+    return data, children, switch
 
 
 # part responsible for adding model and showing plots
 @callback(
     Output('plots', 'children'),
+    Output('metrics_plots', 'data'),
+    Output('weight_plots', 'data'),
     Output('model_names', 'data'),
     Output('predictions', 'data'),
     Output('task', 'data'),
@@ -169,6 +185,7 @@ def update_model(contents, filename, df, column, about_us):
     task = []
     predictions = []
     children = about_us
+    weights_plots = []
     if contents:
         contents = contents[0]
         filename = filename[0]
@@ -193,21 +210,23 @@ def update_model(contents, filename, df, column, about_us):
         model_names = list(predictions.keys())
 
         if task == "regression":
-            plot_component = [
+            metrics_plots = [
                 dbc.Row([
                     dbc.Col([dcc.Graph(figure=metrics.mse_plot(model, X, y, library=library), className="plot")],
                             width=6),
                     dbc.Col([dcc.Graph(figure=metrics.mape_plot(model, X, y, library=library), className="plot")],
                             width=6),
                 ]),
+                dbc.Row([
+                    dbc.Col([dcc.Graph(figure=metrics.rmse_plot(model, X, y, library=library), className="plot")],
+                            width=6),
+                    dbc.Col([dcc.Graph(figure=metrics.r_2_plot(model, X, y, library=library), className="plot")],
+                            width=6),
+                ]),
                 dcc.Graph(figure=metrics.mae_plot(model, X, y, library=library), className="plot"),
-                dcc.Graph(figure=metrics.correlation_plot(model, X, library=library, task=task, y=y),
-                          className="plot"),
-                dcc.Graph(figure=metrics.prediction_compare_plot(model, X, y, library=library, task=task),
-                          className="plot")
             ]
         else:
-            plot_component = [
+            metrics_plots = [
                 dbc.Row([
                     dbc.Col([dcc.Graph(figure=metrics.accuracy_plot(model, X, y, library=library),
                                        className="plot")], width=6),
@@ -222,13 +241,31 @@ def update_model(contents, filename, df, column, about_us):
                         [dcc.Graph(figure=metrics.f1_score_plot(model, X, y, library=library), className="plot")],
                         width=6),
                 ]),
-                dcc.Graph(figure=metrics.correlation_plot(model, X, library=library, task=task, y=y),
-                          className="plot"),
-                dcc.Graph(figure=metrics.prediction_compare_plot(model, X, y, library=library, task=task),
-                          className="plot")
             ]
+
+        metrics_plots += [
+            dcc.Graph(figure=metrics.correlation_plot(model, X, library=library, task=task, y=y),
+                className="plot"),
+            html.H2("""
+                Prediction compare plot shows the differences between model predictions and true values. 
+                The x-axis shows observations and the y-axis shows models. For classification, the color on the 
+                plot indicates whether a given prediction is correct, while for regression tasks the percentage 
+                difference between the true and predicted value is shown.
+                """,
+                className="annotation_str", id="ann_0"),
+            dcc.Graph(figure=metrics.prediction_compare_plot(model, X, y, library=library, task=task),
+                className="plot")]
+
+        weights_plots = []
         if library != "Flaml":
-            plot_component.append(
+            weights_plots.append(
+                html.H2("""
+                Malwina tutaj dodaj swój tekst
+                """,
+                className="annotation_str", id="ann_2")
+            )
+            weights_plots.append(html.Br())
+            weights_plots.append(
                 dbc.Row([
                     dbc.Col([
                         html.Div([], style={'height': '31px'}),  # placeholder to show metrics in the same line
@@ -240,17 +277,31 @@ def update_model(contents, filename, df, column, about_us):
                              ], width=4)
                 ])
             )
-            plot_component.append(
+            weights_plots.append(
                 dbc.Row([
                     dbc.Col([tbl_metrics_adj_ensemble(model, X, y, task, library, weights)], width=4)
                 ], justify="center")
             )
 
         for plot in metrics.permutation_feature_importance_all(model, X, y, library=library, task=task):
-            plot_component.append(dcc.Graph(figure=plot, className="plot"))
+            metrics_plots.append(dcc.Graph(figure=plot, className="plot"))
 
-        for plot in metrics.partial_dependence_plots(model, X, library=library, autogluon_task=task):
-            plot_component.append(dcc.Graph(figure=plot, className="plot"))
+        metrics_plots.append(
+            html.H2("""
+                Partial Dependence isolate one specific feature's effect on the model's output while maintaining 
+                all other features at fixed values. It capturing how the model's output changes as the chosen 
+                feature varies. When the number of observations is large, in order to speed up the generation of 
+                graphs, only a subset of the data is used for calculations.
+                """,
+                className="annotation_str", id="ann_1")
+        )
+
+        if len(X) < 2000:
+            for plot in metrics.partial_dependence_plots(model, X, library=library, autogluon_task=task):
+                metrics_plots.append(dcc.Graph(figure=plot, className="plot"))
+        else:
+            for plot in metrics.partial_dependence_plots(model, X.sample(2000), library=library, autogluon_task=task):
+                metrics_plots.append(dcc.Graph(figure=plot, className="plot"))
 
         # It may be necessary to keep the model for the code with weights,
         # for now we remove the model after making charts
@@ -258,14 +309,78 @@ def update_model(contents, filename, df, column, about_us):
             shutil.rmtree('./uploaded_model')
         except FileNotFoundError:
             pass
-        children = html.Div(plot_component)
 
-    return children, model_names, predictions, task
+        metrics_plots.insert(0, html.Div([
+            dbc.Row([
+                dbc.Col([html.Button('Weights', id="weights", className="button_1")], width=2),
+                dbc.Col([html.Button('Metrics', id="metrics", className="button_1")], width=2),
+                dbc.Col([html.Button('Compatimetrics', id="compatimetrics", className="button_1")], width=2),
+            ], justify="center"),
+        ], style={"display": "block", "position": "sticky"}))
+        weights_plots.insert(0, html.Div([
+            dbc.Row([
+                dbc.Col([html.Button('Weights', id="weights", className="button_1")], width=2),
+                dbc.Col([html.Button('Metrics', id="metrics", className="button_1")], width=2),
+                dbc.Col([html.Button('Compatimetrics', id="compatimetrics", className="button_1")], width=2),
+            ], justify="center"),
+        ], style={"display": "block", "position": "sticky"}))
+
+        weights_plots = html.Div(weights_plots)
+        children = html.Div(metrics_plots)
+
+    return children, children, weights_plots, model_names, predictions, task
+
+
+# callbacks for buttons to change plots categories
+@callback(
+    Output('plots', 'children', allow_duplicate=True),
+    Input('weights', 'n_clicks'),
+    State('weight_plots', 'data'),
+    State('plots', 'children'),
+    prevent_initial_call=True
+)
+def show_weights(n_clicks, data, children):
+    if n_clicks is None:
+        return children
+    if n_clicks >= 1:
+        return data
+    return children
+
+@callback(
+    Output('plots', 'children', allow_duplicate=True),
+    Input('metrics', 'n_clicks'),
+    State('metrics_plots', 'data'),
+    State('plots', 'children'),
+    prevent_initial_call=True
+)
+def show_metrics(n_clicks, data, children):
+    if n_clicks is None:
+        return children
+    if n_clicks >= 1:
+        return data
+    return children
 
 
 @callback(
-    Output('model_selection', 'children'),
-    Input('model_names', 'data')
+    Output('plots', 'children', allow_duplicate=True),
+    Input('compatimetrics', 'n_clicks'),
+    State('compatimetric_plots', 'data'),
+    State('plots', 'children'),
+    prevent_initial_call=True
+)
+def show_compatimetrics(n_clicks, data, children):
+    if n_clicks is None:
+        return children
+    if n_clicks >= 1:
+        return data
+    return children
+
+
+# callback display compatimetric part
+@callback(
+    Output('compatimetric_plots', 'data', allow_duplicate=True),
+    Input('model_names', 'data'),
+    prevent_initial_call=True
 )
 def update_model_selector(model_names):
     children = []
@@ -274,17 +389,27 @@ def update_model_selector(model_names):
         dropdown = dcc.Dropdown(id='model_select', className="dropdown-class",
                                 options=[{'label': x, 'value': x} for x in model_names],
                                 value=model_names[0], clearable=False)
-        children = html.Div([title, dropdown])
+        elements = [title, dropdown]
+        elements.insert(0, html.Div([
+            dbc.Row([
+                dbc.Col([html.Button('Weights', id="weights", className="button_1")], width=2),
+                dbc.Col([html.Button('Metrics', id="metrics", className="button_1")], width=2),
+                dbc.Col([html.Button('Compatimetrics', id="compatimetrics", className="button_1")], width=2),
+            ], justify="center"),
+        ], style={"display": "block", "position": "sticky"}))
+        elements.append(html.Div(id='compatimetrics_container', children=html.Div(id='compatimetrics_plots')))
+        children = html.Div(elements)
     return children
 
 
+# callback to update compatimetric plots
 @callback(
     Output('compatimetrics_plots', 'children'),
     State('predictions', 'data'),
     Input('model_select', 'value'),
     State('task', 'data'),
     State('csv_data', 'data'),
-    State('y_label_column', 'data')
+    State('y_label_column', 'data'),
 )
 def update_compatimetrics_plot(predictions, model_to_compare, task, df, column):
     children = []
@@ -334,6 +459,15 @@ def update_compatimetrics_plot(predictions, model_to_compare, task, df, column):
                 dbc.Col([dcc.Graph(figure=compatimetrics_plots.rmsd_matrix(predictions), className="plot")],
                         width=6),
                 ]),
+
+                html.H2("""
+                    Tutaj miejsce dla Ciebie Jakub aby dodać adnotacje, trzeba pamiętać o tym
+                    aby każda annotacja miała unikalne ID, oraz miała odpowiedni callback,
+                    Jeśli adnotacje będą się pojawiać zawsze razem, np tutaj w regresji, mogą mieć jeden callback
+                    z odpowiednią ilością outputów 
+                    """,
+                    className="annotation_str", id="ann_3"),
+
                 dbc.Row([
                     dbc.Col([dcc.Graph(figure=compatimetrics_plots.ar_matrix(predictions, y), className="plot")],
                             width=6),
@@ -395,6 +529,7 @@ def update_compatimetrics_plot(predictions, model_to_compare, task, df, column):
     return children
 
 
+# callback to changing model weights
 @callback(
     Output('metrics-table', 'data', allow_duplicate=True),
     Output('adj_weights-table', 'data'),
@@ -453,3 +588,39 @@ dash.clientside_callback(
     Input('upload_csv_data', 'contents'),
     prevent_initial_call=False
 )
+
+
+# callbacks to display annotations
+@callback(
+    Output('ann_1', 'style'),
+    Output('ann_0', 'style'),
+    Input('my-toggle-switch', 'value'),
+)
+def update_output(value):
+    if value:
+        return {}, {}
+    else:
+        return {"display": "none"}, {"display": "none"}
+
+
+
+@callback(
+    Output('ann_2', 'style'),
+    Input('my-toggle-switch', 'value'),
+)
+def update_output(value):
+    if value:
+        return {}
+    else:
+        return {"display": "none"}
+
+
+@callback(
+    Output('ann_3', 'style'),
+    Input('my-toggle-switch', 'value'),
+)
+def update_output(value):
+    if value:
+        return {}
+    else:
+        return {"display": "none"}
