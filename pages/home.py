@@ -187,6 +187,7 @@ def select_columns(value):
 def update_model(contents, filename, df, column, about_us):
     model_names, weights, task, predictions, proba_predictions, weights_plots = ([] for _ in range(6))
     children = about_us
+    weights_plots = []
     if contents:
         contents = contents[0]
         filename = filename[0]
@@ -252,6 +253,21 @@ def update_model(contents, filename, df, column, about_us):
                 dcc.Graph(figure=metrics.prediction_compare_plot(predictions, y, task=task),
                           className="plot")
             ]
+            ]
+
+        metrics_plots += [
+            dcc.Graph(figure=metrics.correlation_plot(model, X, library=library, task=task, y=y),
+                className="plot"),
+            html.H2("""
+                Prediction compare plot shows the differences between model predictions and true values. 
+                The x-axis shows observations and the y-axis shows models. For classification, the color on the 
+                plot indicates whether a given prediction is correct, while for regression tasks the percentage 
+                difference between the true and predicted value is shown.
+                """,
+                className="annotation_str", id="ann_0"),
+            dcc.Graph(figure=metrics.prediction_compare_plot(model, X, y, library=library, task=task),
+                className="plot")]
+
         weights_plots = []
         if library != "Flaml":
             weights_plots.append(
@@ -286,13 +302,18 @@ def update_model(contents, filename, df, column, about_us):
             html.H2("""
                 Partial Dependence isolate one specific feature's effect on the model's output while maintaining 
                 all other features at fixed values. It capturing how the model's output changes as the chosen 
-                feature varies. 
+                feature varies. When the number of observations is large, in order to speed up the generation of 
+                graphs, only a subset of the data is used for calculations.
                 """,
                 className="annotation_str", id="ann_1")
         )
 
-        for plot in metrics.partial_dependence_plots(model, X, library=library, autogluon_task=task):
-            metrics_plots.append(dcc.Graph(figure=plot, className="plot"))
+        if len(X) < 2000:
+            for plot in metrics.partial_dependence_plots(model, X, library=library, autogluon_task=task):
+                metrics_plots.append(dcc.Graph(figure=plot, className="plot"))
+        else:
+            for plot in metrics.partial_dependence_plots(model, X.sample(2000), library=library, autogluon_task=task):
+                metrics_plots.append(dcc.Graph(figure=plot, className="plot"))
 
         # It may be necessary to keep the model for the code with weights,
         # for now we remove the model after making charts
@@ -565,15 +586,7 @@ def update_compatimetrics_plot(predictions, model_to_compare, task, df, column):
                 dbc.Col([dcc.Graph(figure=compatimetrics_plots.incompatibility_matrix(predictions),
                                    className="plot")],
                         width=6),
-            ]),
-            html.H3("""
-                    Matrix below on the right shows value of Average Collective Score which is a metric that 
-                    sums number of doubly correct predictions and number of disagreements with coefficient 0.5 and
-                    then dividing it by number of observations. It measures joined performance with consideration
-                    of double correct prediction and disagreements.
-                   """,
-                        className="annotation_str", id="ann_comp_13"),
-                dbc.Row([
+            ]), dbc.Row([
                 dbc.Col([dcc.Graph(figure=compatimetrics_plots.acs_matrix(predictions, y),
                                    className="plot")],
                         width=6),
@@ -689,13 +702,15 @@ dash.clientside_callback(
 # callbacks to display annotations
 @callback(
     Output('ann_1', 'style'),
+    Output('ann_0', 'style'),
     Input('my-toggle-switch', 'value'),
 )
 def update_output(value):
     if value:
-        return {}
+        return {}, {}
     else:
-        return {"display": "none"}
+        return {"display": "none"}, {"display": "none"}
+
 
 
 @callback(
@@ -736,7 +751,7 @@ def update_output(value):
     if value:
         return 6*[{}]
     else:
-        return 6*[{"display": "none"}]
+        return {"display": "none"}
 
 @callback(
     Output('ann_comp_12', 'style'),
