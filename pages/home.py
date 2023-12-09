@@ -161,7 +161,7 @@ def select_columns(value):
         html.H5("Annotation", className="sidepanel_text", id="switch_text"),
         daq.ToggleSwitch(
             id='my-toggle-switch',
-            value=False,
+            value=True,
             color="#0072ef"
         )
     ])
@@ -265,10 +265,18 @@ def update_model(contents, filename, df, column, about_us):
             weights_plots = []
             if library != "Flaml":
                 weights_plots.append(
-                    html.H2("""
-                    Malwina tutaj dodaj swój tekst
-                    """,
-                            className="annotation_str", id="ann_2")
+                    html.H2(
+                        html.P(["""
+                        Below on the left are sliders through which you can change the weight value for each of the models 
+                        included in the ensemble. By default, they are set to those selected by the AutoML package. 
+                        You can also return to the default values by clicking the "Reset to default" button.""", html.Br(),
+                        """On the right is a table of weight values and task-appropriate metrics for each model.""", html.Br(),
+                        """Below in the table the same metrics are shown for the ensemble model - for the original weights,
+                        i.e. those created by the AutoML package, and custom, i.e. for the model with weights that we 
+                        set ourselves. Depending on the change, the cells change color - they are green for a better metric 
+                        and red if the result is worse.
+                        """]),
+                    className="annotation_str", id="ann_2")
                 )
                 weights_plots.append(html.Br())
                 weights_plots.append(
@@ -306,7 +314,8 @@ def update_model(contents, filename, df, column, about_us):
                 for plot in metrics.partial_dependence_plots(model, X, library=library, autogluon_task=task):
                     metrics_plots.append(dcc.Graph(figure=plot, className="plot"))
             else:
-                for plot in metrics.partial_dependence_plots(model, X.sample(2000), library=library, autogluon_task=task):
+                for plot in metrics.partial_dependence_plots(model, X.sample(2000), library=library,
+                                                             autogluon_task=task):
                     metrics_plots.append(dcc.Graph(figure=plot, className="plot"))
 
             # It may be necessary to keep the model for the code with weights,
@@ -481,11 +490,11 @@ def update_compatimetrics_plot(predictions, model_to_compare, task, df, column):
                     dbc.Col([dcc.Graph(
                         figure=compatimetrics_plots.disagreement_ratio_plot(predictions, y, model_to_compare),
                         className="plot")],
-                            width=6),
+                        width=6),
                     dbc.Col([dcc.Graph(
                         figure=compatimetrics_plots.conjunctive_metrics_plot(predictions, y, model_to_compare),
                         className="plot")],
-                            width=6),
+                        width=6),
                 ]),
                 html.H3("""
                        Plot below is showing ratio of predictions on different level of correctness. Doubly correct
@@ -497,7 +506,7 @@ def update_compatimetrics_plot(predictions, model_to_compare, task, df, column):
                     [dcc.Graph(
                         figure=compatimetrics_plots.prediction_correctness_plot(predictions, y, model_to_compare),
                         className='plot')
-                     ]),
+                    ]),
                 html.H3("""
                         On the plot below one can observe the progess of incresing average collective score 
                         through the whole data set. This plot can be helpful when searching for areas of data set
@@ -508,7 +517,7 @@ def update_compatimetrics_plot(predictions, model_to_compare, task, df, column):
                     [dcc.Graph(
                         figure=compatimetrics_plots.collective_cummulative_score_plot(predictions, y, model_to_compare),
                         className='plot')
-                     ]),
+                    ]),
             ]
         elif task == 'regression':
             children = [dbc.Row([
