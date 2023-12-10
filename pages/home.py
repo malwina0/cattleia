@@ -266,14 +266,17 @@ def update_model(contents, filename, df, column, about_us):
                 weights_plots.append(
                     html.H2(
                         html.P(["""
-                        Below on the left are sliders through which you can change the weight value for each of the models 
-                        included in the ensemble. By default, they are set to those selected by the AutoML package. 
-                        You can also return to the default values by clicking the "Reset to default" button.""", html.Br(),
-                        """On the right is a table of weight values and task-appropriate metrics for each model.""", html.Br(),
-                        """Below in the table the same metrics are shown for the ensemble model - for the original weights,
-                        i.e. those created by the AutoML package, and custom, i.e. for the model with weights that we 
-                        set ourselves. Depending on the change, the cells change color - they are green for a better metric 
-                        and red if the result is worse.
+                        Below on the left, sliders are available for modifying the weight value assigned to each model
+                         within the ensemble. Initially, these values are set to the elected by the AutoML package. 
+                         To revert to these default values, click the "Reset weights" button.""", html.Br(),
+                        """On the right, a table displays weight values alongside task-specific metrics for each 
+                        individual model. Editing the cells within the "Weights" column allows for direct modification 
+                        of a model's weight. Any adjustments made will proportionally modify other weights to ensure 
+                        their sum remains at 1.""", html.Br(),
+                        """Below in the table, metrics for both the ensemble model's original weights (set by AutoML) 
+                        and custom weights (set manually) are presented side by side. Changes in metrics are visually 
+                        indicated: cells turn green for improved metrics and red if the changes result in inferior 
+                        performance.
                         """]),
                     className="annotation_str", id="ann_2")
                 )
