@@ -2,14 +2,16 @@
     align-items: center;
     text-align: right;
     background-color: #3a3e4a;
-    height: 20px;
+    height: 22px;
     border-radius: 0;
+    border: 2px solid #1e1e1e;
 }
 
 .weight-slider .rc-slider-track {
     background-color: #ffaef4;
     border-radius: 0;
-    height: 20px;
+    height: 22px;
+    border: 2px solid #1e1e1e;
 }
 
 .weight-slider .rc-slider-handle {

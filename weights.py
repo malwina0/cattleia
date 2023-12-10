@@ -28,7 +28,7 @@ def slider_section(model_name, weight, i):
                 ),
                 width=9
             )
-        ], style={'height': '30px'})
+        ], style={'height': '30.3px'})
     ], style={'display': 'inline'})
 
 
@@ -41,7 +41,7 @@ def calculate_metrics(predictions, y, task, weights):
                 mae.append(float('%.*g' % (3, mean_absolute_error(y, prediction))))
                 mse.append(round(mean_squared_error(y, prediction)))
         data = {
-            'weight': weights,
+            'Weight': weights,
             'MAPE': mape,
             'MAE': mae,
             'MSE': mse
@@ -72,13 +72,20 @@ def tbl_metrics(predictions, y, task, weights):
         columns=[
             {'name': col, 'id': col} for col in df.columns
         ],
-        style_table={'backgroundColor': '#2c2f38', 'border': '1px solid #2c2f38'},
+        style_table={
+            'backgroundColor': '#3a3e4a',
+            'border': '3px solid #1e1e1e',
+        },
         style_cell={
             'textAlign': 'center',
             'color': 'white',
-            'border': '1px solid #2c2f38',
-            'backgroundColor': '#1e1e1e',
+            'border': '1.5px solid #1e1e1e',
+            'backgroundColor': '#3a3e4a',
             'height': '30px'
+        },
+        style_header={
+            'fontWeight': 'bold',
+            'color': '#ffc4f7'
         },
         id='metrics-table'
     )
@@ -95,7 +102,7 @@ def calculate_metrics_adj_ensemble(predictions, proba_predictions, y, task, weig
         mae_adj = float('%.*g' % (3, mean_absolute_error(y, y_adj)))
         mape_adj = float('%.*g' % (3, mean_absolute_percentage_error(y, y_adj)))
         df_metrics = pd.DataFrame({
-            'metric': ['MSE', 'MAE', 'MAPE'],
+            'Metric': ['MSE', 'MAE', 'MAPE'],
             'Original model': [mse, mae, mape],
             'Adjusted model': [mse_adj, mae_adj, mape_adj]
         })
@@ -129,18 +136,62 @@ def calculate_metrics_adj_ensemble(predictions, proba_predictions, y, task, weig
 
 def tbl_metrics_adj_ensemble(predictions, proba_predictions, y, task, weights):
     df = calculate_metrics_adj_ensemble(predictions, proba_predictions, y, task, weights)
+    style_data_conditional = []
+    if task == 'regression':
+        style_data_conditional.extend([
+            {
+                'if': {
+                    'filter_query': '{Original model} > {Adjusted model}',
+                    'column_id': 'Adjusted model'
+                },
+                'backgroundColor': '#2b5c35',
+            },
+            {
+                'if': {
+                    'filter_query': '{Original model} < {Adjusted model}',
+                    'column_id': 'Adjusted model'
+                },
+                'backgroundColor': '#662f2f',
+            }
+        ])
+    else:
+        style_data_conditional.extend([
+            {
+                'if': {
+                    'filter_query': '{Original model} > {Adjusted model}',
+                    'column_id': 'Adjusted model'
+                },
+                'backgroundColor': '#662f2f',
+            },
+            {
+                'if': {
+                    'filter_query': '{Original model} < {Adjusted model}',
+                    'column_id': 'Adjusted model'
+                },
+                'backgroundColor': '#2b5c35',
+            }
+        ])
     return dash_table.DataTable(
-        data=df.to_dict('records'),  # convert DataFrame to format compatible with dash
+        data=df.to_dict('records'),
         columns=[
             {'name': col, 'id': col} for col in df.columns
         ],
-        style_table={'backgroundColor': '#2c2f38', 'border': '2px solid #2c2f38'},
+        style_table={
+            'backgroundColor': '#3a3e4a',
+            'border': '3px solid #1e1e1e',
+            'marginTop': '30px'
+        },
         style_cell={
             'textAlign': 'center',
             'color': 'white',
-            'border': '2px solid #2c2f38',
-            'backgroundColor': '#1e1e1e',
+            'border': '1.5px solid #1e1e1e',
+            'backgroundColor': '#3a3e4a',
             'height': '30px'
         },
+        style_header={
+            'fontWeight': 'bold',
+            'color': '#ffc4f7'
+        },
+        style_data_conditional=style_data_conditional,
         id='adj_weights-table'
     )
