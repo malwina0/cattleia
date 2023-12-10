@@ -2,8 +2,8 @@ import numpy as np
 import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
-from metrics import empty_fig
-from compatimetrics import mean_squared_difference, \
+from components.metrics import empty_fig
+from components.compatimetrics import mean_squared_difference, \
     root_mean_squared_difference, strong_disagreement_ratio, agreement_ratio, conjunctive_rmse, \
     uniformity, disagreement_ratio, disagreement_postive_ratio, correctness_counter, \
     conjunctive_accuracy, conjunctive_precission, conjunctive_recall, average_collective_score, \

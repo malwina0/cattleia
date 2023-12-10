@@ -2,14 +2,13 @@ import dash
 from dash import html, dcc, Output, Input, callback, State, ALL
 import dash_bootstrap_components as dbc
 import sys
-import compatimetrics_plots
-import metrics
+from components import compatimetrics_plots, metrics
 import shutil
 import pandas as pd
-from utils import get_predictions_from_model, get_task_from_model, parse_data, parse_model, \
+from utils.utils import get_predictions_from_model, get_task_from_model, parse_data, parse_model, \
     get_probability_pred_from_model, get_ensemble_weights
 import dash_daq as daq
-from weights import slider_section, \
+from components.weights import slider_section, \
     tbl_metrics, tbl_metrics_adj_ensemble, calculate_metrics, calculate_metrics_adj_ensemble
 
 sys.path.append("..")
