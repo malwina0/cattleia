@@ -218,6 +218,14 @@ button:hover::before {
  width: 100%;
 }
 
+#update-weights-button {
+    padding: 5px 10px;
+    box-shadow: none;
+    /*color: #ffc4f7;*/
+    border: 1px solid #1e1e1e;
+    background-color: #3a3e4a;
+}
+
 .row{
     --bs-gutter-x: 0 !important;
 }

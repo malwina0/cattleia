@@ -179,7 +179,7 @@ def tbl_metrics_adj_ensemble(predictions, proba_predictions, y, task, weights):
         style_table={
             'backgroundColor': '#3a3e4a',
             'border': '3px solid #1e1e1e',
-            'marginTop': '30px'
+            'marginTop': '10px'
         },
         style_cell={
             'textAlign': 'center',

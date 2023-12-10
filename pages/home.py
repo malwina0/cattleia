@@ -2,6 +2,9 @@ import dash
 from dash import html, dcc, Output, Input, callback, State, ALL
 import dash_bootstrap_components as dbc
 import sys
+
+from dash.exceptions import PreventUpdate
+
 import compatimetrics_plots
 import metrics
 import shutil
@@ -274,7 +277,8 @@ def update_model(contents, filename, df, column, about_us):
                             html.Div([], style={'height': '31px'}),  # placeholder to show metrics in the same line
                             html.Div(
                                 [slider_section(model_name, weights[i], i) for i, model_name in enumerate(base_models)],
-                                style={'color': 'white'})
+                                style={'color': 'white'}),
+                            html.Button('Reset weights', id='update-weights-button', n_clicks=0)
                         ], width=7),
                         dbc.Col([tbl_metrics(predictions, y, task, weights)
                                  ], width=4)
@@ -636,6 +640,17 @@ def update_compatimetrics_plot(predictions, model_to_compare, task, df, column):
             ]
     return children
 
+@callback(
+    Output({"type": "weight_slider", "index": ALL}, 'value'),
+    Input('update-weights-button', 'n_clicks'),
+    State('weights_list', 'data'),
+    prevent_initial_call=True
+)
+def reset_sliders(n_clicks, values):
+    if n_clicks > 0:
+        return values
+    else:
+        raise PreventUpdate
 
 # callback to changing model weights
 @callback(
