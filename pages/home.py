@@ -9,7 +9,8 @@ import compatimetrics_plots
 import metrics
 import shutil
 import pandas as pd
-from utils import get_predictions_from_model, get_task_from_model, parse_data, get_probabilty_pred_from_model, get_ensemble_weights
+from utils import get_predictions_from_model, get_task_from_model, parse_data, get_probabilty_pred_from_model, \
+    get_ensemble_weights
 import dash_daq as daq
 from weights import slider_section, \
     tbl_metrics, tbl_metrics_adj_ensemble, calculate_metrics, calculate_metrics_adj_ensemble
@@ -280,7 +281,8 @@ def update_model(contents, filename, df, column, about_us):
                                 style={'color': 'white'}),
                             html.Button('Reset weights', id='update-weights-button', n_clicks=0)
                         ], width=7),
-                        dbc.Col([tbl_metrics(predictions, y, task, weights)
+                        dbc.Col([tbl_metrics(predictions, y, task, weights),
+                                 html.Div(id='weight-update-info', style={'color': 'white'})
                                  ], width=4)
                     ]),
                     dbc.Row([
@@ -302,12 +304,12 @@ def update_model(contents, filename, df, column, about_us):
                 className="annotation_str", id="ann_1")
         )
 
-        # if len(X) < 2000:
-        #     for plot in metrics.partial_dependence_plots(model, X, library=library, autogluon_task=task):
-        #         metrics_plots.append(dcc.Graph(figure=plot, className="plot"))
-        # else:
-        #     for plot in metrics.partial_dependence_plots(model, X.sample(2000), library=library, autogluon_task=task):
-        #         metrics_plots.append(dcc.Graph(figure=plot, className="plot"))
+        if len(X) < 2000:
+            for plot in metrics.partial_dependence_plots(model, X, library=library, autogluon_task=task):
+                metrics_plots.append(dcc.Graph(figure=plot, className="plot"))
+        else:
+            for plot in metrics.partial_dependence_plots(model, X.sample(2000), library=library, autogluon_task=task):
+                metrics_plots.append(dcc.Graph(figure=plot, className="plot"))
 
         # It may be necessary to keep the model for the code with weights,
         # for now we remove the model after making charts
@@ -335,6 +337,7 @@ def update_model(contents, filename, df, column, about_us):
         children = html.Div(metrics_plots)
 
     return children, children, weights_plots, model_names, predictions, task, proba_predictions, weights
+
 
 #
 # callback(
@@ -402,7 +405,8 @@ def update_model_selector(model_names):
         model_names.pop(0)
     children = []
     if model_names:
-        title = html.H4("Choose model for compatimetrics analysis:", className="compatimetrics_title", style={'color': 'white'})
+        title = html.H4("Choose model for compatimetrics analysis:", className="compatimetrics_title",
+                        style={'color': 'white'})
         dropdown = dcc.Dropdown(id='model_select', className="dropdown-class",
                                 options=[{'label': x, 'value': x} for x in model_names],
                                 value=model_names[0], clearable=False)
@@ -443,19 +447,19 @@ def update_compatimetrics_plot(predictions, model_to_compare, task, df, column):
                        """,
                         className="annotation_str", id="ann_comp_6"),
                 dbc.Row([
-                dbc.Col([dcc.Graph(figure=compatimetrics_plots.uniformity_matrix(predictions),
-                                   className="plot")],
-                        width=6),
-                dbc.Col([dcc.Graph(figure=compatimetrics_plots.incompatibility_matrix(predictions),
-                                   className="plot")],
-                        width=6),
-                html.H3("""
+                    dbc.Col([dcc.Graph(figure=compatimetrics_plots.uniformity_matrix(predictions),
+                                       className="plot")],
+                            width=6),
+                    dbc.Col([dcc.Graph(figure=compatimetrics_plots.incompatibility_matrix(predictions),
+                                       className="plot")],
+                            width=6),
+                    html.H3("""
                     Matrix below on the right shows value of Average Collective Score which is a metric that 
                     sums number of doubly correct predictions and number of disagreements with coefficient 0.5 and
                     then dividing it by number of observations. It measures joined performance with consideration
                     of double correct prediction and disagreements.
                    """,
-                        className="annotation_str", id="ann_comp_7"),
+                            className="annotation_str", id="ann_comp_7"),
                 ]),
                 dbc.Row([
                     dbc.Col([dcc.Graph(figure=compatimetrics_plots.acs_matrix(predictions, y),
@@ -481,11 +485,13 @@ def update_compatimetrics_plot(predictions, model_to_compare, task, df, column):
                     ], width=6)
                 ]),
                 dbc.Row([
-                    dbc.Col([dcc.Graph(figure=compatimetrics_plots.disagreement_ratio_plot(predictions, y, model_to_compare),
-                                       className="plot")],
+                    dbc.Col([dcc.Graph(
+                        figure=compatimetrics_plots.disagreement_ratio_plot(predictions, y, model_to_compare),
+                        className="plot")],
                             width=6),
-                    dbc.Col([dcc.Graph(figure=compatimetrics_plots.conjunctive_metrics_plot(predictions, y, model_to_compare),
-                                       className="plot")],
+                    dbc.Col([dcc.Graph(
+                        figure=compatimetrics_plots.conjunctive_metrics_plot(predictions, y, model_to_compare),
+                        className="plot")],
                             width=6),
                 ]),
                 html.H3("""
@@ -495,9 +501,10 @@ def update_compatimetrics_plot(predictions, model_to_compare, task, df, column):
                        """,
                         className="annotation_str", id="ann_comp_10"),
                 dbc.Row(
-                    [dcc.Graph(figure=compatimetrics_plots.prediction_correctness_plot(predictions, y, model_to_compare),
-                               className='plot')
-                ]),
+                    [dcc.Graph(
+                        figure=compatimetrics_plots.prediction_correctness_plot(predictions, y, model_to_compare),
+                        className='plot')
+                     ]),
                 html.H3("""
                         On the plot below one can observe the progess of incresing average collective score 
                         through the whole data set. This plot can be helpful when searching for areas of data set
@@ -505,9 +512,10 @@ def update_compatimetrics_plot(predictions, model_to_compare, task, df, column):
                        """,
                         className="annotation_str", id="ann_comp_11"),
                 dbc.Row(
-                    [dcc.Graph(figure=compatimetrics_plots.collective_cummulative_score_plot(predictions, y, model_to_compare),
-                               className='plot')
-                ]),
+                    [dcc.Graph(
+                        figure=compatimetrics_plots.collective_cummulative_score_plot(predictions, y, model_to_compare),
+                        className='plot')
+                     ]),
             ]
         elif task == 'regression':
             children = [dbc.Row([
@@ -537,9 +545,11 @@ def update_compatimetrics_plot(predictions, model_to_compare, task, df, column):
                             width=6),
                 ]),
                 dbc.Row([
-                    dbc.Col([dcc.Graph(figure=compatimetrics_plots.msd_comparison(predictions, model_to_compare), className="plot")],
+                    dbc.Col([dcc.Graph(figure=compatimetrics_plots.msd_comparison(predictions, model_to_compare),
+                                       className="plot")],
                             width=6),
-                    dbc.Col([dcc.Graph(figure=compatimetrics_plots.rmsd_comparison(predictions, model_to_compare), className="plot")],
+                    dbc.Col([dcc.Graph(figure=compatimetrics_plots.rmsd_comparison(predictions, model_to_compare),
+                                       className="plot")],
                             width=6),
                 ]),
                 html.H3("""
@@ -552,14 +562,15 @@ def update_compatimetrics_plot(predictions, model_to_compare, task, df, column):
                     [dcc.Graph(
                         figure=compatimetrics_plots.conjunctive_rmse_plot(predictions, y, model_to_compare),
                         className='plot')
-                     ]),
+                    ]),
                 html.H3("""
                         Plot below shows actual difference of predictions between chosen model 
                         and other models in ensemble through the whole data set.
                         """,
                         className="annotation_str", id="ann_comp_4"),
                 dbc.Row([
-                    dcc.Graph(figure=compatimetrics_plots.difference_distribution(predictions, model_to_compare), className="plot")
+                    dcc.Graph(figure=compatimetrics_plots.difference_distribution(predictions, model_to_compare),
+                              className="plot")
                 ]),
                 html.H3("""
                             Plot below shows distribution of absolute prediction differences of chosen model and 
@@ -569,7 +580,8 @@ def update_compatimetrics_plot(predictions, model_to_compare, task, df, column):
                             """,
                         className="annotation_str", id="ann_comp_5"),
                 dbc.Row([
-                    dcc.Graph(figure=compatimetrics_plots.difference_boxplot(predictions, y, model_to_compare), className="plot")
+                    dcc.Graph(figure=compatimetrics_plots.difference_boxplot(predictions, y, model_to_compare),
+                              className="plot")
                 ])
             ]
         else:
@@ -580,20 +592,20 @@ def update_compatimetrics_plot(predictions, model_to_compare, task, df, column):
                        """,
                         className="annotation_str", id="ann_comp_12"),
                 dbc.Row([
-                dbc.Col([dcc.Graph(figure=compatimetrics_plots.uniformity_matrix(predictions),
-                                   className="plot")],
-                        width=6),
-                dbc.Col([dcc.Graph(figure=compatimetrics_plots.incompatibility_matrix(predictions),
-                                   className="plot")],
-                        width=6),
-            ]), dbc.Row([
-                dbc.Col([dcc.Graph(figure=compatimetrics_plots.acs_matrix(predictions, y),
-                                   className="plot")],
-                        width=6),
-                dbc.Col([dcc.Graph(figure=compatimetrics_plots.conjuntive_accuracy_matrix(predictions, y),
-                                   className="plot")],
-                        width=6),
-            ]),
+                    dbc.Col([dcc.Graph(figure=compatimetrics_plots.uniformity_matrix(predictions),
+                                       className="plot")],
+                            width=6),
+                    dbc.Col([dcc.Graph(figure=compatimetrics_plots.incompatibility_matrix(predictions),
+                                       className="plot")],
+                            width=6),
+                ]), dbc.Row([
+                    dbc.Col([dcc.Graph(figure=compatimetrics_plots.acs_matrix(predictions, y),
+                                       className="plot")],
+                            width=6),
+                    dbc.Col([dcc.Graph(figure=compatimetrics_plots.conjuntive_accuracy_matrix(predictions, y),
+                                       className="plot")],
+                            width=6),
+                ]),
                 html.H3("""
                         Conjunctive metrics are analogous to standard evaluation metrics, but instead of comparing target
                         variable with one prediction vector, we use two prediction vectors at the same time. Simply we
@@ -606,15 +618,17 @@ def update_compatimetrics_plot(predictions, model_to_compare, task, df, column):
                                    """,
                         className="annotation_str", id="ann_comp_14"),
                 dbc.Row([
-                dbc.Col([dcc.Graph(
-                    figure=compatimetrics_plots.conjunctive_precision_multiclass_plot(predictions, y, model_to_compare),
-                    className="plot")],
-                    width=6),
-                dbc.Col([dcc.Graph(
-                    figure=compatimetrics_plots.conjunctive_recall_multiclass_plot(predictions, y, model_to_compare),
-                    className="plot")],
-                    width=6),
-            ]),
+                    dbc.Col([dcc.Graph(
+                        figure=compatimetrics_plots.conjunctive_precision_multiclass_plot(predictions, y,
+                                                                                          model_to_compare),
+                        className="plot")],
+                        width=6),
+                    dbc.Col([dcc.Graph(
+                        figure=compatimetrics_plots.conjunctive_recall_multiclass_plot(predictions, y,
+                                                                                       model_to_compare),
+                        className="plot")],
+                        width=6),
+                ]),
                 html.H3("""
                      Plot below is showing ratio of predictions on different level of correctness. Doubly correct
                      prediction occurs when two models predicted observation right, disagreement when one of models
@@ -622,10 +636,10 @@ def update_compatimetrics_plot(predictions, model_to_compare, task, df, column):
                      """,
                         className="annotation_str", id="ann_comp_15"),
                 dbc.Row(
-                [dcc.Graph(
-                    figure=compatimetrics_plots.prediction_correctness_plot(predictions, y, model_to_compare),
-                    className='plot')
-                ]),
+                    [dcc.Graph(
+                        figure=compatimetrics_plots.prediction_correctness_plot(predictions, y, model_to_compare),
+                        className='plot')
+                    ]),
                 html.H3("""
                       On the plot below one can observe the progress of increasing average collective score 
                       through the whole data set. This plot can be helpful when searching for areas of data set
@@ -633,15 +647,17 @@ def update_compatimetrics_plot(predictions, model_to_compare, task, df, column):
                      """,
                         className="annotation_str", id="ann_comp_16"),
                 dbc.Row(
-                [dcc.Graph(
-                    figure=compatimetrics_plots.collective_cummulative_score_plot(predictions, y, model_to_compare),
-                    className='plot')
-                ])
+                    [dcc.Graph(
+                        figure=compatimetrics_plots.collective_cummulative_score_plot(predictions, y, model_to_compare),
+                        className='plot')
+                    ])
             ]
     return children
 
+
+# callback to reset weights values to default
 @callback(
-    Output({"type": "weight_slider", "index": ALL}, 'value'),
+    Output({"type": "weight_slider", "index": ALL}, 'value', allow_duplicate=True),
     Input('update-weights-button', 'n_clicks'),
     State('weights_list', 'data'),
     prevent_initial_call=True
@@ -651,6 +667,61 @@ def reset_sliders(n_clicks, values):
         return values
     else:
         raise PreventUpdate
+
+
+@callback(
+    Output({"type": "weight_slider", "index": ALL}, 'value', allow_duplicate=True),
+    Output('weight-update-info', 'children'),
+    Output('metrics-table', 'data'),
+    Input('metrics-table', 'data'),
+    prevent_initial_call=True
+)
+def update_slider_with_table_weights(table_data):
+    is_updated = [isinstance(row['Weight'], str) for row in table_data]
+    index = is_updated.index(True) if True in is_updated else None
+    updated_table_data = table_data.copy()
+
+    def is_float(value):
+        try:
+            float(value)
+            return True
+        except ValueError:
+            return False
+
+    if index is not None:
+        non_float_values = [row['Weight'] for row in table_data if not is_float(row['Weight'])]
+        if not non_float_values:
+            values = [float(row['Weight']) for row in table_data]
+            updated_value = values[index]
+            if updated_value > 1:
+                info = html.Div([f"Please ensure values are within the range of [0, 1]. The provided value of "
+                                 f"{updated_value} has been adjusted to 1."])
+                updated_value = 1
+            elif updated_value < 0:
+                info = html.Div([f"Please ensure values are within the range of [0, 1]. The provided value of "
+                                 f"{updated_value} has been adjusted to 0."])
+                updated_value = 0
+            else:
+                info = None
+        else:
+            info = html.Div(
+                [f"A numeric value is expected, but a different value was provided. Therefore, it has been set to 0."])
+            updated_value = 0
+
+        other_values = [float(row['Weight']) for idx, row in enumerate(table_data) if idx != index]
+        sum_values = sum(value for i, value in enumerate(other_values))
+        weights_adj = [round(((1 - updated_value) * value / sum_values), 2) for value in other_values]
+        weights_adj.insert(index, updated_value)
+        for i, row in enumerate(updated_table_data):
+            if i < len(other_values) + 1:
+                row['Weight'] = weights_adj[i]
+    else:
+        weights_adj = [float(row['Weight']) for row in table_data]
+        info = None
+        updated_table_data = table_data.copy()
+
+    return weights_adj, info, updated_table_data
+
 
 # callback to changing model weights
 @callback(
@@ -671,7 +742,6 @@ def display_output(values, contents, df, column, task, predictions, proba_predic
         y = df.iloc[:, df.columns == column["name"]].squeeze()
         sum_slider_values = sum(values)
         weights_adj = [round((value / sum_slider_values), 2) for value in values]
-
         df = calculate_metrics(predictions, y, task, weights_adj)
         df_adj = calculate_metrics_adj_ensemble(predictions, proba_predictions, y, task, weights_adj)
         return df.to_dict('records'), df_adj.to_dict('records')
@@ -720,7 +790,6 @@ def update_output(value):
         return {"display": "none"}, {"display": "none"}
 
 
-
 @callback(
     Output('ann_2', 'style'),
     Input('my-toggle-switch', 'value'),
@@ -742,9 +811,10 @@ def update_output(value):
 )
 def update_output(value):
     if value:
-        return 5*[{}]
+        return 5 * [{}]
     else:
-        return 5*[{"display": "none"}]
+        return 5 * [{"display": "none"}]
+
 
 @callback(
     Output('ann_comp_6', 'style'),
@@ -757,9 +827,10 @@ def update_output(value):
 )
 def update_output(value):
     if value:
-        return 6*[{}]
+        return 6 * [{}]
     else:
         return {"display": "none"}
+
 
 @callback(
     Output('ann_comp_12', 'style'),
@@ -771,6 +842,6 @@ def update_output(value):
 )
 def update_output(value):
     if value:
-        return 5*[{}]
+        return 5 * [{}]
     else:
-        return 5*[{"display": "none"}]
+        return 5 * [{"display": "none"}]

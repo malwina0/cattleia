@@ -55,11 +55,11 @@ def calculate_metrics(predictions, y, task, weights):
                 recall.append(round(recall_score(y, prediction, average='macro'), 2))
                 f1.append(round(f1_score(y, prediction, average='macro'), 2))
         data = {
-            'weight': weights,
-            'accuracy': accuracy,
-            'precision': precision,
-            'recall': recall,
-            'f1 score': f1
+            'Weight': weights,
+            'Accuracy': accuracy,
+            'Precision': precision,
+            'Recall': recall,
+            'F1 score': f1
         }
 
     return pd.DataFrame(data)
@@ -70,7 +70,7 @@ def tbl_metrics(predictions, y, task, weights):
     return dash_table.DataTable(
         data=df.to_dict('records'),  # convert DataFrame to format compatible with dash
         columns=[
-            {'name': col, 'id': col} for col in df.columns
+            {'name': col, 'id': col, 'editable': True if col == 'Weight' else False} for col in df.columns
         ],
         style_table={
             'backgroundColor': '#3a3e4a',
