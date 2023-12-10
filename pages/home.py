@@ -332,6 +332,14 @@ def update_model(contents, filename, df, column, about_us):
 
     return children, children, weights_plots, model_names, predictions, task, proba_predictions, weights
 
+#
+# callback(
+#     Output('weights_list', 'data'),
+#     [Input('app', 'is_loading')] # Dodatkowy Input, który uruchamia callback przy uruchomieniu aplikacji
+#
+# )
+# def load_weights_on_startup(is_loading):
+#     return get_ensemble_weights(model, library)
 
 # callbacks for buttons to change plots categories
 @callback(
@@ -453,23 +461,21 @@ def update_compatimetrics_plot(predictions, model_to_compare, task, df, column):
                                        className="plot")],
                             width=6),
                 ]),
-                dbc.Row([dbc.Col([html.H3("""
-                Disagreement ratio presented on plot below on the left is measuring how many observations were
-                predicted differently by two models regarding to the class of the record. It can show which class
-                was more difficult to predict when joining models. 
-               """,
+                dbc.Row([dbc.Col([
+                    html.H3("""Disagreement ratio presented on plot below on the left is measuring how many 
+                        observations were predicted differently by two models regarding to the class of the record. 
+                        It can show which class was more difficult to predict when joining models.""",
                         className="annotation_str", id="ann_comp_9"),], width=6),
-                         dbc.Col([html.H3("""
-                Conjunctive metrics are analogous to standard evaluation metrics, but instead of comparing target
-                variable with one prediction vector, we use two prediction vectors at the same time. Simply we
-                mark prediction as correct, if two models predicted it correctly. Thus, conjunctive accuracy,
-                presented on matrix above, precision and recall, showed together below, are good 
-                indicators of joined model performance as they measure the same ratios as original
-                metrics. Worth mentioning - conjunctive recall is generally lower and conjunctive precision 
-                is generally higher, which is related to their definition. 
-                               """,
-                        className="annotation_str", id="ann_comp_8"),], width=6)]),
-
+                    dbc.Col([html.H3("""Conjunctive metrics are analogous to standard evaluation metrics,
+                        but instead of comparing target variable with one prediction vector, we use two prediction vectors 
+                        at the same time. Simply we mark prediction as correct, if two models predicted it correctly. 
+                        Thus, conjunctive accuracy, presented on matrix above, precision and recall, showed together below, 
+                        are good indicators of joined model performance as they measure the same ratios as original
+                        metrics. Worth mentioning - conjunctive recall is generally lower and conjunctive precision 
+                        is generally higher, which is related to their definition.""",
+                        className="annotation_str", id="ann_comp_8"),
+                    ], width=6)
+                ]),
                 dbc.Row([
                     dbc.Col([dcc.Graph(figure=compatimetrics_plots.disagreement_ratio_plot(predictions, y, model_to_compare),
                                        className="plot")],
@@ -646,16 +652,13 @@ def update_compatimetrics_plot(predictions, model_to_compare, task, df, column):
 )
 def display_output(values, contents, df, column, task, predictions, proba_predictions):
     if contents:
-
         df = pd.DataFrame.from_dict(df).dropna()
         y = df.iloc[:, df.columns == column["name"]].squeeze()
-
         sum_slider_values = sum(values)
-        weights = [round((value / sum_slider_values), 2) for value in values]
+        weights_adj = [round((value / sum_slider_values), 2) for value in values]
 
-        df = calculate_metrics(predictions, y, task, weights)
-        df_adj = calculate_metrics_adj_ensemble(predictions, proba_predictions, y, task, weights)
-
+        df = calculate_metrics(predictions, y, task, weights_adj)
+        df_adj = calculate_metrics_adj_ensemble(predictions, proba_predictions, y, task, weights_adj)
         return df.to_dict('records'), df_adj.to_dict('records')
 
 

@@ -22,7 +22,7 @@ def slider_section(model_name, weight, i):
                     tooltip={"placement": "right", "always_visible": False},
                     updatemode='drag',
                     persistence=True,
-                    persistence_type='session',
+                    persistence_type='memory',
                     marks=None,
                     className='weight-slider',
                 ),
