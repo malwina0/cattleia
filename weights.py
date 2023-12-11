@@ -1,9 +1,9 @@
-from dash import html, Dash, dcc, Output, Input, callback, MATCH, State, ALL, dash_table
+from dash import html, dcc, dash_table
 import dash_bootstrap_components as dbc
 import pandas as pd
 import numpy as np
 from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, mean_absolute_percentage_error, \
-    mean_absolute_error, mean_squared_error
+    mean_absolute_error, mean_squared_error, r2_score
 
 def slider_section(model_name, weight, i):
     return html.Div([
@@ -34,17 +34,21 @@ def slider_section(model_name, weight, i):
 
 def calculate_metrics(predictions, y, task, weights):
     if task == "regression":
-        mape, mae, mse = ([] for _ in range(3))
+        mape, mae, mse, rmse, r_squared = ([] for _ in range(5))
         for model_name, prediction in predictions.items():
             if model_name != 'Ensemble':
                 mape.append(float('%.*g' % (3, mean_absolute_percentage_error(y, prediction))))
                 mae.append(float('%.*g' % (3, mean_absolute_error(y, prediction))))
                 mse.append(round(mean_squared_error(y, prediction)))
+                rmse.append(round(mean_squared_error(y, prediction, squared=False)))
+                r_squared.append(float('%.*g' % (3, r2_score(y, prediction))))
         data = {
             'Weight': weights,
             'MAPE': mape,
             'MAE': mae,
-            'MSE': mse
+            'MSE': mse,
+            'RMSE': rmse,
+            'R squared': r_squared
         }
     else:
         accuracy, precision, recall, f1 = ([] for _ in range(4))
@@ -96,15 +100,22 @@ def calculate_metrics_adj_ensemble(predictions, proba_predictions, y, task, weig
         mse = round(mean_squared_error(y, predictions['Ensemble']))
         mae = float('%.*g' % (3, mean_absolute_error(y, predictions['Ensemble'])))
         mape = float('%.*g' % (3, mean_absolute_percentage_error(y, predictions['Ensemble'])))
+        rmse = round(mean_squared_error(y, predictions['Ensemble'], squared=False))
+        r_squared = float('%.*g' % (3, r2_score(y, predictions['Ensemble'])))
+
         predictions = list(dict((name, predictions[name]) for name in predictions if name != 'Ensemble').values())
         y_adj = np.sum(np.array(predictions).T * weights, axis=1)
+
         mse_adj = round(mean_squared_error(y, y_adj))
         mae_adj = float('%.*g' % (3, mean_absolute_error(y, y_adj)))
         mape_adj = float('%.*g' % (3, mean_absolute_percentage_error(y, y_adj)))
+        rmse_adj = round(mean_squared_error(y, y_adj, squared=False))
+        r_squared_adj = float('%.*g' % (3, r2_score(y, y_adj)))
+
         df_metrics = pd.DataFrame({
-            'Metric': ['MSE', 'MAE', 'MAPE'],
-            'Original model': [mse, mae, mape],
-            'Adjusted model': [mse_adj, mae_adj, mape_adj]
+            'Metric': ['MSE', 'MAE', 'MAPE', 'RMSE', 'R squared'],
+            'Original model': [mse, mae, mape, rmse, r_squared],
+            'Adjusted model': [mse_adj, mae_adj, mape_adj, rmse_adj, r_squared_adj]
         })
     else:
         accuracy = round(accuracy_score(y, predictions['Ensemble']), 2)
@@ -141,15 +152,33 @@ def tbl_metrics_adj_ensemble(predictions, proba_predictions, y, task, weights):
         style_data_conditional.extend([
             {
                 'if': {
+                    'filter_query': '{Original model} < {Adjusted model}',
+                    'column_id': 'Adjusted model',
+                    'row_index': [0, 1, 2, 3]
+                },
+                'backgroundColor': '#662f2f',
+            },
+            {
+                'if': {
                     'filter_query': '{Original model} > {Adjusted model}',
-                    'column_id': 'Adjusted model'
+                    'column_id': 'Adjusted model',
+                    'row_index': [0, 1, 2, 3]
                 },
                 'backgroundColor': '#2b5c35',
             },
             {
                 'if': {
                     'filter_query': '{Original model} < {Adjusted model}',
-                    'column_id': 'Adjusted model'
+                    'column_id': 'Adjusted model',
+                    'row_index': 4
+                },
+                'backgroundColor': '#2b5c35',
+            },
+            {
+                'if': {
+                    'filter_query': '{Original model} > {Adjusted model}',
+                    'column_id': 'Adjusted model',
+                    'row_index': 4
                 },
                 'backgroundColor': '#662f2f',
             }

@@ -1,19 +1,16 @@
 import dash
 from dash import html, dcc, Output, Input, callback, State, ALL
 import dash_bootstrap_components as dbc
-import sys
-
 from dash.exceptions import PreventUpdate
-
-import compatimetrics_plots
-import metrics
+import dash_daq as daq
 import shutil
 import pandas as pd
+import sys
+import compatimetrics_plots
+import metrics
 from utils import get_predictions_from_model, get_task_from_model, parse_data, get_probabilty_pred_from_model, \
     get_ensemble_weights
-import dash_daq as daq
-from weights import slider_section, \
-    tbl_metrics, tbl_metrics_adj_ensemble, calculate_metrics, calculate_metrics_adj_ensemble
+from weights import slider_section, tbl_metrics, tbl_metrics_adj_ensemble, calculate_metrics, calculate_metrics_adj_ensemble
 
 sys.path.append("..")
 
