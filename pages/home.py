@@ -130,7 +130,7 @@ def update_output(contents, filename):
                 html.Hr(),
             ])
         else:
-            children = input
+            children = html.Div(["Please provide the file in .csv format."], style={"color": "white"})
 
     return data, children
 
