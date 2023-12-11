@@ -103,7 +103,7 @@ def strong_disagreement_ratio(pred1, pred2, y):
     Numeric value
         SDR value of given predictions pair and true values vector
     """
-    pred1, pred2 = np.array([pred1]), np.array([pred2])
+    pred1, pred2 = np.array(pred1), np.array(pred2)
     difference = np.abs(pred1 - pred2)
     standard_deviation = np.std(y)
     return np.sum(difference > standard_deviation) / len(pred1)
@@ -126,11 +126,11 @@ def agreement_ratio(pred1, pred2, y):
     Numeric value
         AR value of given predictions pair and true values vector
     """
-    pred1, pred2 = np.array([pred1]), np.array([pred2])
+    pred1, pred2 = np.array(pred1), np.array(pred2)
     difference = np.abs(pred1 - pred2)
     standard_deviation = np.std(y)
     threshold = standard_deviation / 50
-    return np.sum(difference[0] < threshold) / len(pred1)
+    return np.sum(difference < threshold) / len(pred1)
 
 def uniformity(pred1, pred2):
     """ Calculates uniformity of two prediction vectors, which is a measure

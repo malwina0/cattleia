@@ -32,17 +32,15 @@ def empty_fig():
     return fig
 
 
-def accuracy_plot(ensemble_model, X, y, library="Flaml"):
+def accuracy_plot(predictions, y):
     """Accuracy metrics plot of individual models from the ensemled model.
 
     Parameters
     ----------
-    ensemble_model : Flaml, AutoGluon or AutoSklearn ensemble model.
+    predictions: dictionary with predictions of ensemble component models
+        of form {'model_name': 'prediction_vector'}
 
-    X, y : dataframe
-
-    library : {'Flaml', 'AutoGluon', 'AutoSklearn'}
-            string that specifies the model library
+    y : target variable vector
 
     Returns
     -------
@@ -51,43 +49,13 @@ def accuracy_plot(ensemble_model, X, y, library="Flaml"):
 
     Examples
     --------
-    accuracy_plot(model_class, X_class, y_class)
+    accuracy_plot(predictions, y_class)
     """
-
-    if library == "Flaml":
-        ensemble_models = ensemble_model.model.estimators_
-        accuracy = [accuracy_score(y, ensemble_model.predict(X))]
-        models_name = ['Ensemble']
-
-        X_transform = ensemble_model._state.task.preprocess(X, ensemble_model._transformer)
-        for model in ensemble_models:
-            y_pred_class = model.predict(X_transform)
-            y_pred_class_name = ensemble_model._label_transformer.inverse_transform(y_pred_class)
-            accuracy.append(accuracy_score(y, y_pred_class_name))
-            models_name.append(type(model).__name__)
-    elif library == "AutoGluon":
-        ensemble_models = ensemble_model.info()['model_info'][ensemble_model.get_model_best()]['stacker_info'][
-            'base_model_names']
-        accuracy = [accuracy_score(y, ensemble_model.predict(X))]
-        models_name = ['Ensemble']
-
-        final_model = ensemble_model.get_model_best()
-        for model_name in ensemble_models:
-            models_name.append(model_name)
-            ensemble_model.set_model_best(model_name)
-            accuracy.append(accuracy_score(y, ensemble_model.predict(X)))
-        ensemble_model.set_model_best(final_model)
-    elif library == "AutoSklearn":
-        class_names = list(y.unique())
-        class_names.sort()
-        accuracy = [accuracy_score(y, ensemble_model.predict(X))]
-        models_name = ['Ensemble']
-
-        for weight, model in ensemble_model.get_models_with_weights():
-            models_name.append(str(type(model._final_estimator.choice)).split('.')[-1][:-2])
-            prediction = model.predict(X)
-            prediction_class = [class_names[idx] for idx in prediction]
-            accuracy.append(accuracy_score(y, prediction_class))
+    accuracy = []
+    models_name = []
+    for model_name, prediction in predictions.items():
+        models_name.append(model_name)
+        accuracy.append(accuracy_score(y, prediction))
 
     fig = empty_fig()
     for i in range(len(accuracy)):
@@ -107,17 +75,15 @@ def accuracy_plot(ensemble_model, X, y, library="Flaml"):
     return fig
 
 
-def precision_plot(ensemble_model, X, y, library="Flaml"):
+def precision_plot(predictions, y):
     """Precision metrics plot of individual models from the ensemled model.
 
     Parameters
     ----------
-    ensemble_model : Flaml, AutoGluon or AutoSklearn ensemble model.
+    predictions: dictionary with predictions of ensemble component models
+        of form {'model_name': 'prediction_vector'}
 
-    X, y : dataframe
-
-    library : {'Flaml', 'AutoGluon', 'AutoSklearn'}
-            string that specifies the model library
+    y : target variable vector
 
     Returns
     -------
@@ -126,42 +92,13 @@ def precision_plot(ensemble_model, X, y, library="Flaml"):
 
     Examples
     --------
-    precision_plot(model_class, X_class, y_class)
+    precision_plot(predictions, y_class)
     """
-    if library == "Flaml":
-        ensemble_models = ensemble_model.model.estimators_
-        precision = [precision_score(y, ensemble_model.predict(X), average='macro')]
-        models_name = ['Ensemble']
-
-        X_transform = ensemble_model._state.task.preprocess(X, ensemble_model._transformer)
-        for model in ensemble_models:
-            y_pred_class = model.predict(X_transform)
-            y_pred_class_name = ensemble_model._label_transformer.inverse_transform(y_pred_class)
-            precision.append(precision_score(y, y_pred_class_name, average='macro'))
-            models_name.append(type(model).__name__)
-    elif library == "AutoGluon":
-        ensemble_models = ensemble_model.info()['model_info'][ensemble_model.get_model_best()]['stacker_info'][
-            'base_model_names']
-        precision = [precision_score(y, ensemble_model.predict(X), average='macro')]
-        models_name = ['Ensemble']
-
-        final_model = ensemble_model.get_model_best()
-        for model_name in ensemble_models:
-            models_name.append(model_name)
-            ensemble_model.set_model_best(model_name)
-            precision.append(precision_score(y, ensemble_model.predict(X), average='macro'))
-        ensemble_model.set_model_best(final_model)
-    elif library == "AutoSklearn":
-        class_names = list(y.unique())
-        class_names.sort()
-        precision = [precision_score(y, ensemble_model.predict(X), average='macro')]
-        models_name = ['Ensemble']
-
-        for weight, model in ensemble_model.get_models_with_weights():
-            models_name.append(str(type(model._final_estimator.choice)).split('.')[-1][:-2])
-            prediction = model.predict(X)
-            prediction_class = [class_names[idx] for idx in prediction]
-            precision.append(precision_score(y, prediction_class, average='macro'))
+    precision = []
+    models_name = []
+    for model_name, prediction in predictions.items():
+        models_name.append(model_name)
+        precision.append(precision_score(y, prediction, average='macro'))
 
     fig = empty_fig()
     for i in range(len(precision)):
@@ -181,17 +118,15 @@ def precision_plot(ensemble_model, X, y, library="Flaml"):
     return fig
 
 
-def recall_plot(ensemble_model, X, y, library="Flaml"):
+def recall_plot(predictions, y):
     """Recall metrics plot of individual models from the ensemled model.
 
     Parameters
     ----------
-    ensemble_model : Flaml, AutoGluon or AutoSklearn ensemble model.
+    predictions: dictionary with predictions of ensemble component models
+        of form {'model_name': 'prediction_vector'}
 
-    X, y : dataframe
-
-    library : {'Flaml', 'AutoGluon', 'AutoSklearn'}
-            string that specifies the model library
+    y : target variable vector
 
     Returns
     -------
@@ -200,43 +135,13 @@ def recall_plot(ensemble_model, X, y, library="Flaml"):
 
     Examples
     --------
-    recall_plot(model_class, X_class, y_class)
+    recall_plot(predictions, y_class)
     """
-    if library == "Flaml":
-        ensemble_models = ensemble_model.model.estimators_
-
-        recall = [recall_score(y, ensemble_model.predict(X), average='macro')]
-        models_name = ['Ensemble']
-
-        X_transform = ensemble_model._state.task.preprocess(X, ensemble_model._transformer)
-        for model in ensemble_models:
-            y_pred_class = model.predict(X_transform)
-            y_pred_class_name = ensemble_model._label_transformer.inverse_transform(y_pred_class)
-            recall.append(recall_score(y, y_pred_class_name, average='macro'))
-            models_name.append(type(model).__name__)
-    elif library == "AutoGluon":
-        ensemble_models = ensemble_model.info()['model_info'][ensemble_model.get_model_best()]['stacker_info'][
-            'base_model_names']
-        recall = [recall_score(y, ensemble_model.predict(X), average='macro')]
-        models_name = ['Ensemble']
-
-        final_model = ensemble_model.get_model_best()
-        for model_name in ensemble_models:
-            models_name.append(model_name)
-            ensemble_model.set_model_best(model_name)
-            recall.append(recall_score(y, ensemble_model.predict(X), average='macro'))
-        ensemble_model.set_model_best(final_model)
-    elif library == "AutoSklearn":
-        class_names = list(y.unique())
-        class_names.sort()
-        recall = [recall_score(y, ensemble_model.predict(X), average='macro')]
-        models_name = ['Ensemble']
-
-        for weight, model in ensemble_model.get_models_with_weights():
-            models_name.append(str(type(model._final_estimator.choice)).split('.')[-1][:-2])
-            prediction = model.predict(X)
-            prediction_class = [class_names[idx] for idx in prediction]
-            recall.append(recall_score(y, prediction_class, average='macro'))
+    recall = []
+    models_name = []
+    for model_name, prediction in predictions.items():
+        models_name.append(model_name)
+        recall.append(recall_score(y, prediction, average='macro'))
 
     fig = empty_fig()
     for i in range(len(recall)):
@@ -256,17 +161,15 @@ def recall_plot(ensemble_model, X, y, library="Flaml"):
     return fig
 
 
-def f1_score_plot(ensemble_model, X, y, library="Flaml"):
+def f1_score_plot(predictions, y):
     """F1 metrics plot of individual models from the ensemled model.
 
     Parameters
     ----------
-    ensemble_model : Flaml, AutoGluon or AutoSklearn ensemble model.
+    predictions: dictionary with predictions of ensemble component models
+        of form {'model_name': 'prediction_vector'}
 
-    X, y : dataframe
-
-    library : {'Flaml', 'AutoGluon', 'AutoSklearn'}
-            string that specifies the model library
+    y : target variable vector
 
     Returns
     -------
@@ -275,42 +178,13 @@ def f1_score_plot(ensemble_model, X, y, library="Flaml"):
 
     Examples
     --------
-    f1_score_plot(model_class, X_class, y_class)
+    f1_score_plot(predictions, y_class)
     """
-    if library == "Flaml":
-        ensemble_models = ensemble_model.model.estimators_
-        f1 = [f1_score(y, ensemble_model.predict(X), average='macro')]
-        models_name = ['Ensemble']
-
-        X_transform = ensemble_model._state.task.preprocess(X, ensemble_model._transformer)
-        for model in ensemble_models:
-            y_pred_class = model.predict(X_transform)
-            y_pred_class_name = ensemble_model._label_transformer.inverse_transform(y_pred_class)
-            f1.append(f1_score(y, y_pred_class_name, average='macro'))
-            models_name.append(type(model).__name__)
-    elif library == "AutoGluon":
-        ensemble_models = ensemble_model.info()['model_info'][ensemble_model.get_model_best()]['stacker_info'][
-            'base_model_names']
-        f1 = [f1_score(y, ensemble_model.predict(X), average='macro')]
-        models_name = ['Ensemble']
-
-        final_model = ensemble_model.get_model_best()
-        for model_name in ensemble_models:
-            models_name.append(model_name)
-            ensemble_model.set_model_best(model_name)
-            f1.append(f1_score(y, ensemble_model.predict(X), average='macro'))
-        ensemble_model.set_model_best(final_model)
-    elif library == "AutoSklearn":
-        class_names = list(y.unique())
-        class_names.sort()
-        f1 = [f1_score(y, ensemble_model.predict(X), average='macro')]
-        models_name = ['Ensemble']
-
-        for weight, model in ensemble_model.get_models_with_weights():
-            models_name.append(str(type(model._final_estimator.choice)).split('.')[-1][:-2])
-            prediction = model.predict(X)
-            prediction_class = [class_names[idx] for idx in prediction]
-            f1.append(f1_score(y, prediction_class, average='macro'))
+    f1 = []
+    models_name = []
+    for model_name, prediction in predictions.items():
+        models_name.append(model_name)
+        f1.append(f1_score(y, prediction, average='macro'))
 
     fig = empty_fig()
     for i in range(len(f1)):
@@ -330,17 +204,15 @@ def f1_score_plot(ensemble_model, X, y, library="Flaml"):
     return fig
 
 
-def mape_plot(ensemble_model, X, y, library="Flaml"):
+def mape_plot(predictions, y):
     """MAPE metrics plot of individual models from the ensemled model.
 
     Parameters
     ----------
-    ensemble_model : Flaml, AutoGluon or AutoSklearn ensemble model.
+    predictions: dictionary with predictions of ensemble component models
+        of form {'model_name': 'prediction_vector'}
 
-    X, y : dataframe
-
-    library : {'Flaml', 'AutoGluon', 'AutoSklearn'}
-            string that specifies the model library
+    y : target variable vector
 
     Returns
     -------
@@ -349,36 +221,13 @@ def mape_plot(ensemble_model, X, y, library="Flaml"):
 
     Examples
     --------
-    mape_plot(model_reg, X_reg, y_reg)
+    mape_plot(predictions, y_reg)
     """
-    if library == "Flaml":
-        ensemble_models = ensemble_model.model.estimators_
-        mape = [mean_absolute_percentage_error(y, ensemble_model.predict(X))]
-        models_name = ['Ensemble']
-
-        X_transform = ensemble_model._state.task.preprocess(X, ensemble_model._transformer)
-        for model in ensemble_models:
-            mape.append(mean_absolute_percentage_error(y, model.predict(X_transform)))
-            models_name.append(type(model).__name__)
-    elif library == "AutoGluon":
-        ensemble_models = ensemble_model.info()['model_info'][ensemble_model.get_model_best()]['stacker_info'][
-            'base_model_names']
-        mape = [mean_absolute_percentage_error(y, ensemble_model.predict(X))]
-        models_name = ['Ensemble']
-
-        final_model = ensemble_model.get_model_best()
-        for model_name in ensemble_models:
-            models_name.append(model_name)
-            ensemble_model.set_model_best(model_name)
-            mape.append(mean_absolute_percentage_error(y, ensemble_model.predict(X)))
-        ensemble_model.set_model_best(final_model)
-    elif library == "AutoSklearn":
-        mape = [mean_absolute_percentage_error(y, ensemble_model.predict(X))]
-        models_name = ['Ensemble']
-
-        for weight, model in ensemble_model.get_models_with_weights():
-            models_name.append(str(type(model._final_estimator.choice)).split('.')[-1][:-2])
-            mape.append(mean_absolute_percentage_error(y, model.predict(X)))
+    mape = []
+    models_name = []
+    for model_name, prediction in predictions.items():
+        models_name.append(model_name)
+        mape.append(mean_absolute_percentage_error(y, prediction))
 
     fig = empty_fig()
     for i in range(len(mape)):
@@ -398,17 +247,15 @@ def mape_plot(ensemble_model, X, y, library="Flaml"):
     return fig
 
 
-def mae_plot(ensemble_model, X, y, library="Flaml"):
+def mae_plot(predictions, y):
     """MAE metrics plot of individual models from the ensemled model.
 
     Parameters
     ----------
-    ensemble_model : Flaml, AutoGluon or AutoSklearn ensemble model.
+    predictions: dictionary with predictions of ensemble component models
+        of form {'model_name': 'prediction_vector'}
 
-    X, y : dataframe
-
-    library : {'Flaml', 'AutoGluon', 'AutoSklearn'}
-            string that specifies the model library
+    y : target variable vector
 
     Returns
     -------
@@ -417,36 +264,13 @@ def mae_plot(ensemble_model, X, y, library="Flaml"):
 
     Examples
     --------
-    mae_plot(model_reg, X_reg, y_reg)
+    mae_plot(predictions, y_reg)
     """
-    if library == "Flaml":
-        ensemble_models = ensemble_model.model.estimators_
-        mae = [mean_absolute_error(y, ensemble_model.predict(X))]
-        models_name = ['Ensemble']
-
-        X_transform = ensemble_model._state.task.preprocess(X, ensemble_model._transformer)
-        for model in ensemble_models:
-            mae.append(mean_absolute_error(y, model.predict(X_transform)))
-            models_name.append(type(model).__name__)
-    elif library == "AutoGluon":
-        ensemble_models = ensemble_model.info()['model_info'][ensemble_model.get_model_best()]['stacker_info'][
-            'base_model_names']
-        mae = [mean_absolute_error(y, ensemble_model.predict(X))]
-        models_name = ['Ensemble']
-
-        final_model = ensemble_model.get_model_best()
-        for model_name in ensemble_models:
-            models_name.append(model_name)
-            ensemble_model.set_model_best(model_name)
-            mae.append(mean_absolute_error(y, ensemble_model.predict(X)))
-        ensemble_model.set_model_best(final_model)
-    elif library == "AutoSklearn":
-        mae = [mean_absolute_error(y, ensemble_model.predict(X))]
-        models_name = ['Ensemble']
-
-        for weight, model in ensemble_model.get_models_with_weights():
-            models_name.append(str(type(model._final_estimator.choice)).split('.')[-1][:-2])
-            mae.append(mean_absolute_error(y, model.predict(X)))
+    mae = []
+    models_name = []
+    for model_name, prediction in predictions.items():
+        models_name.append(model_name)
+        mae.append(mean_absolute_error(y, prediction))
 
     fig = empty_fig()
     for i in range(len(mae)):
@@ -466,17 +290,15 @@ def mae_plot(ensemble_model, X, y, library="Flaml"):
     return fig
 
 
-def mse_plot(ensemble_model, X, y, library="Flaml"):
+def mse_plot(predictions, y):
     """MSE metrics plot of individual models from the ensemled model.
 
     Parameters
     ----------
-    ensemble_model : Flaml, AutoGluon or AutoSklearn ensemble model.
+    predictions: dictionary with predictions of ensemble component models
+        of form {'model_name': 'prediction_vector'}
 
-    X, y : dataframe
-
-    library : {'Flaml', 'AutoGluon', 'AutoSklearn'}
-            string that specifies the model library
+    y : target variable vector
 
     Returns
     -------
@@ -485,36 +307,13 @@ def mse_plot(ensemble_model, X, y, library="Flaml"):
 
     Examples
     --------
-    mse_plot(model_reg, X_reg, y_reg)
+    mse_plot(predictions, y_reg)
     """
-    if library == "Flaml":
-        ensemble_models = ensemble_model.model.estimators_
-        mse = [mean_squared_error(y, ensemble_model.predict(X))]
-        models_name = ['Ensemble']
-
-        X_transform = ensemble_model._state.task.preprocess(X, ensemble_model._transformer)
-        for model in ensemble_models:
-            mse.append(mean_squared_error(y, model.predict(X_transform)))
-            models_name.append(type(model).__name__)
-    elif library == "AutoGluon":
-        ensemble_models = ensemble_model.info()['model_info'][ensemble_model.get_model_best()]['stacker_info'][
-            'base_model_names']
-        mse = [mean_squared_error(y, ensemble_model.predict(X))]
-        models_name = ['Ensemble']
-
-        final_model = ensemble_model.get_model_best()
-        for model_name in ensemble_models:
-            models_name.append(model_name)
-            ensemble_model.set_model_best(model_name)
-            mse.append(mean_squared_error(y, ensemble_model.predict(X)))
-        ensemble_model.set_model_best(final_model)
-    elif library == "AutoSklearn":
-        mse = [mean_squared_error(y, ensemble_model.predict(X))]
-        models_name = ['Ensemble']
-
-        for weight, model in ensemble_model.get_models_with_weights():
-            models_name.append(str(type(model._final_estimator.choice)).split('.')[-1][:-2])
-            mse.append(mean_squared_error(y, model.predict(X)))
+    mse = []
+    models_name = []
+    for model_name, prediction in predictions.items():
+        models_name.append(model_name)
+        mse.append(mean_squared_error(y, prediction))
 
     fig = empty_fig()
     for i in range(len(mse)):
@@ -534,17 +333,15 @@ def mse_plot(ensemble_model, X, y, library="Flaml"):
     return fig
 
 
-def rmse_plot(ensemble_model, X, y, library="Flaml"):
+def rmse_plot(predictions, y):
     """RMSE metrics plot of individual models from the ensemled model.
 
     Parameters
     ----------
-    ensemble_model : Flaml, AutoGluon or AutoSklearn ensemble model.
+    predictions: dictionary with predictions of ensemble component models
+        of form {'model_name': 'prediction_vector'}
 
-    X, y : dataframe
-
-    library : {'Flaml', 'AutoGluon', 'AutoSklearn'}
-            string that specifies the model library
+    y : target variable vector
 
     Returns
     -------
@@ -553,36 +350,13 @@ def rmse_plot(ensemble_model, X, y, library="Flaml"):
 
     Examples
     --------
-    rmse_plot(model_reg, X_reg, y_reg)
+    rmse_plot(predictions, y_reg)
     """
-    if library == "Flaml":
-        ensemble_models = ensemble_model.model.estimators_
-        rmse = [mean_squared_error(y, ensemble_model.predict(X), squared=False)]
-        models_name = ['Ensemble']
-
-        X_transform = ensemble_model._state.task.preprocess(X, ensemble_model._transformer)
-        for model in ensemble_models:
-            rmse.append(mean_squared_error(y, model.predict(X_transform), squared=False))
-            models_name.append(type(model).__name__)
-    elif library == "AutoGluon":
-        ensemble_models = ensemble_model.info()['model_info'][ensemble_model.get_model_best()]['stacker_info'][
-            'base_model_names']
-        rmse = [mean_squared_error(y, ensemble_model.predict(X), squared=False)]
-        models_name = ['Ensemble']
-
-        final_model = ensemble_model.get_model_best()
-        for model_name in ensemble_models:
-            models_name.append(model_name)
-            ensemble_model.set_model_best(model_name)
-            rmse.append(mean_squared_error(y, ensemble_model.predict(X), squared=False))
-        ensemble_model.set_model_best(final_model)
-    elif library == "AutoSklearn":
-        rmse = [mean_squared_error(y, ensemble_model.predict(X), squared=False)]
-        models_name = ['Ensemble']
-
-        for weight, model in ensemble_model.get_models_with_weights():
-            models_name.append(str(type(model._final_estimator.choice)).split('.')[-1][:-2])
-            rmse.append(mean_squared_error(y, model.predict(X), squared=False))
+    rmse = []
+    models_name = []
+    for model_name, prediction in predictions.items():
+        models_name.append(model_name)
+        rmse.append(mean_squared_error(y, prediction, squared=False))
 
     fig = empty_fig()
     for i in range(len(rmse)):
@@ -602,17 +376,15 @@ def rmse_plot(ensemble_model, X, y, library="Flaml"):
     return fig
 
 
-def r_2_plot(ensemble_model, X, y, library="Flaml"):
+def r_2_plot(predictions, y):
     """R^2 metrics plot of individual models from the ensemled model.
 
     Parameters
     ----------
-    ensemble_model : Flaml, AutoGluon or AutoSklearn ensemble model.
+    predictions: dictionary with predictions of ensemble component models
+        of form {'model_name': 'prediction_vector'}
 
-    X, y : dataframe
-
-    library : {'Flaml', 'AutoGluon', 'AutoSklearn'}
-            string that specifies the model library
+    y : target variable vector
 
     Returns
     -------
@@ -621,36 +393,13 @@ def r_2_plot(ensemble_model, X, y, library="Flaml"):
 
     Examples
     --------
-    r_2_plot(model_reg, X_reg, y_reg)
+    r_2_plot(predictions, y_reg)
     """
-    if library == "Flaml":
-        ensemble_models = ensemble_model.model.estimators_
-        r2 = [r2_score(y, ensemble_model.predict(X))]
-        models_name = ['Ensemble']
-
-        X_transform = ensemble_model._state.task.preprocess(X, ensemble_model._transformer)
-        for model in ensemble_models:
-            r2.append(r2_score(y, model.predict(X_transform)))
-            models_name.append(type(model).__name__)
-    elif library == "AutoGluon":
-        ensemble_models = ensemble_model.info()['model_info'][ensemble_model.get_model_best()]['stacker_info'][
-            'base_model_names']
-        r2 = [r2_score(y, ensemble_model.predict(X))]
-        models_name = ['Ensemble']
-
-        final_model = ensemble_model.get_model_best()
-        for model_name in ensemble_models:
-            models_name.append(model_name)
-            ensemble_model.set_model_best(model_name)
-            r2.append(r2_score(y, ensemble_model.predict(X)))
-        ensemble_model.set_model_best(final_model)
-    elif library == "AutoSklearn":
-        r2 = [r2_score(y, ensemble_model.predict(X))]
-        models_name = ['Ensemble']
-
-        for weight, model in ensemble_model.get_models_with_weights():
-            models_name.append(str(type(model._final_estimator.choice)).split('.')[-1][:-2])
-            r2.append(r2_score(y, model.predict(X)))
+    r2 = []
+    models_name = []
+    for model_name, prediction in predictions.items():
+        models_name.append(model_name)
+        r2.append(r2_score(y, prediction))
 
     fig = empty_fig()
     for i in range(len(r2)):
@@ -788,17 +537,13 @@ def permutation_feature_importance(model, X, y, name, task=False):
     return fig
 
 
-def correlation_plot(ensemble_model, X, library="Flaml", task="regression", y=None):
+def correlation_plot(predictions, task="regression", y=None):
     """Prediction correlation plot of models from the ensemled model.
 
     Parameters
     ----------
-    ensemble_model : Flaml, AutoGluon or AutoSklearn ensemble model.
-
-    X : dataframe
-
-    library : {'Flaml', 'AutoGluon', 'AutoSklearn'}
-            string that specifies the model library
+    predictions: dictionary with predictions of ensemble component models
+        of form {'model_name': 'prediction_vector'}
 
     task : {'regression', 'classification'}
             string that specifies the model task
@@ -813,53 +558,9 @@ def correlation_plot(ensemble_model, X, library="Flaml", task="regression", y=No
 
     Examples
     --------
-    correlation_plot(model_reg, X_reg, y_reg, task="regression")
+    correlation_plot(predictions, y_reg, task="regression")
     """
-    if library == "Flaml":
-        ensemble_models = ensemble_model.model.estimators_
-        predict_data = {'Ensemble': ensemble_model.predict(X)}
-
-        X_transform = ensemble_model._state.task.preprocess(X, ensemble_model._transformer)
-        for model in ensemble_models:
-            if task == "regression":
-                predict_data[type(model).__name__] = model.predict(X_transform)
-            if task == "classification" or task == "multiclass":
-                y_pred_class = model.predict(X_transform)
-                y_pred_class_name = ensemble_model._label_transformer.inverse_transform(y_pred_class)
-                predict_data[type(model).__name__] = y_pred_class_name
-    elif library == "AutoGluon":
-        ensemble_models = ensemble_model.info()['model_info'][ensemble_model.get_model_best()]['stacker_info'][
-            'base_model_names']
-        predict_data = {'Ensemble': ensemble_model.predict(X)}
-
-        final_model = ensemble_model.get_model_best()
-        for model_name in ensemble_models:
-            ensemble_model.set_model_best(model_name)
-            predict_data[model_name] = ensemble_model.predict(X)
-        ensemble_model.set_model_best(final_model)
-    elif library == "AutoSklearn":
-        if task == "classification" or task == "multiclass":
-            class_names = list(y.unique())
-            class_names.sort()
-        predict_data = {'Ensemble': ensemble_model.predict(X)}
-
-        for weight, model in ensemble_model.get_models_with_weights():
-            name = str(type(model._final_estimator.choice)).split('.')[-1][:-2]
-            prediction = model.predict(X)
-            if task == "classification" or task == "multiclass":
-                prediction = [class_names[idx] for idx in prediction]
-            # this part is responsible for the fact that the names of the models can be repeated
-            if name in predict_data:
-                number = 1
-                new_name = f"{name}_{number}"
-                while new_name in predict_data:
-                    number += 1
-                    new_name = f"{name}_{number}"
-                predict_data[new_name] = prediction
-            else:
-                predict_data[name] = prediction
-
-    predict_data = pd.DataFrame(predict_data)
+    predict_data = pd.DataFrame(predictions)
     if task == "regression":
         corr_matrix = predict_data.corr().round(2)
     if task == "classification" or task == "multiclass":
@@ -883,7 +584,7 @@ def correlation_plot(ensemble_model, X, library="Flaml", task="regression", y=No
                      'rgba(255,168,0,255)',
                      'rgba(125,179,67,255)',
                      'rgba(3,169,245,255)']
-    fig = px.imshow(corr_matrix, text_auto=True, color_continuous_scale=custom_colors)
+    fig = px.imshow(corr_matrix, text_auto=True, color_continuous_scale=[[0, 'lightblue'], [0.5, 'blue'], [1, 'purple']])
     fig.update_layout(
         title="Predictions models correlation",
         plot_bgcolor='rgba(44,47,56,255)',
@@ -902,7 +603,7 @@ def correlation_plot(ensemble_model, X, library="Flaml", task="regression", y=No
     return fig
 
 
-def prediction_compare_plot(ensemble_model, X, y, library="Flaml", task="regression"):
+def prediction_compare_plot(predictions, y, task="regression"):
     """Prediction compare plot of models from the ensemled model.
         For classification plot show if prediction of model is correct or incorrect.
         For regression it shows the difference between the prediction and the true
@@ -910,12 +611,10 @@ def prediction_compare_plot(ensemble_model, X, y, library="Flaml", task="regress
 
     Parameters
     ----------
-    ensemble_model : Flaml, AutoGluon or AutoSklearn ensemble model.
+   predictions: dictionary with predictions of ensemble component models
+        of form {'model_name': 'prediction_vector'}
 
-    X, y : dataframe
-
-    library : {'Flaml', 'AutoGluon', 'AutoSklearn'}
-            string that specifies the model library
+    y : target variable vector
 
     task : {'regression', 'classification'}
             string that specifies the model task
@@ -927,59 +626,14 @@ def prediction_compare_plot(ensemble_model, X, y, library="Flaml", task="regress
 
     Examples
     --------
-    prediction_compare_plot(model_reg, X_reg, y_reg, library="Flaml", task="regression")
+    prediction_compare_plot(predictions, y_reg, task="regression")
     """
-    if library == "Flaml":
-        ensemble_models = ensemble_model.model.estimators_
-        predict_data = {'Ensemble': ensemble_model.predict(X)}
-
-        X_transform = ensemble_model._state.task.preprocess(X, ensemble_model._transformer)
-        for model in ensemble_models:
-            if task == "regression":
-                predict_data[type(model).__name__] = model.predict(X_transform)
-            if task == "classification" or task == "multiclass":
-                y_pred_class = model.predict(X_transform)
-
-                y_pred_class_name = ensemble_model._label_transformer.inverse_transform(y_pred_class)
-                predict_data[type(model).__name__] = y_pred_class_name
-    if library == "AutoGluon":
-        ensemble_models = ensemble_model.info()['model_info'][ensemble_model.get_model_best()]['stacker_info'][
-            'base_model_names']
-        predict_data = {'Ensemble': ensemble_model.predict(X)}
-
-        final_model = ensemble_model.get_model_best()
-        for model_name in ensemble_models:
-            ensemble_model.set_model_best(model_name)
-            predict_data[model_name] = ensemble_model.predict(X)
-        ensemble_model.set_model_best(final_model)
-    if library == "AutoSklearn":
-        if task == "classification" or task == "multiclass":
-            class_names = list(y.unique())
-            class_names.sort()
-        predict_data = {'Ensemble': ensemble_model.predict(X)}
-
-        for weight, model in ensemble_model.get_models_with_weights():
-            name = str(type(model._final_estimator.choice)).split('.')[-1][:-2]
-            prediction = model.predict(X)
-            if task == "classification" or task == "multiclass":
-                prediction = [class_names[idx] for idx in prediction]
-            # ta czesc odpowada za to że nazwy modeli moga się powtarzać w autosklearnie
-            if name in predict_data:
-                number = 1
-                new_name = f"{name}_{number}"
-                while new_name in predict_data:
-                    number += 1
-                    new_name = f"{name}_{number}"
-                predict_data[new_name] = prediction
-            else:
-                predict_data[name] = prediction
-
     plot_value = {}
     if task == "regression":
-        for name, pred in predict_data.items():
+        for name, pred in predictions.items():
             plot_value[name] = [(i - j) / (j + 0.0000001) * 100 for i, j in zip(pred, y)]
     if task == "classification" or task == "multiclass":
-        for name, pred in predict_data.items():
+        for name, pred in predictions.items():
             plot_value[name] = [1 if i == j else 0 for i, j in zip(pred, y)]
 
     plot_value = pd.DataFrame(plot_value).T

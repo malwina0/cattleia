@@ -5,24 +5,6 @@ import numpy as np
 from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, mean_absolute_percentage_error, \
     mean_absolute_error, mean_squared_error
 
-
-def get_ensemble_names_weights(ensemble_model, library):
-    weights, model_names = ([] for _ in range(2))
-
-    if library == "AutoSklearn":
-        for weight, model in ensemble_model.get_models_with_weights():
-            model_names.append(str(type(model._final_estimator.choice)).split('.')[-1][:-2])
-            weights.append(weight)
-    elif library == "AutoGluon":
-        model_names = ensemble_model.info()['model_info'][ensemble_model.get_model_best()]['stacker_info'][
-            'base_model_names']
-        # TODO: test if needed and handle cases when there is more layers (not 'S1F1')
-        weights = list(ensemble_model.info()['model_info'][ensemble_model.get_model_best()]['children_info']['S1F1'][
-                           'model_weights'].values())
-
-    return model_names, weights
-
-
 def slider_section(model_name, weight, i):
     return html.Div([
         dbc.Row([
@@ -50,23 +32,14 @@ def slider_section(model_name, weight, i):
     ], style={'display': 'inline'})
 
 
-def calculate_metrics(ensemble_model, X, y, task, library, weights):
+def calculate_metrics(predictions, y, task, weights):
     if task == "regression":
         mape, mae, mse = ([] for _ in range(3))
-        if library == "AutoSklearn":
-            for weight, model in ensemble_model.get_models_with_weights():
-                mape.append(float('%.*g' % (3, mean_absolute_percentage_error(y, model.predict(X)))))
-                mae.append(float('%.*g' % (3, mean_absolute_error(y, model.predict(X)))))
-                mse.append(round(mean_squared_error(y, model.predict(X))))
-        elif library == "AutoGluon":
-            final_model = ensemble_model.get_model_best()
-            for model_name in ensemble_model.info()['model_info'][ensemble_model.get_model_best()]['stacker_info'][
-                'base_model_names']:
-                ensemble_model.set_model_best(model_name)
-                mape.append(float('%.*g' % (3, mean_absolute_percentage_error(y, ensemble_model.predict(X)))))
-                mae.append(float('%.*g' % (3, mean_absolute_error(y, ensemble_model.predict(X)))))
-                mse.append(round(mean_squared_error(y, ensemble_model.predict(X))))
-            ensemble_model.set_model_best(final_model)
+        for model_name, prediction in predictions.items():
+            if model_name != 'Ensemble':
+                mape.append(float('%.*g' % (3, mean_absolute_percentage_error(y, prediction))))
+                mae.append(float('%.*g' % (3, mean_absolute_error(y, prediction))))
+                mse.append(round(mean_squared_error(y, prediction)))
         data = {
             'weight': weights,
             'MAPE': mape,
@@ -75,26 +48,12 @@ def calculate_metrics(ensemble_model, X, y, task, library, weights):
         }
     else:
         accuracy, precision, recall, f1 = ([] for _ in range(4))
-        if library == "AutoSklearn":
-            class_names = list(y.unique())
-            class_names.sort()
-            for weight, model in ensemble_model.get_models_with_weights():
-                prediction = model.predict(X)
-                prediction_class = [class_names[idx] for idx in prediction]
-                accuracy.append(round(accuracy_score(y, prediction_class), 2))
-                precision.append(round(precision_score(y, prediction_class, average='micro'), 2))
-                recall.append(round(recall_score(y, prediction_class, average='micro'), 2))
-                f1.append(round(f1_score(y, prediction_class, average='micro'), 2))
-        elif library == "AutoGluon":
-            final_model = ensemble_model.get_model_best()
-            for model_name in ensemble_model.info()['model_info'][ensemble_model.get_model_best()]['stacker_info'][
-                'base_model_names']:
-                ensemble_model.set_model_best(model_name)
-                accuracy.append(round(accuracy_score(y, ensemble_model.predict(X)), 2))
-                precision.append(round(precision_score(y, ensemble_model.predict(X), average='micro'), 2))
-                recall.append(round(recall_score(y, ensemble_model.predict(X), average='micro'), 2))
-                f1.append(round(f1_score(y, ensemble_model.predict(X), average='micro'), 2))
-            ensemble_model.set_model_best(final_model)
+        for model_name, prediction in predictions.items():
+            if model_name != 'Ensemble':
+                accuracy.append(round(accuracy_score(y, prediction), 2))
+                precision.append(round(precision_score(y, prediction, average='macro'), 2))
+                recall.append(round(recall_score(y, prediction, average='macro'), 2))
+                f1.append(round(f1_score(y, prediction, average='macro'), 2))
         data = {
             'weight': weights,
             'accuracy': accuracy,
@@ -106,8 +65,8 @@ def calculate_metrics(ensemble_model, X, y, task, library, weights):
     return pd.DataFrame(data)
 
 
-def tbl_metrics(ensemble_model, X, y, task, library, weights):
-    df = calculate_metrics(ensemble_model, X, y, task, library, weights)
+def tbl_metrics(predictions, y, task, weights):
+    df = calculate_metrics(predictions, y, task, weights)
     return dash_table.DataTable(
         data=df.to_dict('records'),  # convert DataFrame to format compatible with dash
         columns=[
@@ -125,24 +84,12 @@ def tbl_metrics(ensemble_model, X, y, task, library, weights):
     )
 
 
-def calculate_metrics_adj_ensemble(ensemble_model, X, y, task, library, weights):
+def calculate_metrics_adj_ensemble(predictions, proba_predictions, y, task, weights):
     if task == "regression":
-        mse = round(mean_squared_error(y, ensemble_model.predict(X)))
-        mae = float('%.*g' % (3, mean_absolute_error(y, ensemble_model.predict(X))))
-        mape = float('%.*g' % (3, mean_absolute_percentage_error(y, ensemble_model.predict(X))))
-        predictions = []
-
-        if library == "AutoSklearn":
-            for weight, model in ensemble_model.get_models_with_weights():
-                predictions.append(model.predict(X).tolist())
-        elif library == "AutoGluon":
-            final_model = ensemble_model.get_model_best()
-            for model_name in ensemble_model.info()['model_info'][ensemble_model.get_model_best()]['stacker_info'][
-                'base_model_names']:
-                ensemble_model.set_model_best(model_name)
-                predictions.append(ensemble_model.predict(X).tolist())
-            ensemble_model.set_model_best(final_model)
-
+        mse = round(mean_squared_error(y, predictions['Ensemble']))
+        mae = float('%.*g' % (3, mean_absolute_error(y, predictions['Ensemble'])))
+        mape = float('%.*g' % (3, mean_absolute_percentage_error(y, predictions['Ensemble'])))
+        predictions = list(dict((name, predictions[name]) for name in predictions if name != 'Ensemble').values())
         y_adj = np.sum(np.array(predictions).T * weights, axis=1)
         mse_adj = round(mean_squared_error(y, y_adj))
         mae_adj = float('%.*g' % (3, mean_absolute_error(y, y_adj)))
@@ -153,22 +100,10 @@ def calculate_metrics_adj_ensemble(ensemble_model, X, y, task, library, weights)
             'Adjusted model': [mse_adj, mae_adj, mape_adj]
         })
     else:
-        accuracy = round(accuracy_score(y, ensemble_model.predict(X)), 2)
-        precision = round(precision_score(y, ensemble_model.predict(X), average='micro'), 2)
-        recall = round(recall_score(y, ensemble_model.predict(X), average='micro'), 2)
-        f1 = round(f1_score(y, ensemble_model.predict(X), average='micro'), 2)
-        proba_predictions = []
-        if library == "AutoSklearn":
-            for weight, model in ensemble_model.get_models_with_weights():
-                prediction = model.predict_proba(X)
-                proba_predictions.append(prediction.tolist())
-        elif library == "AutoGluon":
-            final_model = ensemble_model.get_model_best()
-            for model_name in ensemble_model.info()['model_info'][ensemble_model.get_model_best()]['stacker_info'][
-                'base_model_names']:
-                ensemble_model.set_model_best(model_name)
-                proba_predictions.append(ensemble_model.predict_proba(X).values.tolist())
-            ensemble_model.set_model_best(final_model)
+        accuracy = round(accuracy_score(y, predictions['Ensemble']), 2)
+        precision = round(precision_score(y, predictions['Ensemble'], average='macro'), 2)
+        recall = round(recall_score(y, predictions['Ensemble'], average='macro'), 2)
+        f1 = round(f1_score(y, predictions['Ensemble'], average='macro'), 2)
 
         y_proba_adj = [
             [sum(w * x for x, w in zip(elements, weights)) for elements in zip(*rows)]
@@ -180,9 +115,9 @@ def calculate_metrics_adj_ensemble(ensemble_model, X, y, task, library, weights)
         y_class_adj = [class_names[idx] for idx in y_adj]
 
         accuracy_adj = round(accuracy_score(y, y_class_adj), 2)
-        precision_adj = round(precision_score(y, y_class_adj, average='micro'), 2)
-        recall_adj = round(recall_score(y, y_class_adj, average='micro'), 2)
-        f1_adj = round(f1_score(y, y_class_adj, average='micro'), 2)
+        precision_adj = round(precision_score(y, y_class_adj, average='macro'), 2)
+        recall_adj = round(recall_score(y, y_class_adj, average='macro'), 2)
+        f1_adj = round(f1_score(y, y_class_adj, average='macro'), 2)
 
         df_metrics = pd.DataFrame({
             'metric': ['accuracy', 'precision', 'recall', 'f1 score'],
@@ -192,8 +127,8 @@ def calculate_metrics_adj_ensemble(ensemble_model, X, y, task, library, weights)
     return df_metrics
 
 
-def tbl_metrics_adj_ensemble(ensemble_model, X, y, task, library, weights):
-    df = calculate_metrics_adj_ensemble(ensemble_model, X, y, task, library, weights)
+def tbl_metrics_adj_ensemble(predictions, proba_predictions, y, task, weights):
+    df = calculate_metrics_adj_ensemble(predictions, proba_predictions, y, task, weights)
     return dash_table.DataTable(
         data=df.to_dict('records'),  # convert DataFrame to format compatible with dash
         columns=[
