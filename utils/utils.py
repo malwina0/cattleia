@@ -5,26 +5,85 @@ import zipfile
 from autogluon.tabular import TabularPredictor
 from dash import html
 
-# data loading function
-def parse_data(contents, filename):
-    content_type, content_string = contents.split(",")
+def parse_data(contents):
+    """
+    Parse data from a base64 encoded string.
 
+    Parameters
+    ----------
+    contents : str
+        A string containing the content type and content separated by a comma.
+        The content should be base64 encoded data representing a CSV file.
+
+    Returns
+    -------
+    pandas.DataFrame
+        A DataFrame parsed from the decoded CSV content.
+
+    Notes
+    -----
+    This function expects the contents parameter to be in the format: "content_type, content_string",
+    where content_type specifies the type of content and content_string is a base64 encoded CSV data.
+
+    Raises
+    ------
+    Exception
+        If there is an error while processing the file, an error message will be printed, and
+        an HTML Div with an error message will be returned.
+    """
+    content_type, content_string = contents.split(",")
     decoded = base64.b64decode(content_string)
     try:
-        if "csv" in filename:
-            df = pd.read_csv(io.StringIO(decoded.decode("utf-8")), sep = ',|;', engine='python')
-            return df
-        elif "pkl" in filename:
+        df = pd.read_csv(io.StringIO(decoded.decode("utf-8")), sep = ',|;|\t', engine='python')
+        return df
+
+    except Exception as e:
+        print(e)
+        return html.Div(["There was an error processing this file."])
+
+def parse_model(contents, filename):
+    """
+    Parse a machine learning model from a base64 encoded string.
+
+    Parameters
+    ----------
+    contents : str
+        A string containing the content type and content separated by a comma.
+        The content should be base64 encoded data representing a machine learning model file.
+
+    filename : str
+        The filename associated with the contents.
+
+    Returns
+    -------
+    tuple
+        A tuple containing the parsed machine learning model and the library used to create the model.
+
+    Notes
+    -----
+    This function expects the contents parameter to be in the format: "content_type, content_string",
+    where content_type specifies the type of content and content_string is a base64 encoded machine learning model.
+    The filename parameter is used to determine the appropriate action based on the file extension.
+
+    Raises
+    ------
+    Exception
+        If there is an error while processing the file, an error message will be printed, and
+        an HTML Div with an error message will be returned.
+    """
+    content_type, content_string = contents.split(",")
+    decoded = base64.b64decode(content_string)
+    try:
+        if ".pkl" in filename:
             model = pd.read_pickle(io.BytesIO(decoded))
             if "<class 'flaml" in str(model.__class__).split("."):
                 library = "Flaml"
             else:
                 library = "AutoSklearn"
             return model, library
-        elif "zip" in filename:
+        elif ".zip" in filename:
             with zipfile.ZipFile(io.BytesIO(decoded), 'r') as zip_ref:
                 zip_ref.extractall('./uploaded_model')
-
             model = TabularPredictor.load('./uploaded_model', require_py_version_match=False)
             library = "AutoGluon"
             return model, library
@@ -36,7 +95,7 @@ def parse_data(contents, filename):
 def get_task_from_model(ensemble_model, y, library):
     """Function that recognise machine learning task performed by ensemble model.
 
-   Parameters
+    Parameters
     ----------
     ensemble_model : Flaml, AutoGluon or AutoSklearn ensemble model.
 
@@ -49,10 +108,6 @@ def get_task_from_model(ensemble_model, y, library):
     -------
     task {'regression', 'classification', 'multiclass'}
         string that specifies the model task
-
-    Examples
-    --------
-    get_task_from_model(ensemble_model, y, library)
     """
     if library == 'AutoGluon':
         task = ensemble_model.info()['problem_type']
@@ -77,7 +132,7 @@ def get_predictions_from_model(ensemble_model, X, y, library, task):
     """Function that calculates predictions of component models from given ensemble
     model
 
-   Parameters
+    Parameters
     ----------
     ensemble_model : Flaml, AutoGluon or AutoSklearn ensemble model.
 
@@ -93,10 +148,6 @@ def get_predictions_from_model(ensemble_model, X, y, library, task):
     -------
     predictions: dictionary
         of form {'model_name' : 'prediction_vector'}
-
-    Examples
-    --------
-    get_predictions_from_model(ensemble_model, X, y, library, task)
     """
     predictions = {}
     if library == "Flaml":
@@ -155,11 +206,11 @@ def get_predictions_from_model(ensemble_model, X, y, library, task):
 
     return predictions
 
-def get_probabilty_pred_from_model(ensemble_model, X, library):
+def get_probability_pred_from_model(ensemble_model, X, library):
     """Function that calculates probability of belonging to a class from
      component models from given ensemble model
 
-   Parameters
+    Parameters
     ----------
     ensemble_model : Flaml, AutoGluon or AutoSklearn ensemble model.
 
@@ -171,10 +222,6 @@ def get_probabilty_pred_from_model(ensemble_model, X, library):
     Returns
     -------
     predictions: list containing vectors of probability of belonging to a class
-
-    Examples
-    --------
-    gget_probabilty_pred_from_model(ensemble_model, X, library)
     """
     proba_predictions = []
     if library == "AutoSklearn":
@@ -191,13 +238,28 @@ def get_probabilty_pred_from_model(ensemble_model, X, library):
     return proba_predictions
 
 def get_ensemble_weights(ensemble_model, library):
+    """
+    Retrieve the weights of individual models in an ensemble.
+
+    Parameters
+    ----------
+    ensemble_model : object
+      The ensemble model object containing multiple models.
+
+    library : str
+      The name of the library/framework used to create the ensemble model.
+      Supported values are "AutoSklearn" or "AutoGluon".
+
+    Returns
+    -------
+    list: A list containing the weights of individual models in the ensemble.
+    """
     weights = []
 
     if library == "AutoSklearn":
         for weight, model in ensemble_model.get_models_with_weights():
             weights.append(weight)
     elif library == "AutoGluon":
-        # TODO: test if needed and handle cases when there is more layers (not 'S1F1')
         weights = list(ensemble_model.info()['model_info'][ensemble_model.get_model_best()]['children_info']['S1F1'][
                            'model_weights'].values())
 

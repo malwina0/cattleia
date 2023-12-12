@@ -46,10 +46,6 @@ def accuracy_plot(predictions, y):
     -------
     fig : plotly.graph_objs._figure.Figure
         plotly plot
-
-    Examples
-    --------
-    accuracy_plot(predictions, y_class)
     """
     accuracy = []
     models_name = []
@@ -89,10 +85,6 @@ def precision_plot(predictions, y):
     -------
     fig : plotly.graph_objs._figure.Figure
         plotly plot
-
-    Examples
-    --------
-    precision_plot(predictions, y_class)
     """
     precision = []
     models_name = []
@@ -132,10 +124,6 @@ def recall_plot(predictions, y):
     -------
     fig : plotly.graph_objs._figure.Figure
         plotly plot
-
-    Examples
-    --------
-    recall_plot(predictions, y_class)
     """
     recall = []
     models_name = []
@@ -175,10 +163,6 @@ def f1_score_plot(predictions, y):
     -------
     fig : plotly.graph_objs._figure.Figure
         plotly plot
-
-    Examples
-    --------
-    f1_score_plot(predictions, y_class)
     """
     f1 = []
     models_name = []
@@ -218,10 +202,6 @@ def mape_plot(predictions, y):
     -------
     fig : plotly.graph_objs._figure.Figure
         plotly plot
-
-    Examples
-    --------
-    mape_plot(predictions, y_reg)
     """
     mape = []
     models_name = []
@@ -261,10 +241,6 @@ def mae_plot(predictions, y):
     -------
     fig : plotly.graph_objs._figure.Figure
         plotly plot
-
-    Examples
-    --------
-    mae_plot(predictions, y_reg)
     """
     mae = []
     models_name = []
@@ -304,10 +280,6 @@ def mse_plot(predictions, y):
     -------
     fig : plotly.graph_objs._figure.Figure
         plotly plot
-
-    Examples
-    --------
-    mse_plot(predictions, y_reg)
     """
     mse = []
     models_name = []
@@ -347,10 +319,6 @@ def rmse_plot(predictions, y):
     -------
     fig : plotly.graph_objs._figure.Figure
         plotly plot
-
-    Examples
-    --------
-    rmse_plot(predictions, y_reg)
     """
     rmse = []
     models_name = []
@@ -390,10 +358,6 @@ def r_2_plot(predictions, y):
     -------
     fig : plotly.graph_objs._figure.Figure
         plotly plot
-
-    Examples
-    --------
-    r_2_plot(predictions, y_reg)
     """
     r2 = []
     models_name = []
@@ -438,10 +402,6 @@ def permutation_feature_importance_all(ensemble_model, X, y, library="Flaml", ta
     -------
     plots : list of plotly.graph_objs._figure.Figure object
         plotly plot list
-
-    Examples
-    --------
-    permutation_feature_importance_all(model_reg, X_reg, y_reg, task="regression")
     """
     if library == "Flaml":
         plots = [permutation_feature_importance(ensemble_model, X, y, 'Ensemble')]
@@ -506,10 +466,6 @@ def permutation_feature_importance(model, X, y, name, task=False):
     -------
     fig : plotly.graph_objs._figure.Figure
         plotly plot
-
-    Examples
-    --------
-    permutation_feature_importance(model, X_transform, y, type(model).__name__)
     """
     if task == False:
         r = permutation_importance(model, X, y)
@@ -555,10 +511,6 @@ def correlation_plot(predictions, task="regression", y=None):
     -------
     fig : plotly.graph_objs._figure.Figure
         plotly plot
-
-    Examples
-    --------
-    correlation_plot(predictions, y_reg, task="regression")
     """
     predict_data = pd.DataFrame(predictions)
     if task == "regression":
@@ -623,10 +575,6 @@ def prediction_compare_plot(predictions, y, task="regression"):
     -------
     fig : plotly.graph_objs._figure.Figure
         plotly plot
-
-    Examples
-    --------
-    prediction_compare_plot(predictions, y_reg, task="regression")
     """
     plot_value = {}
     if task == "regression":
@@ -713,10 +661,6 @@ def partial_dependence_plots(ensemble_model, X, library="Flaml", autogluon_task=
     -------
     fig : list of plotly.graph_objs._figure.Figure
         list of plotly plot
-
-    Examples
-    --------
-    partial_dependence_plots(model_reg, X_reg, y_reg)
     """
     if library == "Flaml":
         ensemble_models = ensemble_model.model.estimators_
@@ -835,10 +779,6 @@ def partial_dependence_line_plot(y_values, x_values, model_names, name):
     -------
     fig : plotly.graph_objs._figure.Figure
         plotly plot
-
-    Examples
-    --------
-    partial_dependence_line_plot(values[variable], plot_x_value, model_name[variable], variable)
     """
     fig = empty_fig()
     fig.update_layout(
@@ -1184,16 +1124,6 @@ def partial_dependence_custom(
     -------
     predictions : :class:`~sklearn.utils.Bunch`
         Dictionary-like object, with the following attributes.
-
-    Examples
-    --------
-    >>> X = [[0, 0, 2], [1, 0, 0]]
-    >>> y = [0, 1]
-    >>> from sklearn.ensemble import GradientBoostingClassifier
-    >>> gb = GradientBoostingClassifier(random_state=0).fit(X, y)
-    >>> partial_dependence(gb, features=[0], X=X, percentiles=(0, 1),
-    ...                    grid_resolution=2) # doctest: +SKIP
-    (array([[-4.52...,  4.52...]]), [array([ 0.,  1.])])
     """
 
     # Use check_array only on lists and other non-array-likes / sparse. Do not
