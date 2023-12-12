@@ -123,31 +123,29 @@ def calculate_metrics(predictions, y, task, weights):
 
 
 def tbl_metrics(predictions, y, task, weights):
-    """Generates a Dash DataTable displaying evaluation metrics for the ensemble model.
+    """Create a Dash DataTable displaying evaluation metrics for models such as MAPE, MAE, MSE, RMSE and R squared for
+    regression tasks, or accuracy, precision, recall, and F1 score for classification tasks. It uses the
+    `calculate_metrics` function to compute these metrics based on provided predictions, true labels, and weights.
 
     Parameters
     ----------
-    ensemble_model : object
-        The ensemble model object for which metrics are displayed.
-    X : array-like of shape (n_samples, n_features)
-        The input data.
-    y : array-like of shape (n_samples,)
-        The target values.
-    task : {'regression', 'classification'}
-        The type of task, either regression or classification, to determine which metrics to display.
-    library : {'AutoSklearn', 'AutoGluon'}
-        The library type used for the ensemble model.
+    predictions : dict
+        A dictionary containing model names as keys and their corresponding predictions as values.
+    y : array-like
+        The true labels or values.
+    task : str
+        The type of task, either "regression" or "classification".
     weights : array-like
-     List of weights corresponding to each model in the ensemble.
+        The weights associated with the models.
 
     Returns
     -------
     dash_table.DataTable
-        A Dash DataTable displaying calculated metrics based on the task and library.
+        A Dash DataTable containing evaluation metrics for each model.
     """
     df = calculate_metrics(predictions, y, task, weights)
     return dash_table.DataTable(
-        data=df.to_dict('records'),  # convert DataFrame to format compatible with dash
+        data=df.to_dict('records'),
         columns=[
             {'name': col, 'id': col, 'editable': True if col == 'Weight' else False} for col in df.columns
         ],
@@ -171,43 +169,32 @@ def tbl_metrics(predictions, y, task, weights):
 
 
 def calculate_metrics_adj_ensemble(predictions, proba_predictions, y, task, weights):
-    """Calculate evaluation metrics for an ensemble model considering both original and adjusted predictions.
+    """Calculate adjusted evaluation metrics for an ensemble model. For regression tasks,
+    it computes MSE, MAE, and MAPE for both the original and adjusted ensemble predictions based on
+    provided predictions, true labels, and weights. For classification tasks, it computes accuracy,
+    precision, recall, and F1 score for both the original and adjusted ensemble predictions.
 
     Parameters
     ----------
     predictions : dict
-        Dictionary containing predictions where 'Ensemble' key holds the ensemble predictions.
+        A dictionary containing model names as keys and their corresponding predictions as values.
+
     proba_predictions : list
-        List of probability predictions for each class.
-    y : array-like of shape (n_samples,)
-        True target values.
-    task : {'regression', 'classification'}
-        Task type, 'regression' for regression problems and 'classification' for classification problems.
-    weights : array-like of shape (n_estimators,)
-        Weights applied to individual predictions in the ensemble.
+        A list containing probability predictions.
+
+    y : array-like
+        The true labels or values.
+
+    task : str
+        The type of task, either "regression" or "classification".
+
+    weights : array-like
+        The weights associated with the models.
 
     Returns
     -------
     pandas.DataFrame
-        DataFrame containing evaluation metrics for the original and adjusted models.
-
-    Notes
-    -----
-    For regression tasks, the following metrics are calculated:
-    - MSE (Mean Squared Error)
-    - MAE (Mean Absolute Error)
-    - MAPE (Mean Absolute Percentage Error)
-    - RMSE (Root Mean Squared Error)
-    - R squared (Coefficient of Determination)
-
-    For classification tasks, the following metrics are calculated:
-    - Accuracy
-    - Precision
-    - Recall
-    - F1 Score
-
-    The 'Original model' and 'Adjusted model' columns in the returned DataFrame
-    represent the respective metrics for the original and adjusted predictions.
+        A DataFrame containing calculated evaluation metrics for the ensemble model, both original and adjusted.
     """
     if task == "regression":
         mse = round(mean_squared_error(y, predictions['Ensemble']))
@@ -259,28 +246,29 @@ def calculate_metrics_adj_ensemble(predictions, proba_predictions, y, task, weig
 
 
 def tbl_metrics_adj_ensemble(predictions, proba_predictions, y, task, weights):
-    """Generates a Dash DataTable displaying evaluation metrics for the adjusted ensemble model.
+    """
+    Create a Dash DataTable displaying adjusted evaluation metrics for an ensemble model. It uses
+    the `calculate_metrics_adj_ensemble` function to compute these metrics based on provided predictions,
+    probability predictions, true labels, and weights.
 
     Parameters
     ----------
-    ensemble_model : object
-        The ensemble model object for which metrics are displayed.
-    X : array-like of shape (n_samples, n_features)
-        The input data.
-    y : array-like of shape (n_samples,)
-        The target values.
-    task : {'regression', 'classification'}
-        The type of task, either regression or classification, to determine which metrics to display.
-    library : {'AutoSklearn', 'AutoGluon'}
-        The library type used for the ensemble model.
+    predictions : dict
+        A dictionary containing model names as keys and their corresponding predictions as values.
+    proba_predictions : list
+        A list containing probability predictions.
+    y : array-like
+        The true labels or values.
+    task : str
+        The type of task, either "regression" or "classification".
     weights : array-like
-        List of weights corresponding to each model in the ensemble.
+        The weights associated with the models.
 
     Returns
     -------
     dash_table.DataTable
-        A Dash DataTable displaying calculated metrics for the original and adjusted models based on the task.
-        The table contains conditional styling highlighting differences between original and adjusted models.
+        A Dash DataTable containing adjusted evaluation metrics for the ensemble model. The table contains conditional
+        styling highlighting differences between original and adjusted models.
     """
     df = calculate_metrics_adj_ensemble(predictions, proba_predictions, y, task, weights)
     style_data_conditional = []
