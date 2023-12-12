@@ -1,6 +1,10 @@
 import dash
 from dash import html, dcc, Output, Input, callback, State, ALL
 import dash_bootstrap_components as dbc
+from dash.exceptions import PreventUpdate
+import dash_daq as daq
+import shutil
+import pandas as pd
 import sys
 from components import compatimetrics_plots, metrics
 import shutil
@@ -282,21 +286,21 @@ def update_model(contents, filename, df, column, about_us):
                 )
                 weights_plots.append(html.Br())
                 weights_plots.append(
-                    dbc.Row([
-                        dbc.Col([
-                            html.Div([], style={'height': '31px'}),  # placeholder to show metrics in the same line
-                            html.Div(
-                                [slider_section(model_name, weights[i], i) for i, model_name in enumerate(base_models)],
-                                style={'color': 'white'})
-                        ], width=7),
-                        dbc.Col([tbl_metrics(predictions, y, task, weights)
-                                 ], width=4)
-                    ])
-                )
-                weights_plots.append(
-                    dbc.Row([
-                        dbc.Col([tbl_metrics_adj_ensemble(predictions, proba_predictions, y, task, weights)], width=4)
-                    ], justify="center")
+                    dbc.Col([
+                        dbc.Row([
+                            dbc.Col([
+                                html.Div([], style={'height': '31px'}),  # placeholder to show metrics in the same line
+                                html.Div(
+                                    [slider_section(model_name, weights[i], i) for i, model_name in enumerate(base_models)],
+                                    style={'color': 'white'})
+                            ], width=7),
+                            dbc.Col([tbl_metrics(predictions, y, task, weights)
+                                     ], width=4)
+                        ]),
+                        dbc.Row([
+                            dbc.Col([tbl_metrics_adj_ensemble(predictions, proba_predictions, y, task, weights)], width=4)
+                        ], justify="center")
+                    ], className="weight-analysis-col")
                 )
 
             for plot in metrics.permutation_feature_importance_all(model, X, y, library=library, task=task):
@@ -471,23 +475,21 @@ def update_compatimetrics_plot(predictions, model_to_compare, task, df, column):
                                        className="plot")],
                             width=6),
                 ]),
-                dbc.Row([dbc.Col([html.H3("""
-                Disagreement ratio presented on plot below on the left is measuring how many observations were
-                predicted differently by two models regarding to the class of the record. It can show which class
-                was more difficult to predict when joining models. 
-               """,
-                                          className="annotation_str", id="ann_comp_9"), ], width=6),
-                         dbc.Col([html.H3("""
-                Conjunctive metrics are analogous to standard evaluation metrics, but instead of comparing target
-                variable with one prediction vector, we use two prediction vectors at the same time. Simply we
-                mark prediction as correct, if two models predicted it correctly. Thus, conjunctive accuracy,
-                presented on matrix above, precision and recall, showed together below, are good 
-                indicators of joined model performance as they measure the same ratios as original
-                metrics. Worth mentioning - conjunctive recall is generally lower and conjunctive precision 
-                is generally higher, which is related to their definition. 
-                               """,
-                                          className="annotation_str", id="ann_comp_8"), ], width=6)]),
-
+                dbc.Row([dbc.Col([
+                    html.H3("""Disagreement ratio presented on plot below on the left is measuring how many 
+                        observations were predicted differently by two models regarding to the class of the record. 
+                        It can show which class was more difficult to predict when joining models.""",
+                        className="annotation_str", id="ann_comp_9"),], width=6),
+                    dbc.Col([html.H3("""Conjunctive metrics are analogous to standard evaluation metrics,
+                        but instead of comparing target variable with one prediction vector, we use two prediction vectors 
+                        at the same time. Simply we mark prediction as correct, if two models predicted it correctly. 
+                        Thus, conjunctive accuracy, presented on matrix above, precision and recall, showed together below, 
+                        are good indicators of joined model performance as they measure the same ratios as original
+                        metrics. Worth mentioning - conjunctive recall is generally lower and conjunctive precision 
+                        is generally higher, which is related to their definition.""",
+                        className="annotation_str", id="ann_comp_8"),
+                    ], width=6)
+                ]),
                 dbc.Row([
                     dbc.Col([dcc.Graph(
                         figure=compatimetrics_plots.disagreement_ratio_plot(predictions, y, model_to_compare),
@@ -508,7 +510,7 @@ def update_compatimetrics_plot(predictions, model_to_compare, task, df, column):
                     [dcc.Graph(
                         figure=compatimetrics_plots.prediction_correctness_plot(predictions, y, model_to_compare),
                         className='plot')
-                    ]),
+                     ]),
                 html.H3("""
                         On the plot below one can observe the progess of incresing average collective score 
                         through the whole data set. This plot can be helpful when searching for areas of data set
@@ -519,7 +521,7 @@ def update_compatimetrics_plot(predictions, model_to_compare, task, df, column):
                     [dcc.Graph(
                         figure=compatimetrics_plots.collective_cummulative_score_plot(predictions, y, model_to_compare),
                         className='plot')
-                    ]),
+                     ]),
             ]
         elif task == 'regression':
             children = [dbc.Row([
@@ -533,7 +535,7 @@ def update_compatimetrics_plot(predictions, model_to_compare, task, df, column):
                         width=6),
                 dbc.Col([dcc.Graph(figure=compatimetrics_plots.rmsd_matrix(predictions), className="plot")],
                         width=6),
-            ]),
+                ]),
                 html.H3("""
                     Matrices below show ratio of agreement and strong disagreement between two models. Agreement ratio 
                     calculates the percentage of observations that two models predicted closer than fiftieth part of 
@@ -659,6 +661,74 @@ def update_compatimetrics_plot(predictions, model_to_compare, task, df, column):
     return children
 
 
+# callback to reset weights values to default
+@callback(
+    Output({"type": "weight_slider", "index": ALL}, 'value', allow_duplicate=True),
+    Input('update-weights-button', 'n_clicks'),
+    State('weights_list', 'data'),
+    prevent_initial_call=True
+)
+def reset_sliders(n_clicks, values):
+    if n_clicks > 0:
+        return values
+    else:
+        raise PreventUpdate
+
+
+@callback(
+    Output({"type": "weight_slider", "index": ALL}, 'value', allow_duplicate=True),
+    Output('weight-update-info', 'children'),
+    Output('metrics-table', 'data'),
+    Input('metrics-table', 'data'),
+    prevent_initial_call=True
+)
+def update_slider_with_table_weights(table_data):
+    is_updated = [isinstance(row['Weight'], str) for row in table_data]
+    index = is_updated.index(True) if True in is_updated else None
+    updated_table_data = table_data.copy()
+
+    def is_float(value):
+        try:
+            float(value)
+            return True
+        except ValueError:
+            return False
+
+    if index is not None:
+        non_float_values = [row['Weight'] for row in table_data if not is_float(row['Weight'])]
+        if not non_float_values:
+            values = [float(row['Weight']) for row in table_data]
+            updated_value = values[index]
+            if updated_value > 1:
+                info = html.Div([f"Please ensure values are within the range of [0, 1]. The provided value of "
+                                 f"{updated_value} has been adjusted to 1."])
+                updated_value = 1
+            elif updated_value < 0:
+                info = html.Div([f"Please ensure values are within the range of [0, 1]. The provided value of "
+                                 f"{updated_value} has been adjusted to 0."])
+                updated_value = 0
+            else:
+                info = None
+        else:
+            info = html.Div(
+                [f"A numeric value is expected, but a different value was provided. Therefore, it has been set to 0."])
+            updated_value = 0
+
+        other_values = [float(row['Weight']) for idx, row in enumerate(table_data) if idx != index]
+        sum_values = sum(value for i, value in enumerate(other_values))
+        weights_adj = [round(((1 - updated_value) * value / sum_values), 2) for value in other_values]
+        weights_adj.insert(index, updated_value)
+        for i, row in enumerate(updated_table_data):
+            if i < len(other_values) + 1:
+                row['Weight'] = weights_adj[i]
+    else:
+        weights_adj = [float(row['Weight']) for row in table_data]
+        info = None
+        updated_table_data = table_data.copy()
+
+    return weights_adj, info, updated_table_data
+
+
 # callback to changing model weights
 @callback(
     Output('metrics-table', 'data', allow_duplicate=True),
@@ -676,13 +746,10 @@ def display_output(values, contents, df, column, task, predictions, proba_predic
     if contents:
         df = pd.DataFrame.from_dict(df).dropna()
         y = df.iloc[:, df.columns == column["name"]].squeeze()
-
         sum_slider_values = sum(values)
-        weights = [round((value / sum_slider_values), 2) for value in values]
-
-        df = calculate_metrics(predictions, y, task, weights)
-        df_adj = calculate_metrics_adj_ensemble(predictions, proba_predictions, y, task, weights)
-
+        weights_adj = [round((value / sum_slider_values), 2) for value in values]
+        df = calculate_metrics(predictions, y, task, weights_adj)
+        df_adj = calculate_metrics_adj_ensemble(predictions, proba_predictions, y, task, weights_adj)
         return df.to_dict('records'), df_adj.to_dict('records')
 
 

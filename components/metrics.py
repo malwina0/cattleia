@@ -1,18 +1,11 @@
 import pandas as pd
+import numpy as np
 import plotly.express as px
 import plotly.graph_objects as go
-import numpy as np
-from sklearn.metrics import mean_absolute_percentage_error
-from sklearn.metrics import mean_absolute_error
-from sklearn.metrics import mean_squared_error
-from sklearn.metrics import accuracy_score
-from sklearn.metrics import precision_score
-from sklearn.metrics import recall_score
-from sklearn.metrics import f1_score
-from sklearn.metrics import r2_score
+from sklearn.metrics import mean_absolute_percentage_error, mean_absolute_error, mean_squared_error, accuracy_score, \
+    precision_score, recall_score, f1_score, r2_score
+from sklearn.inspection import permutation_importance, partial_dependence
 from scipy.stats import chi2_contingency
-from sklearn.inspection import permutation_importance
-from sklearn.inspection import partial_dependence
 
 
 def empty_fig():

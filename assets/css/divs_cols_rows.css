@@ -1,0 +1,10 @@
+.weight-analysis-col{
+    margin-top: 20px;
+    margin-bottom: 20px;
+    margin-left: 5px;
+    margin-right: 10px;
+    border: 20px solid;
+    border-color: rgba(44,47,56,255);
+    border-radius: 25px;
+    background-color: rgba(44, 47, 56, 255);
+}

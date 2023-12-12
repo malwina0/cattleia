@@ -1,28 +1,28 @@
-from dash import html, Dash, dcc, Output, Input, callback, MATCH, State, ALL, dash_table
+from dash import html, dcc, dash_table
 import dash_bootstrap_components as dbc
 import pandas as pd
 import numpy as np
 from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, mean_absolute_percentage_error, \
-    mean_absolute_error, mean_squared_error
+    mean_absolute_error, mean_squared_error, r2_score
 
 def slider_section(model_name, weight, i):
-    """Generate a slider section for a model's weight adjustment.
+    """Creates an HTML Div containing a slider and model name.
 
     Parameters
     ----------
     model_name : str
-        The name of the model for which the slider section is being created.
-
+        The name of the model to display.
     weight : float
-        The initial weight value of the model.
-
+        The initial value for the slider representing the weight of the model.
     i : int
-        The index or identifier of the model.
+        Index used to identify the slider.
 
     Returns
     -------
     dash_html_components.Div
-        A Dash Div component containing the slider section for the specified model.
+        An HTML Div element containing a row with two columns:
+        - The first column displays the model name.
+        - The second column contains a Dash Slider component for adjusting the weight.
     """
     return html.Div([
         dbc.Row([
@@ -40,50 +40,68 @@ def slider_section(model_name, weight, i):
                     tooltip={"placement": "right", "always_visible": False},
                     updatemode='drag',
                     persistence=True,
-                    persistence_type='session',
+                    persistence_type='memory',
                     marks=None,
                     className='weight-slider',
                 ),
                 width=9
             )
-        ], style={'height': '30px'})
+        ], style={'height': '30.3px'})
     ], style={'display': 'inline'})
 
 
 def calculate_metrics(predictions, y, task, weights):
-    """Calculate evaluation metrics for models' predictions.
+    """Calculate evaluation metrics for individual models and their weighted ensemble.
 
     Parameters
     ----------
     predictions : dict
-        A dictionary containing model names as keys and their corresponding predictions as values.
-
-    y : array-like
-        The true labels or values.
-
-    task : str {"regression", "classification"}
-        The type of task, either "regression" or "classification".
-
-    weights : array-like
-        The weights associated with the models.
+        Dictionary containing predictions where keys represent model names and values are predictions.
+    y : array-like of shape (n_samples,)
+        True target values.
+    task : {'regression', 'classification'}
+        Task type, 'regression' for regression problems and 'classification' for classification problems.
+    weights : array-like of shape (n_estimators,)
+        Weights applied to individual predictions in the ensemble.
 
     Returns
     -------
     pandas.DataFrame
-        A DataFrame containing calculated evaluation metrics for each model.
+        DataFrame containing evaluation metrics for each individual model and the weighted ensemble.
+
+    Notes
+    -----
+    For regression tasks, the following metrics are calculated for individual models:
+    - MAPE (Mean Absolute Percentage Error)
+    - MAE (Mean Absolute Error)
+    - MSE (Mean Squared Error)
+    - RMSE (Root Mean Squared Error)
+    - R squared (Coefficient of Determination)
+
+    For classification tasks, the following metrics are calculated for individual models:
+    - Accuracy
+    - Precision
+    - Recall
+    - F1 Score
+
+    The DataFrame includes columns for weights assigned to models and respective metrics.
     """
     if task == "regression":
-        mape, mae, mse = ([] for _ in range(3))
+        mape, mae, mse, rmse, r_squared = ([] for _ in range(5))
         for model_name, prediction in predictions.items():
             if model_name != 'Ensemble':
                 mape.append(float('%.*g' % (3, mean_absolute_percentage_error(y, prediction))))
                 mae.append(float('%.*g' % (3, mean_absolute_error(y, prediction))))
                 mse.append(round(mean_squared_error(y, prediction)))
+                rmse.append(round(mean_squared_error(y, prediction, squared=False)))
+                r_squared.append(float('%.*g' % (3, r2_score(y, prediction))))
         data = {
-            'weight': weights,
+            'Weight': weights,
             'MAPE': mape,
             'MAE': mae,
-            'MSE': mse
+            'MSE': mse,
+            'RMSE': rmse,
+            'R squared': r_squared
         }
     else:
         accuracy, precision, recall, f1 = ([] for _ in range(4))
@@ -94,18 +112,18 @@ def calculate_metrics(predictions, y, task, weights):
                 recall.append(round(recall_score(y, prediction, average='macro'), 2))
                 f1.append(round(f1_score(y, prediction, average='macro'), 2))
         data = {
-            'weight': weights,
-            'accuracy': accuracy,
-            'precision': precision,
-            'recall': recall,
-            'f1 score': f1
+            'Weight': weights,
+            'Accuracy': accuracy,
+            'Precision': precision,
+            'Recall': recall,
+            'F1 score': f1
         }
 
     return pd.DataFrame(data)
 
 
 def tbl_metrics(predictions, y, task, weights):
-    """Create a Dash DataTable displaying evaluation metrics for models such as MAPE, MAE, MSE for
+    """Create a Dash DataTable displaying evaluation metrics for models such as MAPE, MAE, MSE, RMSE and R squared for
     regression tasks, or accuracy, precision, recall, and F1 score for classification tasks. It uses the
     `calculate_metrics` function to compute these metrics based on provided predictions, true labels, and weights.
 
@@ -113,13 +131,10 @@ def tbl_metrics(predictions, y, task, weights):
     ----------
     predictions : dict
         A dictionary containing model names as keys and their corresponding predictions as values.
-
     y : array-like
         The true labels or values.
-
     task : str
         The type of task, either "regression" or "classification".
-
     weights : array-like
         The weights associated with the models.
 
@@ -132,15 +147,22 @@ def tbl_metrics(predictions, y, task, weights):
     return dash_table.DataTable(
         data=df.to_dict('records'),
         columns=[
-            {'name': col, 'id': col} for col in df.columns
+            {'name': col, 'id': col, 'editable': True if col == 'Weight' else False} for col in df.columns
         ],
-        style_table={'backgroundColor': '#2c2f38', 'border': '1px solid #2c2f38'},
+        style_table={
+            'backgroundColor': '#3a3e4a',
+            'border': '3px solid #1e1e1e',
+        },
         style_cell={
             'textAlign': 'center',
             'color': 'white',
-            'border': '1px solid #2c2f38',
-            'backgroundColor': '#1e1e1e',
+            'border': '1.5px solid #1e1e1e',
+            'backgroundColor': '#3a3e4a',
             'height': '30px'
+        },
+        style_header={
+            'fontWeight': 'bold',
+            'color': '#ffc4f7'
         },
         id='metrics-table'
     )
@@ -178,15 +200,22 @@ def calculate_metrics_adj_ensemble(predictions, proba_predictions, y, task, weig
         mse = round(mean_squared_error(y, predictions['Ensemble']))
         mae = float('%.*g' % (3, mean_absolute_error(y, predictions['Ensemble'])))
         mape = float('%.*g' % (3, mean_absolute_percentage_error(y, predictions['Ensemble'])))
+        rmse = round(mean_squared_error(y, predictions['Ensemble'], squared=False))
+        r_squared = float('%.*g' % (3, r2_score(y, predictions['Ensemble'])))
+
         predictions = list(dict((name, predictions[name]) for name in predictions if name != 'Ensemble').values())
         y_adj = np.sum(np.array(predictions).T * weights, axis=1)
+
         mse_adj = round(mean_squared_error(y, y_adj))
         mae_adj = float('%.*g' % (3, mean_absolute_error(y, y_adj)))
         mape_adj = float('%.*g' % (3, mean_absolute_percentage_error(y, y_adj)))
+        rmse_adj = round(mean_squared_error(y, y_adj, squared=False))
+        r_squared_adj = float('%.*g' % (3, r2_score(y, y_adj)))
+
         df_metrics = pd.DataFrame({
-            'metric': ['MSE', 'MAE', 'MAPE'],
-            'Original model': [mse, mae, mape],
-            'Adjusted model': [mse_adj, mae_adj, mape_adj]
+            'Metric': ['MSE', 'MAE', 'MAPE', 'RMSE', 'R squared'],
+            'Original model': [mse, mae, mape, rmse, r_squared],
+            'Adjusted model': [mse_adj, mae_adj, mape_adj, rmse_adj, r_squared_adj]
         })
     else:
         accuracy = round(accuracy_score(y, predictions['Ensemble']), 2)
@@ -225,38 +254,97 @@ def tbl_metrics_adj_ensemble(predictions, proba_predictions, y, task, weights):
     Parameters
     ----------
     predictions : dict
-      A dictionary containing model names as keys and their corresponding predictions as values.
-
+        A dictionary containing model names as keys and their corresponding predictions as values.
     proba_predictions : list
-      A list containing probability predictions.
-
+        A list containing probability predictions.
     y : array-like
-      The true labels or values.
-
+        The true labels or values.
     task : str
-      The type of task, either "regression" or "classification".
-
+        The type of task, either "regression" or "classification".
     weights : array-like
-      The weights associated with the models.
+        The weights associated with the models.
 
     Returns
     -------
     dash_table.DataTable
-      A Dash DataTable containing adjusted evaluation metrics for the ensemble model.
+        A Dash DataTable containing adjusted evaluation metrics for the ensemble model. The table contains conditional
+        styling highlighting differences between original and adjusted models.
     """
     df = calculate_metrics_adj_ensemble(predictions, proba_predictions, y, task, weights)
+    style_data_conditional = []
+    if task == 'regression':
+        style_data_conditional.extend([
+            {
+                'if': {
+                    'filter_query': '{Original model} < {Adjusted model}',
+                    'column_id': 'Adjusted model',
+                    'row_index': [0, 1, 2, 3]
+                },
+                'backgroundColor': '#662f2f',
+            },
+            {
+                'if': {
+                    'filter_query': '{Original model} > {Adjusted model}',
+                    'column_id': 'Adjusted model',
+                    'row_index': [0, 1, 2, 3]
+                },
+                'backgroundColor': '#2b5c35',
+            },
+            {
+                'if': {
+                    'filter_query': '{Original model} < {Adjusted model}',
+                    'column_id': 'Adjusted model',
+                    'row_index': 4
+                },
+                'backgroundColor': '#2b5c35',
+            },
+            {
+                'if': {
+                    'filter_query': '{Original model} > {Adjusted model}',
+                    'column_id': 'Adjusted model',
+                    'row_index': 4
+                },
+                'backgroundColor': '#662f2f',
+            }
+        ])
+    else:
+        style_data_conditional.extend([
+            {
+                'if': {
+                    'filter_query': '{Original model} > {Adjusted model}',
+                    'column_id': 'Adjusted model'
+                },
+                'backgroundColor': '#662f2f',
+            },
+            {
+                'if': {
+                    'filter_query': '{Original model} < {Adjusted model}',
+                    'column_id': 'Adjusted model'
+                },
+                'backgroundColor': '#2b5c35',
+            }
+        ])
     return dash_table.DataTable(
         data=df.to_dict('records'),
         columns=[
             {'name': col, 'id': col} for col in df.columns
         ],
-        style_table={'backgroundColor': '#2c2f38', 'border': '2px solid #2c2f38'},
+        style_table={
+            'backgroundColor': '#3a3e4a',
+            'border': '3px solid #1e1e1e',
+            'marginTop': '10px'
+        },
         style_cell={
             'textAlign': 'center',
             'color': 'white',
-            'border': '2px solid #2c2f38',
-            'backgroundColor': '#1e1e1e',
+            'border': '1.5px solid #1e1e1e',
+            'backgroundColor': '#3a3e4a',
             'height': '30px'
         },
+        style_header={
+            'fontWeight': 'bold',
+            'color': '#ffc4f7'
+        },
+        style_data_conditional=style_data_conditional,
         id='adj_weights-table'
     )
