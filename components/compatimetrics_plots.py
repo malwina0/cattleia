@@ -24,7 +24,8 @@ matrix_layout = {'plot_bgcolor':'rgba(44,47,56,255)',
         'title_font_color':"rgba(225, 225, 225, 255)",
         'title_font_size':28,
         'xaxis_title_standoff':300,
-        'yaxis_ticklen':39}
+        'yaxis_ticklen':39,
+        'coloraxis_colorbar_title_text':''}
 
 def msd_matrix(predictions):
     """Mean Squared Difference matrix of every pair of models from the ensemble model.
@@ -50,11 +51,17 @@ def msd_matrix(predictions):
             else:
                 matrix[i, j] = round(mean_squared_difference(predictions[models[i]], predictions[models[j]]))
     matrix = pd.DataFrame(matrix, index=models, columns=models)
-    fig = px.imshow(matrix, color_continuous_scale=[[0, 'lightblue'], [0.5, 'blue'], [1, 'purple']])
+    fig = px.imshow(matrix, color_continuous_scale=[[0, 'lightblue'], [0.5, 'blue'], [1, 'purple']],
+                    labels=dict(x="Model 1",
+                                y="Model 2",
+                                color="MSD")
+                    )
     fig.update_layout(matrix_layout,
                       title='Mean Squared Error')
-    fig.update_xaxes(tickangle=30)
-    fig.update_xaxes(tickfont_size=10)
+    fig.update_xaxes(tickangle=30,
+                     title="")
+    fig.update_xaxes(tickfont_size=10,
+                     title="")
     fig.update_traces(textfont_size=13, textfont_color="rgba(255, 255, 255, 255)")
 
     return fig
@@ -85,11 +92,17 @@ def rmsd_matrix(predictions):
                 matrix[i, j] = round(root_mean_squared_difference(predictions[models[i]],
                                                                   predictions[models[j]]))
     matrix = pd.DataFrame(matrix, index=models, columns=models)
-    fig = px.imshow(matrix, text_auto=True, color_continuous_scale=[[0, 'lightblue'], [0.5, 'blue'], [1, 'purple']])
+    fig = px.imshow(matrix, color_continuous_scale=[[0, 'lightblue'], [0.5, 'blue'], [1, 'purple']],
+                    labels=dict(x="Model 1",
+                                y="Model 2",
+                                color="RMSD")
+                    )
     fig.update_layout(matrix_layout,
                       title="Root Mean Squared Error")
-    fig.update_xaxes(tickangle=30)
-    fig.update_xaxes(tickfont_size=10)
+    fig.update_xaxes(tickangle=30,
+                     title="")
+    fig.update_xaxes(tickfont_size=10,
+                     title="")
     fig.update_traces(textfont_size=13, textfont_color="rgba(255, 255, 255, 255)")
 
     return fig
@@ -125,12 +138,18 @@ def sdr_matrix(predictions, y):
     matrix = pd.DataFrame(matrix, index=models, columns=models)
     fig = px.imshow(matrix, text_auto=True, color_continuous_scale=[[0, 'lightblue'], [0.5, 'blue'], [1, 'purple']],
                     zmin=0,
-                    zmax=1)
+                    zmax=1,
+                    labels=dict(x="Model 1",
+                                y="Model 2",
+                                color="Strong Disagreement Ratio")
+                    )
     fig.update_layout(matrix_layout,
         title="Strong Disagreement Ratio",
     )
-    fig.update_xaxes(tickangle=30)
-    fig.update_xaxes(tickfont_size=10)
+    fig.update_xaxes(tickangle=30,
+                     title="")
+    fig.update_xaxes(tickfont_size=10,
+                     title="")
     fig.update_traces(textfont_size=13, textfont_color="rgba(255, 255, 255, 255)")
 
     return fig
@@ -166,13 +185,18 @@ def ar_matrix(predictions, y):
     matrix = pd.DataFrame(matrix, index=models, columns=models)
     fig = px.imshow(matrix, text_auto=True, color_continuous_scale=[[0, 'lightblue'], [0.5, 'blue'], [1, 'purple']],
                     zmin=0,
-                    zmax=1
+                    zmax=1,
+                    labels=dict(x="Model 1",
+                                y="Model 2",
+                                color="Agreement Ratio")
                     )
     fig.update_layout(matrix_layout,
         title="Agreement Ratio"
     )
-    fig.update_xaxes(tickangle=30)
-    fig.update_xaxes(tickfont_size=10)
+    fig.update_xaxes(tickangle=30,
+                     title="")
+    fig.update_xaxes(tickfont_size=10,
+                     title="")
     fig.update_traces(textfont_size=13, textfont_color="rgba(255, 255, 255, 255)")
 
     return fig
@@ -417,12 +441,18 @@ def uniformity_matrix(predictions):
                 matrix[i, j] = round(uniformity(predictions[models[i]], predictions[models[j]]), 2)
     matrix = pd.DataFrame(matrix, index=models, columns=models)
     fig = px.imshow(matrix, text_auto=True, color_continuous_scale=[[0, 'lightblue'], [0.5, 'blue'], [1, 'purple']],
-                    zmin=0, zmax=1)
+                    zmin=0, zmax=1,
+                    labels=dict(x="Model 1",
+                                y="Model 2",
+                                color="Uniformity")
+                    )
     fig.update_layout(matrix_layout,
         title="Uniformity"
     )
-    fig.update_xaxes(tickangle=30)
-    fig.update_xaxes(tickfont_size=10)
+    fig.update_xaxes(tickangle=30,
+                     title = "")
+    fig.update_xaxes(tickfont_size=10,
+                     title = "")
     fig.update_traces(textfont_size=13, textfont_color="rgba(255, 255, 255, 255)")
 
     return fig
@@ -453,12 +483,18 @@ def incompatibility_matrix(predictions):
                 matrix[i, j] = round(disagreement_ratio(predictions[models[i]], predictions[models[j]]), 2)
     matrix = pd.DataFrame(matrix, index=models, columns=models)
     fig = px.imshow(matrix, text_auto=True, color_continuous_scale=[[0, 'lightblue'], [0.5, 'blue'], [1, 'purple']],
-                    zmin=0, zmax=1)
+                    zmin=0, zmax=1,
+                    labels=dict(x="Model 1",
+                                y="Model 2",
+                                color="Incompatibility")
+                    )
     fig.update_layout(matrix_layout,
         title="Incompatibility"
     )
-    fig.update_xaxes(tickangle=30)
-    fig.update_xaxes(tickfont_size=10)
+    fig.update_xaxes(tickangle=30,
+                     title="")
+    fig.update_xaxes(tickfont_size=10,
+                     title="")
     fig.update_traces(textfont_size=13, textfont_color="rgba(255, 255, 255, 255)")
 
     return fig
@@ -492,12 +528,18 @@ def acs_matrix(predictions, y):
                 matrix[i, j] = round(average_collective_score(predictions[models[i]], predictions[models[j]], y)[0], 2)
     matrix = pd.DataFrame(matrix, index=models, columns=models)
     fig = px.imshow(matrix, text_auto=True, color_continuous_scale=[[0, 'lightblue'], [0.5, 'blue'], [1, 'purple']],
-                    zmin=0, zmax=1)
+                    zmin=0, zmax=1,
+                    labels=dict(x="Model 1",
+                                y="Model 2",
+                                color="Average Collective Score")
+                    )
     fig.update_layout(matrix_layout,
         title="Average Collective Score"
     )
-    fig.update_xaxes(tickangle=30)
-    fig.update_xaxes(tickfont_size=10)
+    fig.update_xaxes(tickangle=30,
+                     title="")
+    fig.update_xaxes(tickfont_size=10,
+                     title="")
     fig.update_traces(textfont_size=13, textfont_color="rgba(255, 255, 255, 255)")
 
     return fig
@@ -531,12 +573,18 @@ def conjuntive_accuracy_matrix(predictions, y):
                 matrix[i, j] = round(conjunctive_accuracy(predictions[models[i]], predictions[models[j]], y), 2)
     matrix = pd.DataFrame(matrix, index=models, columns=models)
     fig = px.imshow(matrix, text_auto=True, color_continuous_scale=[[0, 'lightblue'], [0.5, 'blue'], [1, 'purple']],
-                    zmin=0, zmax=1)
+                    zmin=0, zmax=1,
+                    labels=dict(x="Model 1",
+                                y="Model 2",
+                                color="Conjunctive Accuracy")
+                    )
     fig.update_layout(matrix_layout,
         title="Conjunctive Accuracy"
     )
-    fig.update_xaxes(tickangle=30)
-    fig.update_xaxes(tickfont_size=10)
+    fig.update_xaxes(tickangle=30,
+                     title="")
+    fig.update_xaxes(tickfont_size=10,
+                     title="")
     fig.update_traces(textfont_size=13, textfont_color="rgba(255, 255, 255, 255)")
 
     return fig
