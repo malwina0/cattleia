@@ -203,19 +203,13 @@ def msd_comparison(predictions, model_to_compare):
         MSD.append(mean_squared_difference(predictions[model], compare_prediction))
     fig = empty_fig()
     for i in range(len(MSD)):
-        fig.add_trace(go.Bar(x=[i], y=[MSD[i]], name=""))
+        fig.add_trace(go.Bar(x=[MSD[i]], y=[models[i]], orientation='h'))
 
     fig.update_traces(marker=dict(color='rgba(0,114,239,255)'))
     fig.update_layout(
         title="Mean Squared Difference <br> of " + model_to_compare + " model",
         font_size=17,
         title_font_size=20,
-        xaxis=dict(
-            tickmode='array',
-            tickvals=list(range(len(MSD))),
-            ticktext=models,
-            title_font_size=17,
-        ),
         showlegend=False
     )
 
@@ -247,19 +241,13 @@ def rmsd_comparison(predictions, model_to_compare):
         RMSD.append(root_mean_squared_difference(predictions[model], compare_prediction))
     fig = empty_fig()
     for i in range(len(RMSD)):
-        fig.add_trace(go.Bar(x=[i], y=[RMSD[i]], name=""))
+        fig.add_trace(go.Bar(x=[RMSD[i]], y=[models[i]], orientation='h'))
 
     fig.update_traces(marker=dict(color='rgba(0,114,239,255)'))
     fig.update_layout(
         title={'text': "Root Mean Squared Difference <br> of " + model_to_compare + " model"},
         font_size=17,
         title_font_size=20,
-        xaxis=dict(
-            tickmode='array',
-            tickvals=list(range(len(RMSD))),
-            ticktext=models,
-            title_font_size=17,
-        ),
         showlegend=False
     )
 
@@ -394,7 +382,7 @@ def difference_boxplot(predictions, y, model_to_compare):
         title={'text': "Distribution of absolute difference between " + model_to_compare + " prediction <br> and " +
                        "other models predictions with tresholds of agreement and strong disagreement"},
         autosize=True,
-        height=800
+        height=600
     )
     fig.update_yaxes(
         gridcolor='rgba(51,54,61,255)',

@@ -42,22 +42,21 @@ def accuracy_plot(predictions, y):
     """
     accuracy = []
     models_name = []
+    color_map = []
     for model_name, prediction in predictions.items():
+        if model_name == 'Ensemble':
+            color_map.append('lightblue')
+        else:
+            color_map.append('rgba(0,114,239,255)')
         models_name.append(model_name)
         accuracy.append(accuracy_score(y, prediction))
 
     fig = empty_fig()
     for i in range(len(accuracy)):
-        fig.add_trace(go.Bar(x=[i], y=[accuracy[i]], name=""))
+        fig.add_trace(go.Bar(x=[accuracy[i]], y=[models_name[i]], orientation='h', marker_color=color_map[i]))
 
-    fig.update_traces(marker=dict(color='rgba(0,114,239,255)'))
     fig.update_layout(
         title="Accuracy metrics values",
-        xaxis=dict(
-            tickmode='array',
-            tickvals=list(range(len(accuracy))),
-            ticktext=models_name
-        ),
         showlegend=False
     )
 
@@ -81,22 +80,21 @@ def precision_plot(predictions, y):
     """
     precision = []
     models_name = []
+    color_map = []
     for model_name, prediction in predictions.items():
+        if model_name == 'Ensemble':
+            color_map.append('lightblue')
+        else:
+            color_map.append('rgba(0,114,239,255)')
         models_name.append(model_name)
         precision.append(precision_score(y, prediction, average='macro'))
 
     fig = empty_fig()
     for i in range(len(precision)):
-        fig.add_trace(go.Bar(x=[i], y=[precision[i]], name=""))
+        fig.add_trace(go.Bar(x=[precision[i]], y=[models_name[i]], orientation='h', marker_color=color_map[i]))
 
-    fig.update_traces(marker=dict(color='rgba(0,114,239,255)'))
     fig.update_layout(
         title="Precision metrics values",
-        xaxis=dict(
-            tickmode='array',
-            tickvals=list(range(len(precision))),
-            ticktext=models_name
-        ),
         showlegend=False
     )
 
@@ -120,22 +118,21 @@ def recall_plot(predictions, y):
     """
     recall = []
     models_name = []
+    color_map = []
     for model_name, prediction in predictions.items():
+        if model_name == 'Ensemble':
+            color_map.append('lightblue')
+        else:
+            color_map.append('rgba(0,114,239,255)')
         models_name.append(model_name)
         recall.append(recall_score(y, prediction, average='macro'))
 
     fig = empty_fig()
     for i in range(len(recall)):
-        fig.add_trace(go.Bar(x=[i], y=[recall[i]], name=""))
+        fig.add_trace(go.Bar(x=[recall[i]], y=[models_name[i]], orientation='h', marker_color=color_map[i]))
 
-    fig.update_traces(marker=dict(color='rgba(0,114,239,255)'))
     fig.update_layout(
         title="Recall metrics values",
-        xaxis=dict(
-            tickmode='array',
-            tickvals=list(range(len(recall))),
-            ticktext=models_name
-        ),
         showlegend=False
     )
 
@@ -159,22 +156,21 @@ def f1_score_plot(predictions, y):
     """
     f1 = []
     models_name = []
+    color_map = []
     for model_name, prediction in predictions.items():
+        if model_name == 'Ensemble':
+            color_map.append('lightblue')
+        else:
+            color_map.append('rgba(0,114,239,255)')
         models_name.append(model_name)
         f1.append(f1_score(y, prediction, average='macro'))
 
     fig = empty_fig()
     for i in range(len(f1)):
-        fig.add_trace(go.Bar(x=[i], y=[f1[i]], name=""))
+        fig.add_trace(go.Bar(x=[f1[i]], y=[models_name[i]], orientation='h', marker_color=color_map[i]))
 
-    fig.update_traces(marker=dict(color='rgba(0,114,239,255)'))
     fig.update_layout(
         title="F score metric values",
-        xaxis=dict(
-            tickmode='array',
-            tickvals=list(range(len(f1))),
-            ticktext=models_name
-        ),
         showlegend=False
     )
 
@@ -198,22 +194,21 @@ def mape_plot(predictions, y):
     """
     mape = []
     models_name = []
+    color_map = []
     for model_name, prediction in predictions.items():
+        if model_name == 'Ensemble':
+            color_map.append('lightblue')
+        else:
+            color_map.append('rgba(0,114,239,255)')
         models_name.append(model_name)
         mape.append(mean_absolute_percentage_error(y, prediction))
 
     fig = empty_fig()
     for i in range(len(mape)):
-        fig.add_trace(go.Bar(x=[i], y=[mape[i]], name=""))
+        fig.add_trace(go.Bar(x=[mape[i]], y=[models_name[i]], orientation='h', marker_color=color_map[i]))
 
-    fig.update_traces(marker=dict(color='rgba(0,114,239,255)'))
     fig.update_layout(
         title="MAPE metric values",
-        xaxis=dict(
-            tickmode='array',
-            tickvals=list(range(len(mape))),
-            ticktext=models_name
-        ),
         showlegend=False
     )
 
@@ -237,22 +232,21 @@ def mae_plot(predictions, y):
     """
     mae = []
     models_name = []
+    color_map = []
     for model_name, prediction in predictions.items():
+        if model_name == 'Ensemble':
+            color_map.append('lightblue')
+        else:
+            color_map.append('rgba(0,114,239,255)')
         models_name.append(model_name)
         mae.append(mean_absolute_error(y, prediction))
 
     fig = empty_fig()
     for i in range(len(mae)):
-        fig.add_trace(go.Bar(x=[i], y=[mae[i]], name=""))
+        fig.add_trace(go.Bar(x=[mae[i]], y=[models_name[i]], orientation='h', marker_color=color_map[i]))
 
-    fig.update_traces(marker=dict(color='rgba(0,114,239,255)'))
     fig.update_layout(
         title="MAE metric values",
-        xaxis=dict(
-            tickmode='array',
-            tickvals=list(range(len(mae))),
-            ticktext=models_name
-        ),
         showlegend=False
     )
 
@@ -276,22 +270,21 @@ def mse_plot(predictions, y):
     """
     mse = []
     models_name = []
+    color_map = []
     for model_name, prediction in predictions.items():
+        if model_name == 'Ensemble':
+            color_map.append('lightblue')
+        else:
+            color_map.append('rgba(0,114,239,255)')
         models_name.append(model_name)
         mse.append(mean_squared_error(y, prediction))
 
     fig = empty_fig()
     for i in range(len(mse)):
-        fig.add_trace(go.Bar(x=[i], y=[mse[i]], name=models_name[i]))
+        fig.add_trace(go.Bar(x=[mse[i]], y=[models_name[i]], orientation='h', marker_color=color_map[i]))
 
-    fig.update_traces(marker=dict(color='rgba(0,114,239,255)'))
     fig.update_layout(
         title="MSE metric values",
-        xaxis=dict(
-            tickmode='array',
-            tickvals=list(range(len(mse))),
-            ticktext=models_name
-        ),
         showlegend=False
     )
 
@@ -315,22 +308,21 @@ def rmse_plot(predictions, y):
     """
     rmse = []
     models_name = []
+    color_map = []
     for model_name, prediction in predictions.items():
+        if model_name == 'Ensemble':
+            color_map.append('lightblue')
+        else:
+            color_map.append('rgba(0,114,239,255)')
         models_name.append(model_name)
         rmse.append(mean_squared_error(y, prediction, squared=False))
 
     fig = empty_fig()
     for i in range(len(rmse)):
-        fig.add_trace(go.Bar(x=[i], y=[rmse[i]], name=models_name[i]))
+        fig.add_trace(go.Bar(x=[rmse[i]], y=[models_name[i]], orientation='h', marker_color=color_map[i]))
 
-    fig.update_traces(marker=dict(color='rgba(0,114,239,255)'))
     fig.update_layout(
         title="RMSE metric values",
-        xaxis=dict(
-            tickmode='array',
-            tickvals=list(range(len(rmse))),
-            ticktext=models_name
-        ),
         showlegend=False
     )
 
@@ -354,22 +346,21 @@ def r_2_plot(predictions, y):
     """
     r2 = []
     models_name = []
+    color_map = []
     for model_name, prediction in predictions.items():
+        if model_name == 'Ensemble':
+            color_map.append('lightblue')
+        else:
+            color_map.append('rgba(0,114,239,255)')
         models_name.append(model_name)
         r2.append(r2_score(y, prediction))
 
     fig = empty_fig()
     for i in range(len(r2)):
-        fig.add_trace(go.Bar(x=[i], y=[r2[i]], name=models_name[i]))
+        fig.add_trace(go.Bar(x=[r2[i]], y=[models_name[i]], orientation='h', marker_color=color_map[i]))
 
-    fig.update_traces(marker=dict(color='rgba(0,114,239,255)'))
     fig.update_layout(
         title="R^2 metric values",
-        xaxis=dict(
-            tickmode='array',
-            tickvals=list(range(len(r2))),
-            ticktext=models_name
-        ),
         showlegend=False
     )
 
@@ -787,7 +778,10 @@ def partial_dependence_line_plot(y_values, x_values, model_names, name):
     )
 
     for line_value, model_name in zip(y_values, model_names):
-        fig.add_trace(go.Scatter(x=x_values, y=line_value, mode='lines', name=model_name))
+        if model_name == 'Ensemble':
+            fig.add_trace(go.Scatter(x=x_values, y=line_value, mode='lines', name=model_name, line=dict(width=5)))
+        else:
+            fig.add_trace(go.Scatter(x=x_values, y=line_value, mode='lines', name=model_name))
     return fig
 
 
