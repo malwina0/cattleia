@@ -231,7 +231,13 @@ def update_model(contents, filename, df, column, about_us):
                         dbc.Col([dcc.Graph(figure=metrics.r_2_plot(predictions, y), className="plot")],
                                 width=6),
                     ]),
-                    dcc.Graph(figure=metrics.mae_plot(predictions, y), className="plot"),
+                    dbc.Row([
+                        dbc.Col([dcc.Graph(figure=metrics.mae_plot(predictions, y), className="plot")],
+                                width=6),
+                        dbc.Col([dcc.Graph(figure=metrics.correlation_plot(predictions, task=task, y=y),
+                                  className="plot")], width=6),
+                    ])
+
                 ]
             else:
                 proba_predictions = get_probability_pred_from_model(model, X, library)
@@ -250,11 +256,11 @@ def update_model(contents, filename, df, column, about_us):
                             [dcc.Graph(figure=metrics.f1_score_plot(predictions, y), className="plot")],
                             width=6),
                     ]),
+                    dcc.Graph(figure=metrics.correlation_plot(predictions, task=task, y=y),
+                              className="plot"),
                 ]
 
             metrics_plots += [
-                dcc.Graph(figure=metrics.correlation_plot(predictions, task=task, y=y),
-                          className="plot"),
                 html.H2("""
                     Prediction compare plot shows the differences between model predictions and true values. 
                     The x-axis shows observations and the y-axis shows models. For classification, the color on the 
