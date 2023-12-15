@@ -58,10 +58,10 @@ def msd_matrix(predictions):
                     )
     fig.update_layout(matrix_layout,
                       title='Mean Squared Error')
-    fig.update_xaxes(tickangle=30,
-                     title="")
-    fig.update_yaxes(tickfont_size=30,
-                     title="")
+    fig.update_xaxes(tickangle=30, tickfont_size=10,
+                     title="Model 1")
+    fig.update_yaxes(tickfont_size=10,
+                     title="Model 2")
     fig.update_traces(textfont_size=13, textfont_color="rgba(255, 255, 255, 255)")
 
     return fig
@@ -99,10 +99,10 @@ def rmsd_matrix(predictions):
                     )
     fig.update_layout(matrix_layout,
                       title="Root Mean Squared Error")
-    fig.update_xaxes(tickangle=30,
-                     title="")
-    fig.update_yaxes(tickfont_size=30,
-                     title="")
+    fig.update_xaxes(tickangle=30, tickfont_size=10,
+                     title="Model 1")
+    fig.update_yaxes(tickfont_size=10,
+                     title="Model 2")
     fig.update_traces(textfont_size=13, textfont_color="rgba(255, 255, 255, 255)")
 
     return fig
@@ -146,10 +146,10 @@ def sdr_matrix(predictions, y):
     fig.update_layout(matrix_layout,
         title="Strong Disagreement Ratio",
     )
-    fig.update_xaxes(tickangle=30,
-                     title="")
+    fig.update_xaxes(tickangle=30, tickfont_size=10,
+                     title="Model 1")
     fig.update_yaxes(tickfont_size=10,
-                     title="")
+                     title="Model 2")
     fig.update_traces(textfont_size=13, textfont_color="rgba(255, 255, 255, 255)")
 
     return fig
@@ -193,10 +193,10 @@ def ar_matrix(predictions, y):
     fig.update_layout(matrix_layout,
         title="Agreement Ratio"
     )
-    fig.update_xaxes(tickangle=30,
-                     title="")
+    fig.update_xaxes(tickangle=30, tickfont_size=10,
+                     title="Model 1")
     fig.update_yaxes(tickfont_size=10,
-                     title="")
+                     title="Model 2")
     fig.update_traces(textfont_size=13, textfont_color="rgba(255, 255, 255, 255)")
 
     return fig
