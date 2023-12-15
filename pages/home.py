@@ -297,14 +297,18 @@ def update_model(contents, filename, df, column, about_us):
                             dbc.Col([
                                 html.Div([], style={'height': '31px'}),  # placeholder to show metrics in the same line
                                 html.Div(
-                                    [slider_section(model_name, weights[i], i) for i, model_name in enumerate(base_models)],
-                                    style={'color': 'white'})
+                                    [slider_section(model_name, weights[i], i) for i, model_name in
+                                     enumerate(base_models)],
+                                    style={'color': 'white'}),
+                                html.Button('Reset weights', id='update-weights-button', n_clicks=0)
                             ], width=7),
-                            dbc.Col([tbl_metrics(predictions, y, task, weights)
+                            dbc.Col([tbl_metrics(predictions, y, task, weights),
+                                     html.Div(id='weight-update-info', style={'color': 'white'})
                                      ], width=4)
                         ]),
                         dbc.Row([
-                            dbc.Col([tbl_metrics_adj_ensemble(predictions, proba_predictions, y, task, weights)], width=4)
+                            dbc.Col([tbl_metrics_adj_ensemble(predictions, proba_predictions, y, task, weights)],
+                                    width=4)
                         ], justify="center")
                     ], className="weight-analysis-col")
                 )
