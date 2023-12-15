@@ -690,7 +690,7 @@ def update_slider_with_table_weights(table_data):
     is_updated = [isinstance(row['Weight'], str) for row in table_data]
     index = is_updated.index(True) if True in is_updated else None
     updated_table_data = table_data.copy()
-    print('c')
+
     def is_float(value):
         try:
             float(value)
@@ -699,10 +699,8 @@ def update_slider_with_table_weights(table_data):
             return False
 
     if index is not None:
-        print('f')
         non_float_values = [row['Weight'] for row in table_data if not is_float(row['Weight'])]
         if not non_float_values:
-            print(non_float_values)
             values = [float(row['Weight']) for row in table_data]
             updated_value = values[index]
             if updated_value > 1:
