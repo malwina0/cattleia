@@ -60,7 +60,7 @@ def msd_matrix(predictions):
                       title='Mean Squared Error')
     fig.update_xaxes(tickangle=30,
                      title="")
-    fig.update_xaxes(tickfont_size=10,
+    fig.update_yaxes(tickfont_size=30,
                      title="")
     fig.update_traces(textfont_size=13, textfont_color="rgba(255, 255, 255, 255)")
 
@@ -101,7 +101,7 @@ def rmsd_matrix(predictions):
                       title="Root Mean Squared Error")
     fig.update_xaxes(tickangle=30,
                      title="")
-    fig.update_xaxes(tickfont_size=10,
+    fig.update_yaxes(tickfont_size=30,
                      title="")
     fig.update_traces(textfont_size=13, textfont_color="rgba(255, 255, 255, 255)")
 
@@ -148,7 +148,7 @@ def sdr_matrix(predictions, y):
     )
     fig.update_xaxes(tickangle=30,
                      title="")
-    fig.update_xaxes(tickfont_size=10,
+    fig.update_yaxes(tickfont_size=10,
                      title="")
     fig.update_traces(textfont_size=13, textfont_color="rgba(255, 255, 255, 255)")
 
@@ -195,7 +195,7 @@ def ar_matrix(predictions, y):
     )
     fig.update_xaxes(tickangle=30,
                      title="")
-    fig.update_xaxes(tickfont_size=10,
+    fig.update_yaxes(tickfont_size=10,
                      title="")
     fig.update_traces(textfont_size=13, textfont_color="rgba(255, 255, 255, 255)")
 
@@ -451,7 +451,7 @@ def uniformity_matrix(predictions):
     )
     fig.update_xaxes(tickangle=30,
                      title = "")
-    fig.update_xaxes(tickfont_size=10,
+    fig.update_yaxes(tickfont_size=10,
                      title = "")
     fig.update_traces(textfont_size=13, textfont_color="rgba(255, 255, 255, 255)")
 
@@ -493,7 +493,7 @@ def incompatibility_matrix(predictions):
     )
     fig.update_xaxes(tickangle=30,
                      title="")
-    fig.update_xaxes(tickfont_size=10,
+    fig.update_yaxes(tickfont_size=10,
                      title="")
     fig.update_traces(textfont_size=13, textfont_color="rgba(255, 255, 255, 255)")
 
@@ -538,7 +538,7 @@ def acs_matrix(predictions, y):
     )
     fig.update_xaxes(tickangle=30,
                      title="")
-    fig.update_xaxes(tickfont_size=10,
+    fig.update_yaxes(tickfont_size=10,
                      title="")
     fig.update_traces(textfont_size=13, textfont_color="rgba(255, 255, 255, 255)")
 
@@ -583,7 +583,7 @@ def conjuntive_accuracy_matrix(predictions, y):
     )
     fig.update_xaxes(tickangle=30,
                      title="")
-    fig.update_xaxes(tickfont_size=10,
+    fig.update_yaxes(tickfont_size=10,
                      title="")
     fig.update_traces(textfont_size=13, textfont_color="rgba(255, 255, 255, 255)")
 
