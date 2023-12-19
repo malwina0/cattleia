@@ -10,6 +10,27 @@
 
 :cherry_blossom: enables the analysis of weights and how they impact the model by allowing their modification
 
+## Application Setup Guide
+### System Requirements
+- Linux or WSL for Windows
+- Python >= 3.8
+
+### Instruction
+1. **Clone the repository:**
+   ```bash
+   git clone https://github.com/malwina0/cattleia.git
+   ```
+2. **Install dependencies:**
+   ```bash
+   cd cattleia
+   pip3 install -r requirements.txt
+   ```
+3. **Start the app:**
+   ```bash
+   python3 app.py
+   ```
+4. Access the Dash app at http://127.0.0.1:8050/. Keep the server running to use the app.
+
 ## Motivation
 The motivation for the research is to understand the inner workings of ensemble models and to develop new insights and techniques that can be used to improve the performance of AutoML models in tabular data prediction. The *cattleia* aims to improve the trustworthiness and interpretability of AutoML. The goal is to make this tool intuitive to use, the same time providing valuable information and analysis. 
 
