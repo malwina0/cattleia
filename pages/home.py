@@ -68,7 +68,9 @@ layout = html.Div([
     # side menu
     html.Div([
         dbc.Container([
+            html.Br(),
             dcc.Link(html.H5("Instruction"), href="/instruction", className="sidepanel_text"),
+            dbc.Button("Change Content", id="link-button", color="link", style={"textDecoration": "underline"}),
             html.Hr(),
             html.H5("Upload csv data", className="sidepanel_text"),
             dcc.Upload(

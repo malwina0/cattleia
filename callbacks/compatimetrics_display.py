@@ -26,7 +26,8 @@ def update_model_selector(model_names):
                 dbc.Col([html.Button('Metrics', id="metrics", className="button_1")], width=2),
                 dbc.Col([html.Button('Compatimetrics', id="compatimetrics", className="button_1")], width=2),
             ], justify="center"),
-        ], style={"display": "block", "position": "sticky"}))
+        ], className="navigation-buttons"))
+        elements.insert(1, html.Div([], className="navigation_placeholder"))
         elements.append(html.Div(id='compatimetrics_container', children=html.Div(id='compatimetrics_plots')))
         children = html.Div(elements)
     return children

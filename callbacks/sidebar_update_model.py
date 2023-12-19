@@ -70,7 +70,6 @@ def update_model(contents, filename, df, column, about_us):
                         dbc.Col([dcc.Graph(figure=metrics.correlation_plot(predictions, task=task, y=y),
                                   className="plot")], width=6),
                     ])
-
                 ]
             else:
                 proba_predictions = get_probability_pred_from_model(model, X, library)
@@ -159,13 +158,13 @@ def update_model(contents, filename, df, column, about_us):
                         className="annotation_str", id="ann_1")
             )
 
-            if len(X) < 2000:
-                for plot in metrics.partial_dependence_plots(model, X, library=library, autogluon_task=task):
-                    metrics_plots.append(dcc.Graph(figure=plot, className="plot"))
-            else:
-                for plot in metrics.partial_dependence_plots(model, X.sample(2000), library=library,
-                                                             autogluon_task=task):
-                    metrics_plots.append(dcc.Graph(figure=plot, className="plot"))
+            # if len(X) < 2000:
+            #     for plot in metrics.partial_dependence_plots(model, X, library=library, autogluon_task=task):
+            #         metrics_plots.append(dcc.Graph(figure=plot, className="plot"))
+            # else:
+            #     for plot in metrics.partial_dependence_plots(model, X.sample(2000), library=library,
+            #                                                  autogluon_task=task):
+            #         metrics_plots.append(dcc.Graph(figure=plot, className="plot"))
 
             # It may be necessary to keep the model for the code with weights,
             # for now we remove the model after making charts
@@ -180,17 +179,18 @@ def update_model(contents, filename, df, column, about_us):
                     dbc.Col([html.Button('Metrics', id="metrics", className="button_1")], width=2),
                     dbc.Col([html.Button('Compatimetrics', id="compatimetrics", className="button_1")], width=2),
                 ], justify="center"),
-            ], style={"display": "block", "position": "sticky"}))
+            ], className="navigation-buttons"))
+            metrics_plots.insert(1, html.Div([], className="navigation_placeholder"))
             weights_plots.insert(0, html.Div([
                 dbc.Row([
                     dbc.Col([html.Button('Weights', id="weights", className="button_1")], width=2),
                     dbc.Col([html.Button('Metrics', id="metrics", className="button_1")], width=2),
                     dbc.Col([html.Button('Compatimetrics', id="compatimetrics", className="button_1")], width=2),
                 ], justify="center"),
-            ], style={"display": "block", "position": "sticky"}))
-
+            ], className="navigation-buttons"))
+            weights_plots.insert(1, html.Div([], className="navigation_placeholder"))
             weights_plots = html.Div(weights_plots)
-            children = html.Div(metrics_plots)
+            children = html.Div(metrics_plots, style={"position":"relative", "overflow": "auto"})
         else:
             children = html.Div(["Please provide the file in .pkl or .zip format."], style={"color": "white"})
 

@@ -46,7 +46,6 @@ body {
 .spin{
      position: absolute;
      top: 200px;
-
  }
 
 
@@ -146,6 +145,12 @@ body {
     color: rgba(225, 225, 225, 255);
     font-size: 18px;
     margin-left: 50px;
+    max-width: 40%;
+    height: auto;
+}
+
+.instruction-img{
+    margin-left: 15px;
 }
 
 .about_us_main{
