@@ -3,7 +3,6 @@ body {
     overflow-x: hidden;
 }
 
-
 .custom_nav_bar{
     background-color: rgba(44,47,56,255);
     border-radius: 25px;
@@ -12,7 +11,6 @@ body {
     outline: 5px solid rgba(30,30,30,255);
     width: 100%;
 }
-
 
 .tittle{
     margin-left: 50px;
@@ -42,12 +40,10 @@ body {
     margin-top: 0;
 }
 
-
 .spin{
      position: absolute;
      top: 200px;
  }
-
 
 .upload_data{
     width: 100%;
@@ -60,12 +56,10 @@ body {
     color: rgba(225, 225, 225, 255);
 }
 
-
 .sidepanel_text{
     color: rgba(225, 225, 225, 255);
     text-align: center;
 }
-
 
 .sidepanel{
     background-color: rgba(44, 47, 56, 255);
@@ -77,7 +71,6 @@ body {
 
 }
 
-
 .plot{
     margin-top: 20px;
     margin-bottom: 20px;
@@ -88,8 +81,6 @@ body {
     border-radius: 25px;
 }
 
-
-/* menu wyboru */
 .dropdown-class > .Select-control {
     width:100% !important;
     border: 2px solid black;
@@ -97,8 +88,6 @@ body {
     background-color:rgba(0,114,239,255);
 }
 
-
-/* opcje */
 .Select-menu-outer {
     background-color: rgba(44,47,56,255);
     border: 2px solid black;
@@ -108,7 +97,6 @@ body {
     scrollbar-width: thin;
     scrollbar-color: #333333 #666666;
 }
-
 
 /* width */
 ::-webkit-scrollbar {
@@ -175,7 +163,6 @@ body {
     margin-left: 100px;
 }
 
-
 .annotation_str{
     color: rgba(225, 225, 225, 255);
     font-size: 19px;
@@ -192,3 +179,11 @@ body {
     --bs-gutter-x: 0 !important;
 }
 
+.compatimetrics_title{
+    color: white
+}
+
+.page-text{
+    color: white;
+    background-color: rgba(44,47,56,255);
+}

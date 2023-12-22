@@ -144,6 +144,17 @@ def update_model(contents, filename, df, column, about_us):
                         ], justify="center")
                     ], className="weight-analysis-col")
                 )
+            else:
+                weights_plots.append(
+                    dbc.Row([
+                        html.Div(["""FLAML library does not incorporate the use of weights in its ensemble creation 
+                        process."""],
+                        className='page-text'
+                        )
+                    ],
+                    className='plot'
+                    )
+                )
 
             for plot in metrics.permutation_feature_importance_all(model, X, y, library=library, task=task):
                 metrics_plots.append(dcc.Graph(figure=plot, className="plot"))

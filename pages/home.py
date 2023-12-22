@@ -2,7 +2,6 @@ import dash
 from dash import html, dcc
 import dash_bootstrap_components as dbc
 import sys
-
 from callbacks import *
 from callbacks.about_us import about_us
 
