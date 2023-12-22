@@ -26,7 +26,7 @@ def empty_fig():
 
 
 def accuracy_plot(predictions, y):
-    """Accuracy metrics plot of individual models from the ensemled model.
+    """Accuracy metrics plot of individual models from the ensemble model.
 
     Parameters
     ----------
@@ -64,7 +64,7 @@ def accuracy_plot(predictions, y):
 
 
 def precision_plot(predictions, y):
-    """Precision metrics plot of individual models from the ensemled model.
+    """Precision metrics plot of individual models from the ensemble model.
 
     Parameters
     ----------
@@ -102,7 +102,7 @@ def precision_plot(predictions, y):
 
 
 def recall_plot(predictions, y):
-    """Recall metrics plot of individual models from the ensemled model.
+    """Recall metrics plot of individual models from the ensemble model.
 
     Parameters
     ----------
@@ -140,7 +140,7 @@ def recall_plot(predictions, y):
 
 
 def f1_score_plot(predictions, y):
-    """F1 metrics plot of individual models from the ensemled model.
+    """F1 metrics plot of individual models from the ensemble model.
 
     Parameters
     ----------
@@ -178,7 +178,7 @@ def f1_score_plot(predictions, y):
 
 
 def mape_plot(predictions, y):
-    """MAPE metrics plot of individual models from the ensemled model.
+    """MAPE metrics plot of individual models from the ensemble model.
 
     Parameters
     ----------
@@ -216,7 +216,7 @@ def mape_plot(predictions, y):
 
 
 def mae_plot(predictions, y):
-    """MAE metrics plot of individual models from the ensemled model.
+    """MAE metrics plot of individual models from the ensemble model.
 
     Parameters
     ----------
@@ -254,7 +254,7 @@ def mae_plot(predictions, y):
 
 
 def mse_plot(predictions, y):
-    """MSE metrics plot of individual models from the ensemled model.
+    """MSE metrics plot of individual models from the ensemble model.
 
     Parameters
     ----------
@@ -292,7 +292,7 @@ def mse_plot(predictions, y):
 
 
 def rmse_plot(predictions, y):
-    """RMSE metrics plot of individual models from the ensemled model.
+    """RMSE metrics plot of individual models from the ensemble model.
 
     Parameters
     ----------
@@ -330,7 +330,7 @@ def rmse_plot(predictions, y):
 
 
 def r_2_plot(predictions, y):
-    """R^2 metrics plot of individual models from the ensemled model.
+    """R^2 metrics plot of individual models from the ensemble model.
 
     Parameters
     ----------
@@ -368,7 +368,7 @@ def r_2_plot(predictions, y):
 
 
 def permutation_feature_importance_all(ensemble_model, X, y, library="Flaml", task="regression"):
-    """Permutation feature importance plots of individual models from the ensemled model.
+    """Permutation feature importance plots of individual models from the ensemble model.
 
     Parameters
     ----------
@@ -432,7 +432,7 @@ def permutation_feature_importance_all(ensemble_model, X, y, library="Flaml", ta
 
 
 def permutation_feature_importance(model, X, y, name, task=False):
-    """Permutation feature importance plot of individual models from the ensemled model.
+    """Permutation feature importance plot of individual models from the ensemble model.
 
     Parameters
     ----------
@@ -478,7 +478,7 @@ def permutation_feature_importance(model, X, y, name, task=False):
 
 
 def correlation_plot(predictions, task="regression", y=None):
-    """Prediction correlation plot of models from the ensemled model.
+    """Prediction correlation plot of models from the ensemble model.
 
     Parameters
     ----------
@@ -540,7 +540,7 @@ def correlation_plot(predictions, task="regression", y=None):
 
 
 def prediction_compare_plot(predictions, y, task="regression"):
-    """Prediction compare plot of models from the ensemled model.
+    """Prediction compare plot of models from the ensemble model.
         For classification plot show if prediction of model is correct or incorrect.
         For regression it shows the difference between the prediction and the true
         value expressed as a percentage.
@@ -626,7 +626,7 @@ def prediction_compare_plot(predictions, y, task="regression"):
 
 
 def partial_dependence_plots(ensemble_model, X, library="Flaml", autogluon_task=False):
-    """Permutation feature importance plot of individual models from the ensemled model.
+    """Permutation feature importance plot of individual models from the ensemble model.
 
     Parameters
     ----------
@@ -746,7 +746,7 @@ def partial_dependence_plots(ensemble_model, X, library="Flaml", autogluon_task=
 
 
 def partial_dependence_line_plot(y_values, x_values, model_names, name):
-    """partial dependence one plot
+    """Partial dependence one plot
 
     Parameters
     ----------

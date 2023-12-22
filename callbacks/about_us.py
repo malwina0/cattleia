@@ -43,7 +43,7 @@ about_us = html.Div([
         creating predictive models and extracting valuable insights from numerical information. 
         Our mission is to develop skills in this field and share our knowledge with others. 
         Cattleia is our project created as a Bachelor thesis.  
-        Our project co-ordinator and supervisor is Anna Kozak
+        Our project co-ordinator and supervisor is Anna Kozak.
     """, className="about_us_str", style={"max-width": "70%", "height": "auto"}),
 ])
 

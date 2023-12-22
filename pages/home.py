@@ -16,6 +16,7 @@ layout = html.Div([
     dcc.Store(id='metrics_plots', data=[], storage_type='memory'),
     dcc.Store(id='compatimetric_plots', data=[], storage_type='memory'),
     dcc.Store(id='weight_plots', data=[], storage_type='memory'),
+    dcc.Store(id='xai_plots', data=[], storage_type='memory'),
     dcc.Store(id='predictions', data={}, storage_type='memory'),
     dcc.Store(id='model_names', data=[], storage_type='memory'),
     dcc.Store(id='task', data=[], storage_type='memory'),
