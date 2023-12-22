@@ -145,11 +145,16 @@ body {
     color: rgba(225, 225, 225, 255);
     font-size: 18px;
     margin-left: 50px;
-    max-width: 40%;
+    max-width: 70%;
     height: auto;
 }
 
-.instruction-img{
+.instruction-code{
+    margin-left: 50px;
+    max-width: 70%;
+}
+
+.instruction-icon{
     margin-left: 15px;
 }
 
@@ -233,4 +238,12 @@ button:hover::before {
 
 .row{
     --bs-gutter-x: 0 !important;
+}
+
+
+#instruction-button {
+    width:100% !important;
+    border: 2px solid black;
+    border-radius:20px;
+    background-color:rgba(0,114,239,255);
 }
