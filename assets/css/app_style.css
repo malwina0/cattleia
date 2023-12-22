@@ -188,62 +188,7 @@ body {
     margin-right: 10px;
 }
 
-
-button {
- padding: 15px 25px;
- border: unset;
- border-radius: 15px;
- color: #e8e8e8;
- z-index: 1;
- background: rgba(44, 47, 56, 255);
- position: relative;
- font-weight: 1000;
- font-size: 17px;
- -webkit-box-shadow: 4px 8px 19px -3px rgba(0,0,0,0.27);
- box-shadow: 4px 8px 19px -3px rgba(0,0,0,0.27);
- transition: all 250ms;
- overflow: hidden;
-}
-
-button::before {
- content: "";
- position: absolute;
- top: 0;
- left: 0;
- height: 100%;
- width: 0;
- border-radius: 15px;
- background-color: #212121;
- z-index: -1;
- -webkit-box-shadow: 4px 8px 19px -3px rgba(0,0,0,0.27);
- box-shadow: 4px 8px 19px -3px rgba(0,0,0,0.27);
- transition: all 250ms
-}
-
-button:hover {
- color: #e8e8e8;
-}
-
-button:hover::before {
- width: 100%;
-}
-
-#update-weights-button {
-    padding: 5px 10px;
-    box-shadow: none;
-    /*color: #ffc4f7;*/
-    border: 1px solid #1e1e1e;
-    background-color: #3a3e4a;
-}
-
 .row{
     --bs-gutter-x: 0 !important;
 }
 
-
-#instruction-button {
-    width:100% !important;
-    border: 2px solid black;
-    border-radius:20px;
-    background-color:rgba(0,114,239,255);
-}

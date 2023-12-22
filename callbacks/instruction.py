@@ -1,21 +1,17 @@
-from dash import html, dcc, Output, Input, callback, State
+from dash import html, dcc, Output, Input, callback
 import dash_bootstrap_components as dbc
-from components import metrics
-import shutil
-import pandas as pd
-from utils.utils import get_predictions_from_model, get_task_from_model, parse_model, get_ensemble_weights,\
-    get_probability_pred_from_model
-from components.weights import slider_section, tbl_metrics, tbl_metrics_adj_ensemble
-# part responsible for adding model and showing plots
+
 @callback(
     Output('plots', 'children', allow_duplicate=True),
+    Output('about-us-button', 'style', allow_duplicate=True),
+    Output('instruction-button', 'style', allow_duplicate=True),
     Input('instruction-button', 'n_clicks'),
     prevent_initial_call=True
 )
 def show_instruction(n_clicks):
     children = []
     if n_clicks is None:
-        return children
+        return children, {'display': 'none'}
     if n_clicks >= 1:
         children = html.Div([
             dbc.Row([
@@ -108,4 +104,4 @@ def show_instruction(n_clicks):
             html.Br(),
             html.Br(),
         ], className="instruction")
-    return children
+    return children, {'display': 'block'}, {'display': 'none'}
