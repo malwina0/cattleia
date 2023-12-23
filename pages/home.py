@@ -22,6 +22,7 @@ layout = html.Div([
     dcc.Store(id='task', data=[], storage_type='memory'),
     dcc.Store(id='proba_predictions', data=[], storage_type='memory'),
     dcc.Store(id='weights_list', data=[], storage_type='memory'),
+    dcc.Store(id='pd_plots_dict', data={}, storage_type='memory'),
     # side menu
     html.Div([
         dbc.Container([
