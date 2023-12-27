@@ -712,9 +712,19 @@ def prepare_feature_importance(ensemble_model, X, y, library="FLAML", task="regr
             class_name = y.unique()
             class_index = {name: idx for idx, name in enumerate(class_name)}
             y_class_index = [class_index[y_elem] for y_elem in y]
-
+        unique_names = []
         for weight, model in ensemble_model.get_models_with_weights():
             model_name = str(type(model._final_estimator.choice)).split('.')[-1][:-2]
+            if model_name in unique_names:
+                i = 1
+                model_name_new = model_name + "_" + str(i)
+                while model_name_new in unique_names:
+                    i += 1
+                    model_name_new = model_name + "_" + str(i)
+                unique_names.append(model_name_new)
+                model_name = model_name_new
+            else:
+                unique_names.append(model_name)
             if task == "classification" or task == "multiclass":
                 pfi[model_name] = calculate_pfi(model, X, y_class_index, task)
             else:
