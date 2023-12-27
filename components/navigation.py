@@ -9,5 +9,5 @@ navigation_row = html.Div([
         dbc.Col([html.Button('Weights', id="weights", className="button_1")], width=2),
         dbc.Col([html.Button('XAI', id="xai", className="button_1")], width=2),
     ], justify="center"),
-], className="navigation-buttons")
+], className="navigation_buttons")
 
