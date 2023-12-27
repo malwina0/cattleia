@@ -42,7 +42,7 @@ def show_instruction(n_clicks):
                 dbc.Col(html.H3("2. Save model"), width='auto', className="instruction_main"),
                 dbc.Col(html.Img(src="assets/images/save.png", height="30px", className="instruction-icon"), align="center", width='auto'),
             ], justify="start"),
-            dbc.Row([html.Div("""For Flaml and Auto-sklearn save model using pickle.dump method.""",
+            dbc.Row([html.Div("""For FLAML and Auto-sklearn save model using pickle.dump method.""",
                              className="instruction_str")]),
             dbc.Row([dcc.Markdown("""
                             ```python
@@ -87,7 +87,7 @@ def show_instruction(n_clicks):
                 dbc.Col(html.H3("5. Upload model"), width='auto', className="instruction_main"),
                 dbc.Col(html.Img(src="assets/images/upload.png", height="40px", className="instruction-icon"), align="center", width='auto'),
             ], justify="start"),
-            dbc.Row([html.Div("Upload saved model, .pkl file for Flaml and Autosklearn, .zip file for AutoGluon.",
+            dbc.Row([html.Div("Upload saved model, .pkl file for FLAML and Auto-sklearn, .zip file for AutoGluon.",
                              className="instruction_str")]),
             dbc.Row([html.Img(src="assets/images/upload_model.png",
                               style={"max-width": "29%"},

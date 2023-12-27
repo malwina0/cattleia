@@ -1,6 +1,7 @@
 from typing import Iterable
 
 import numpy as np
+import pandas as pd
 from plotly import graph_objects as go
 from scipy import sparse
 from scipy.stats._mstats_basic import mquantiles
@@ -9,7 +10,7 @@ from sklearn.ensemble import RandomForestRegressor
 from sklearn.ensemble._gb import BaseGradientBoosting
 from sklearn.ensemble._hist_gradient_boosting.gradient_boosting import BaseHistGradientBoosting
 from sklearn.exceptions import NotFittedError
-from sklearn.inspection import partial_dependence
+from sklearn.inspection import partial_dependence, permutation_importance
 from sklearn.inspection._pd_utils import _check_feature_names, _get_feature_index
 from sklearn.tree import DecisionTreeRegressor
 from sklearn.utils import _safe_assign, _safe_indexing, check_array, _determine_key_type, _get_column_indices, Bunch
@@ -18,18 +19,18 @@ from sklearn.utils.extmath import cartesian
 from components.metrics import empty_fig
 
 
-def partial_dependence_plots(ensemble_model, X, library="Flaml", task="regression"):
+def partial_dependence_plots(ensemble_model, X, library="FLAML", task="regression"):
     """Genetarte partial dependence plots for features based on the provided ensemble model.
 
     Parameters
     ----------
-    ensemble_model : Flaml, AutoGluon or AutoSklearn ensemble model.
+    ensemble_model : FLAML, AutoGluon or Auto-sklearn ensemble model.
 
     X : pandas.DataFrame
        The input data containing features for which partial dependence plots will be generated.
 
     library : str, optional
-       The library used for the ensemble model. Default is "Flaml".
+       The library used for the ensemble model. Default is "FLAML".
 
     task : {'classification', 'regression', 'multiclass'}
         'classification', 'regression' or 'multiclass', depends on the task.
@@ -44,17 +45,10 @@ def partial_dependence_plots(ensemble_model, X, library="Flaml", task="regressio
     columns = []
     values = {}
 
-    for i in range(X.shape[1]):
-        try:
-            values[X.columns[i]] = [partial_dependence(ensemble_model, X, [i])['average'][0]]
-            model_name[X.columns[i]] = ['Ensemble']
-            columns.append(X.columns[i])
-        except TypeError:
-            pass
-
-    if library == "Flaml":
+    if library == "FLAML":
         ensemble_models = ensemble_model.model.estimators_
         X_transform = ensemble_model._state.task.preprocess(X, ensemble_model._transformer)
+        update_partial_dependence_info(X, ensemble_model, values, model_name, columns)
 
         for model in ensemble_models:
             for i in range(X_transform.shape[1]):
@@ -64,16 +58,17 @@ def partial_dependence_plots(ensemble_model, X, library="Flaml", task="regressio
                     model_name[X_transform.columns[i]].append(type(model).__name__)
                 except Exception:
                     pass
-
     if library == "AutoGluon":
         ensemble_models = ensemble_model.info()['model_info'][ensemble_model.get_model_best()]['stacker_info'][
             'base_model_names']
 
-        if task == "regression":
-            ensemble_model._estimator_type = "regressor"
-        else:
+        if task == "classification":
             ensemble_model._estimator_type = "classifier"
+        else:
+            ensemble_model._estimator_type = "regressor"
         ensemble_model.classes_ = ["a"]
+
+        update_partial_dependence_info(X, ensemble_model, values, model_name, columns)
 
         final_model = ensemble_model.get_model_best()
         for model in ensemble_models:
@@ -86,15 +81,15 @@ def partial_dependence_plots(ensemble_model, X, library="Flaml", task="regressio
                     pass
         ensemble_model.set_model_best(final_model)
 
-    elif library == "AutoSklearn":
+    elif library == "Auto-sklearn":
+        update_partial_dependence_info(X, ensemble_model, values, model_name, columns)
         for weight, model in ensemble_model.get_models_with_weights():
             for i in range(X.shape[1]):
                 try:
-                    if task == "regression":
-                        values[X.columns[i]].append(partial_dependence(model, X, [i])['average'][0])
-                    else:
+                    if task == "classification":
                         values[X.columns[i]].append(partial_dependence_custom(model, X, [i])['average'][0])
-
+                    else:
+                        values[X.columns[i]].append(partial_dependence(model, X, [i])['average'][0])
                     name = str(type(model._final_estimator.choice)).split('.')[-1][:-2]
                     if name in model_name[X.columns[i]]:
                         number = 1
@@ -160,8 +155,16 @@ def partial_dependence_line_plot(y_values, x_values, model_names, name):
             fig.add_trace(go.Scatter(x=x_values, y=line_value, mode='lines', name=model_name))
     return fig
 
+def update_partial_dependence_info(X, ensemble_model, values, model_name, columns):
+    for i in range(X.shape[1]):
+        try:
+            values[X.columns[i]] = [partial_dependence(ensemble_model, X, [i])['average'][0]]
+            model_name[X.columns[i]] = ['Ensemble']
+            columns.append(X.columns[i])
+        except TypeError:
+            pass
 
-# Code below is modified code from scikit-learn library to operate AutoSklearn partial dependence
+# Code below is modified code from scikit-learn library to operate Auto-sklearn partial dependence
 def _partial_dependence_brute(est, grid, features, X, response_method):
 
     predictions = []
@@ -627,3 +630,125 @@ def partial_dependence_custom(
             individual=predictions,
             values=values,
         )
+
+
+def calculate_pfi(model, X, y, task):
+    """
+    Calculate permutation feature importances for a given model.
+
+    Parameters:
+    model: Model object
+        The machine learning model for which feature importances are to be calculated.
+
+    X: DataFrame
+        The input features.
+
+    y: Series or array-like
+        The target variable.
+
+    task: str or bool
+        The task type ('regression', 'classification', 'multiclass', or False).
+
+    Returns:
+    importances_mean: array-like
+        The mean feature importances.
+    """
+    if task == False:
+        r = permutation_importance(model, X, y)
+    elif task == "regression":
+        r = permutation_importance(model, X, y, scoring='r2')
+    elif task == "classification" or task == "multiclass":
+        r = permutation_importance(model, X, y, scoring='accuracy')
+    return r.importances_mean
+
+
+def prepare_feature_importance(ensemble_model, X, y, library="FLAML", task="regression"):
+    """
+    Calculate permutation feature importance for an ensemble model.
+
+    Parameters:
+    ensemble_model: Model object
+        The ensemble model.
+
+    X: DataFrame
+        The input features.
+
+    y: Series or array-like
+        The target variable.
+
+    library: str, optional (default="FLAML")
+        The library used for the ensemble model: "FLAML", "AutoGluon", or "Auto-sklearn".
+
+    task: str, optional (default="regression")
+        The task type: "regression", "classification", or "multiclass".
+
+    Returns:
+    DataFrame
+        A DataFrame containing feature importances for different models in the ensemble.
+    """
+    pfi = {'variable': X.columns, 'Ensemble': calculate_pfi(ensemble_model, X, y, task)}
+
+    if library == "FLAML":
+        ensemble_models = ensemble_model.model.estimators_
+        X_transform = ensemble_model._state.task.preprocess(X, ensemble_model._transformer)
+        for model in ensemble_models:
+            if task == "regression":
+                pfi[type(model).__name__] = calculate_pfi(model, X_transform, y, task)
+            else:
+                pfi[type(model).__name__] = calculate_pfi(model, X_transform,
+                                                          ensemble_model._label_transformer.transform(y), task)
+
+    elif library == "AutoGluon":
+        ensemble_models = ensemble_model.info()['model_info'][ensemble_model.get_model_best()]['stacker_info'][
+            'base_model_names']
+        final_model = ensemble_model.get_model_best()
+        for model_name in ensemble_models:
+            ensemble_model.set_model_best(model_name)
+            pfi[model_name] = calculate_pfi(ensemble_model, X, y, task)
+        ensemble_model.set_model_best(final_model)
+
+    elif library == "Auto-sklearn":
+        if task == "classification" or "multiclass":
+            class_name = y.unique()
+            class_index = {name: idx for idx, name in enumerate(class_name)}
+            y_class_index = [class_index[y_elem] for y_elem in y]
+
+        for weight, model in ensemble_model.get_models_with_weights():
+            model_name = str(type(model._final_estimator.choice)).split('.')[-1][:-2]
+            if task == "classification" or task == "multiclass":
+                pfi[model_name] = calculate_pfi(model, X, y_class_index, task)
+            else:
+                pfi[model_name] = calculate_pfi(model, X, y, task)
+    df = pd.DataFrame(pfi)
+
+    return df
+
+
+def feature_importance_plot(df):
+    """
+    This function creates a plot displaying the feature importance for different models.
+
+    Parameters:
+    df: DataFrame
+      DataFrame containing model feature importances.
+
+    Returns:
+    fig: plotly.graph_objs._figure.Figure
+      Plotly figure displaying the model feature importance plot.
+    """
+    df_melted = df.melt(id_vars='variable', var_name='Model', value_name='Value')
+    fig = empty_fig()
+    for model, group in df_melted.groupby('Model'):
+        fig.add_trace(go.Bar(
+            x=group['variable'],
+            y=group['Value'],
+            name=model,
+            hovertemplate="<b>%{customdata}</b><br>Value: %{y:.3f}<extra></extra>",
+            customdata=group['Model'],
+            visible=True if model == 'Ensemble' else 'legendonly'
+        ))
+
+    fig.update_layout(
+        title="Model Feature Importance",
+    )
+    return fig

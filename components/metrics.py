@@ -4,7 +4,6 @@ import plotly.express as px
 import plotly.graph_objects as go
 from sklearn.metrics import mean_absolute_percentage_error, mean_absolute_error, mean_squared_error, accuracy_score, \
     precision_score, recall_score, f1_score, r2_score
-from sklearn.inspection import permutation_importance
 from scipy.stats import chi2_contingency
 
 
@@ -367,116 +366,6 @@ def r_2_plot(predictions, y):
     return fig
 
 
-def permutation_feature_importance_all(ensemble_model, X, y, library="Flaml", task="regression"):
-    """Permutation feature importance plots of individual models from the ensemble model.
-
-    Parameters
-    ----------
-    ensemble_model : Flaml, AutoGluon or AutoSklearn ensemble model.
-
-    X, y : dataframe
-
-    library : {'Flaml', 'AutoGluon', 'AutoSklearn'}
-            string that specifies the model library
-
-    task : {'regression', 'classification'}
-            string that specifies task type
-
-    Returns
-    -------
-    plots : list of plotly.graph_objs._figure.Figure object
-        plotly plot list
-    """
-    if library == "Flaml":
-        plots = [permutation_feature_importance(ensemble_model, X, y, 'Ensemble')]
-
-        ensemble_models = ensemble_model.model.estimators_
-        X_transform = ensemble_model._state.task.preprocess(X, ensemble_model._transformer)
-        for model in ensemble_models:
-            if task == "regression":
-                plots.append(permutation_feature_importance(model, X_transform, y, type(model).__name__))
-            if task == "classification" or task == 'multiclass':
-                plots.append(permutation_feature_importance(model,
-                                                            X_transform,
-                                                            ensemble_model._label_transformer.transform(y),
-                                                            type(model).__name__))
-    elif library == "AutoGluon":
-        if task == "regression":
-            autogluon_task = "regression"
-        else:
-            autogluon_task = "classification"
-        plots = [permutation_feature_importance(ensemble_model, X, y, 'Ensemble', autogluon_task)]
-
-        ensemble_models = ensemble_model.info()['model_info'][ensemble_model.get_model_best()]['stacker_info'][
-            'base_model_names']
-        final_model = ensemble_model.get_model_best()
-        for model_name in ensemble_models:
-            ensemble_model.set_model_best(model_name)
-            plots.append(permutation_feature_importance(ensemble_model, X, y, model_name, autogluon_task))
-        ensemble_model.set_model_best(final_model)
-    elif library == "AutoSklearn":
-        plots = [permutation_feature_importance(ensemble_model, X, y, 'Ensemble')]
-        if task == "classification" or "multiclass":
-            class_name = y.unique()
-            class_index = {name: idx for idx, name in enumerate(class_name)}
-            y_class_index = [class_index[y_elem] for y_elem in y]
-
-        for weight, model in ensemble_model.get_models_with_weights():
-            model_name = str(type(model._final_estimator.choice)).split('.')[-1][:-2]
-            if task == "classification" or task == "multiclass":
-                plots.append(permutation_feature_importance(model, X, y_class_index, model_name, task))
-            else:
-                plots.append(permutation_feature_importance(model, X, y, model_name, task))
-
-    return plots
-
-
-def permutation_feature_importance(model, X, y, name, task=False):
-    """Permutation feature importance plot of individual models from the ensemble model.
-
-    Parameters
-    ----------
-    model : Flaml, AutoGluon or AutoSklearn ensemble model.
-
-    X, y : dataframe
-
-    name : string that specifies the model name
-
-    task : {'regression', 'classification', False}
-            If library is not autogluon then it should be False. Otherwise it should be
-            "regression" or "classification" depends on the task.
-
-    Returns
-    -------
-    fig : plotly.graph_objs._figure.Figure
-        plotly plot
-    """
-    if task == False:
-        r = permutation_importance(model, X, y)
-    elif task == "regression":
-        r = permutation_importance(model, X, y, scoring='r2')
-    elif task == "classification" or task == "multiclass":
-        r = permutation_importance(model, X, y, scoring='accuracy')
-    importance = r.importances_mean
-
-    fig = empty_fig()
-    for i in range(len(importance)):
-        fig.add_trace(go.Bar(x=[i], y=[importance[i]], name=""))
-
-    fig.update_traces(marker=dict(color='rgba(0,114,239,255)'))
-    fig.update_layout(
-        title=name + " model feature importance",
-        xaxis=dict(
-            tickmode='array',
-            tickvals=list(range(len(importance))),
-            ticktext=X.columns
-        ),
-        yaxis_range=[0, 1],
-        showlegend=False
-    )
-    return fig
-
-
 def correlation_plot(predictions, task="regression", y=None):
     """Prediction correlation plot of models from the ensemble model.
 
@@ -489,7 +378,7 @@ def correlation_plot(predictions, task="regression", y=None):
             string that specifies the model task
 
     y : dataframe
-        needed only for  AutoSklearn
+        needed only for  Auto-sklearn
 
     Returns
     -------
@@ -547,7 +436,7 @@ def prediction_compare_plot(predictions, y, task="regression"):
 
     Parameters
     ----------
-   predictions: dictionary with predictions of ensemble component models
+    predictions: dictionary with predictions of ensemble component models
         of form {'model_name': 'prediction_vector'}
 
     y : target variable vector

@@ -6,11 +6,11 @@ from components import metrics
 import shutil
 import pandas as pd
 
-# from components.test import calculate_partial_dependence
-from utils.utils import get_predictions_from_model, get_task_from_model, parse_model, get_ensemble_weights,\
+from utils.utils import get_predictions_from_model, get_task_from_model, parse_model, get_ensemble_weights, \
     get_probability_pred_from_model
 from components.weights import slider_section, tbl_metrics, tbl_metrics_adj_ensemble
 from components.navigation import navigation_row
+from components.xai import prepare_feature_importance, feature_importance_plot
 
 # part responsible for adding model and showing plots
 @callback(
@@ -24,6 +24,7 @@ from components.navigation import navigation_row
     Output('proba_predictions', 'data'),
     Output('weights_list', 'data'),
     Output('pd_plots_dict', 'data'),
+    Output('selected_model_name', 'children'),
     Input('upload_model', 'contents'),
     State('upload_model', 'filename'),
     State('csv_data', 'data'),
@@ -34,6 +35,7 @@ def update_model(contents, filename, df, column, about_us):
     model_names, weights, task, predictions, proba_predictions, weights_plots, xai_plots = ([] for _ in range(7))
     children = about_us
     pd_plots_dict = {}
+    filename_info = html.Div()
     if contents:
         contents = contents[0]
         filename = filename[0]
@@ -118,7 +120,7 @@ def update_model(contents, filename, df, column, about_us):
 
             # weights component
             weights_plots = []
-            if library != "Flaml":
+            if library != "FLAML":
                 weights_plots.append(
                     html.H2(
                         html.P(["""
@@ -209,8 +211,10 @@ def update_model(contents, filename, df, column, about_us):
                     ],className='plot')
                 )
 
-            for plot in metrics.permutation_feature_importance_all(model, X, y, library=library, task=task):
-                xai_plots.append(dcc.Graph(figure=plot, className="plot"))
+            fi_df = prepare_feature_importance(model, X, y, library=library, task=task)
+            fi_plot = feature_importance_plot(fi_df)
+            xai_plots.append(dcc.Graph(figure=fi_plot, className="plot"))
+
 
             # It may be necessary to keep the model for the code with weights,
             # for now we remove the model after making charts
@@ -223,5 +227,8 @@ def update_model(contents, filename, df, column, about_us):
         else:
             children = html.Div(["Please provide the file in .pkl or .zip format."], style={"color": "white"})
 
+        filename_info = html.Div([f"Loaded file: {filename},", html.Br(),
+                                  f"library: {library}."], style={"color": "white"})
+
     return children, children, weights_plots, xai_plots, model_names, predictions, task, proba_predictions, weights, \
-        pd_plots_dict
+        pd_plots_dict, filename_info

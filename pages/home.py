@@ -42,6 +42,7 @@ layout = html.Div([
             ),
             html.Div(id='select_y_label_column'),
             html.Div(id='upload_model_section'),
+            html.Div(id='selected_model_name'),
             html.Div(id="switch_annotation")
         ], className="px-3 sidepanel")
     ], id="side_menu_div"),
