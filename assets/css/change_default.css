@@ -1,0 +1,11 @@
+[class*="primary"], input[type='radio'] {
+    color: black;
+    background-color: #ffaef4!important;
+    accent-color: #f5e9ab;
+    border-color: #fbd2d2 !important;
+    margin: 0.2rem;
+}
+
+[class*="primary"]:hover {
+    background-color: #ffaef4!important;
+}

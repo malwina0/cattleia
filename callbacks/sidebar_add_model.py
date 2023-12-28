@@ -28,7 +28,7 @@ def add_model(value):
         daq.ToggleSwitch(
             id='my-toggle-switch',
             value=True,
-            color="#0072ef"
+            color="#ffaef4"
         )
     ])
 

@@ -83,9 +83,14 @@ body {
 
 .dropdown-class > .Select-control {
     width:100% !important;
-    border: 2px solid black;
+    border: 2px solid  #f5e9ab !important;
     border-radius:20px;
-    background-color:rgba(0,114,239,255);
+    background-color: #ffaef4;
+    color: black !important;
+}
+
+.Select-placeholder{
+    color: black;
 }
 
 .Select-menu-outer {

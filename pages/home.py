@@ -27,7 +27,7 @@ layout = html.Div([
     html.Div([
         dbc.Container([
             html.Br(),
-            dbc.Button("Instruction", id="instruction-button", className='page-button'),
+            dbc.Button("Instruction", id="instruction-button", className='page-button', color='primary'),
             dbc.Button('About us', id='about-us-button', className='page-button', style={'display': 'none'}),
             html.Hr(),
             html.H5("Upload csv data", className="sidepanel_text"),
