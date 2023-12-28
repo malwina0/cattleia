@@ -6,6 +6,8 @@ from sklearn.metrics import mean_absolute_percentage_error, mean_absolute_error,
     precision_score, recall_score, f1_score, r2_score
 from scipy.stats import chi2_contingency
 
+from utils.plots_layout import matrix_layout
+
 
 def empty_fig():
     fig = go.Figure()
@@ -409,20 +411,19 @@ def correlation_plot(predictions, task="regression", y=None):
                      'rgba(255,168,0,255)',
                      'rgba(125,179,67,255)',
                      'rgba(3,169,245,255)']
-    fig = px.imshow(corr_matrix, text_auto=True, color_continuous_scale=[[0, 'lightblue'], [0.5, 'blue'], [1, 'purple']])
-    fig.update_layout(
-        title="Predictions models correlation",
-        plot_bgcolor='rgba(44,47,56,255)',
-        paper_bgcolor='rgba(44,47,56,255)',
-        font_color="rgba(225, 225, 225, 255)",
-        font_size=20,
-        title_font_color="rgba(225, 225, 225, 255)",
-        title_font_size=25,
-        xaxis_title_standoff=300,
-        yaxis_ticklen=39,
-    )
-    fig.update_xaxes(tickangle=30)
-    fig.update_xaxes(tickfont_size=10)
+    fig = px.imshow(
+            corr_matrix,
+            color_continuous_scale=[[0, 'lightblue'], [0.5, 'blue'], [1, 'purple']],
+            labels=dict(x="Model 1",
+                        y="Model 2",
+                        color="Correlation")
+        )
+    fig.update_layout(matrix_layout,
+                      title="Predictions models correlation")
+    fig.update_xaxes(tickangle=30, tickfont_size=10,
+                     title="Model 1")
+    fig.update_yaxes(tickfont_size=10,
+                     title="Model 2")
     fig.update_traces(textfont_size=13, textfont_color="rgba(255, 255, 255, 255)")
 
     return fig
