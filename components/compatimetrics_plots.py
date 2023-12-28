@@ -42,7 +42,7 @@ def msd_matrix(predictions):
                                 color="MSD")
                     )
     fig.update_layout(matrix_layout,
-                      title='Mean Squared Error')
+                      title='Mean Squared Difference')
     fig.update_xaxes(tickangle=30, tickfont_size=10,
                      title="Model 1")
     fig.update_yaxes(tickfont_size=10,
@@ -83,7 +83,7 @@ def rmsd_matrix(predictions):
                                 color="RMSD")
                     )
     fig.update_layout(matrix_layout,
-                      title="Root Mean Squared Error")
+                      title="Root Mean Squared Difference")
     fig.update_xaxes(tickangle=30, tickfont_size=10,
                      title="Model 1")
     fig.update_yaxes(tickfont_size=10,
