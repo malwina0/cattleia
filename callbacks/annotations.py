@@ -12,13 +12,14 @@ def update_output(value):
 
 @callback(
     Output('ann_xai_partial_dep', 'style'),
+    Output('ann_xai_feature_importance', 'style'),
     Input('my-toggle-switch', 'value'),
 )
 def update_output(value):
     if value:
-        return {}
+        return 2 * [{}]
     else:
-        return {"display": "none"}
+        return 2 * [{"display": "none"}]
 
 
 @callback(

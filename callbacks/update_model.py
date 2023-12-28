@@ -7,7 +7,7 @@ import shutil
 import pandas as pd
 
 from components.annotations import ann_metrics_prediction_compare, ann_weights_sliders, ann_weights_metrics, \
-    ann_weights_ensemble
+    ann_weights_ensemble, ann_xai_feature_importance, ann_xai_partial_dep
 from utils.utils import get_predictions_from_model, get_task_from_model, parse_model, get_ensemble_weights, \
     get_probability_pred_from_model
 from components.weights import slider_section, tbl_metrics, tbl_metrics_adj_ensemble
@@ -160,14 +160,14 @@ def update_model(contents, filename, df, column, about_us):
                 )
 
             # XAI component
+            fi_df = prepare_feature_importance(model, X, y, library=library, task=task)
+            fi_plot = feature_importance_plot(fi_df)
             xai_plots.append(
-                html.H2("""
-                    Partial Dependence isolate one specific feature's effect on the model's output while maintaining 
-                    all other features at fixed values. It capturing how the model's output changes as the chosen 
-                    feature varies. When the number of observations is large, in order to speed up the generation of 
-                    graphs, only a subset of the data is used for calculations.
-                    """,
-                        className="annotation_str", id="ann_xai_partial_dep")
+                dbc.Row([
+                    html.H3(['Feature Importance across models'], className='annotation-title'),
+                    ann_xai_feature_importance,
+                    dcc.Graph(figure=fi_plot, className="plot")
+                ], className = "custom-caption")
             )
 
             if len(X) < 2000:
@@ -180,15 +180,21 @@ def update_model(contents, filename, df, column, about_us):
                 dropdown = dcc.Dropdown(id='variable_select_dropdown', className="dropdown-class",
                                         options=[{'label': x, 'value': x} for x in pd_variables],
                                         value=pd_variables[0], clearable=False)
-                xai_plots.append(dropdown)
                 selected_variable_plot = pd_plots_dict.get(pd_variables[0])
                 xai_plots.append(
-                    dcc.Graph(
-                        figure=selected_variable_plot,
-                        className="plot",
-                        id='partial_dependence_plot'
-                    )
+                    dbc.Row([
+                        html.H3(['Partial Dependence across models'], className='annotation-title'),
+                        html.H5("Choose a column to display its partial dependence plot:", className='annotation-title'),
+                        dropdown,
+                        ann_xai_partial_dep,
+                        dcc.Graph(
+                            figure=selected_variable_plot,
+                            className="plot",
+                            id='partial_dependence_plot'
+                        )
+                    ], className="custom-caption")
                 )
+
             else:
                 xai_plots.append(
                     dbc.Row([
@@ -197,10 +203,6 @@ def update_model(contents, filename, df, column, about_us):
                                  )
                     ],className='plot')
                 )
-
-            fi_df = prepare_feature_importance(model, X, y, library=library, task=task)
-            fi_plot = feature_importance_plot(fi_df)
-            xai_plots.append(dcc.Graph(figure=fi_plot, className="plot"))
 
 
             # It may be necessary to keep the model for the code with weights,

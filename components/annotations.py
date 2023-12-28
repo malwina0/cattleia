@@ -41,3 +41,20 @@ ann_weights_ensemble = html.Div([
     html.A([" (set manually) are presented side by side."])
 ], className="annotation_str", id="ann_weights_ensemble")
 
+
+ann_xai_feature_importance = html.Div([
+    "The feature importance plot illustrates the significance of different features in a model's predictions.",
+    html.Ul([
+        html.Li([html.Strong("Default display "), html.A("The ensemble's feature importance chart is shown automatically.")]),
+        html.Li([html.Strong("Comparing multiple models: "),  html.A("To compare additional models, click their names in the chart legend.")])
+    ])
+], className="annotation_str", id="ann_xai_feature_importance")
+
+ann_xai_partial_dep = html.Div([
+    "Partial Dependence isolates the impact of a single feature on the model's output while keeping all other features constant.",
+    html.Ul([
+        html.Li(["It illustrates how the model's output shifts as the chosen feature varies."]),
+        html.Li(["With a large number of observations, to expedite graph generation, calculations are performed using a subset of the data."])
+    ])
+    ], className="annotation_str", id="ann_xai_partial_dep")
+

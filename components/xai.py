@@ -1,8 +1,8 @@
 from typing import Iterable
-
 import numpy as np
 import pandas as pd
 from plotly import graph_objects as go
+import plotly.express as px
 from scipy import sparse
 from scipy.stats._mstats_basic import mquantiles
 from sklearn.base import is_regressor, is_classifier
@@ -17,6 +17,7 @@ from sklearn.utils import _safe_assign, _safe_indexing, check_array, _determine_
 from sklearn.utils.extmath import cartesian
 
 from components.metrics import empty_fig
+from utils.plots_layout import matrix_layout
 
 
 def partial_dependence_plots(ensemble_model, X, library="FLAML", task="regression"):
@@ -136,21 +137,13 @@ def partial_dependence_line_plot(y_values, x_values, model_names, name):
         A Plotly figure representing the partial dependence line plot.
     """
     fig = empty_fig()
-    fig.update_layout(
-        title=f"{name} variable partial dependence plot",
-        plot_bgcolor='rgba(44,47,56,255)',
-        paper_bgcolor='rgba(44,47,56,255)',
-        font_color="rgba(225, 225, 225, 255)",
-        font_size=15,
-        title_font_color="rgba(225, 225, 225, 255)",
-        title_font_size=25,
-        xaxis_title_standoff=300,
-        yaxis_ticklen=39,
+    fig.update_layout(matrix_layout,
+        title=f"{name} variable partial dependence plot"
     )
 
     for line_value, model_name in zip(y_values, model_names):
         if model_name == 'Ensemble':
-            fig.add_trace(go.Scatter(x=x_values, y=line_value, mode='lines', name=model_name, line=dict(width=5)))
+            fig.add_trace(go.Scatter(x=x_values, y=line_value, mode='lines', name=model_name, line=dict(color='#ffaef4', width=5)))
         else:
             fig.add_trace(go.Scatter(x=x_values, y=line_value, mode='lines', name=model_name))
     return fig
@@ -757,8 +750,5 @@ def feature_importance_plot(df):
             customdata=group['Model'],
             visible=True if model == 'Ensemble' else 'legendonly'
         ))
-
-    fig.update_layout(
-        title="Model Feature Importance",
-    )
+    fig.update_traces(marker_color='#ffaef4', selector=dict(name='Ensemble'))
     return fig
