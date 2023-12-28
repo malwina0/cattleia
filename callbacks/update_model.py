@@ -6,7 +6,8 @@ from components import metrics
 import shutil
 import pandas as pd
 
-from components.annotations import ann_metrics_prediction_compare
+from components.annotations import ann_metrics_prediction_compare, ann_weights_sliders, ann_weights_metrics, \
+    ann_weights_ensemble
 from utils.utils import get_predictions_from_model, get_task_from_model, parse_model, get_ensemble_weights, \
     get_probability_pred_from_model
 from components.weights import slider_section, tbl_metrics, tbl_metrics_adj_ensemble
@@ -120,25 +121,11 @@ def update_model(contents, filename, df, column, about_us):
             weights_plots = []
             if library != "FLAML":
                 weights_plots.append(
-                    html.H2(
-                        html.P(["""
-                        Below on the left, sliders are available for modifying the weight value assigned to each model
-                         within the ensemble. Initially, these values are set to the elected by the AutoML package. 
-                         To revert to these default values, click the "Reset weights" button.""", html.Br(),
-                        """On the right, a table displays weight values alongside task-specific metrics for each 
-                        individual model. Editing the cells within the "Weights" column allows for direct modification 
-                        of a model's weight. Any adjustments made will proportionally modify other weights to ensure 
-                        their sum remains at 1.""", html.Br(),
-                        """Below in the table, metrics for both the ensemble model's original weights (set by AutoML) 
-                        and custom weights (set manually) are presented side by side. Changes in metrics are visually 
-                        indicated: cells turn green for improved metrics and red if the changes result in inferior 
-                        performance.
-                        """]),
-                    className="annotation_str", id="ann_weights")
-                )
-                weights_plots.append(html.Br())
-                weights_plots.append(
                     dbc.Col([
+                        dbc.Row([
+                            dbc.Col([ann_weights_sliders], width=7),
+                            dbc.Col([ann_weights_metrics], width=4)
+                        ]),
                         dbc.Row([
                             dbc.Col([
                                 html.Div([], style={'height': '31px'}),  # placeholder to show metrics in the same line
@@ -153,10 +140,11 @@ def update_model(contents, filename, df, column, about_us):
                                      ], width=4)
                         ]),
                         dbc.Row([
+                            dbc.Col([ann_weights_ensemble], width=4),
                             dbc.Col([tbl_metrics_adj_ensemble(predictions, proba_predictions, y, task, weights)],
                                     width=4)
-                        ], justify="center"),
-                        dbc.Row(dbc.Col(id="weights-color-info", width=4), justify='center')
+                        ], justify="left"),
+                        dbc.Row([dbc.Col(width=4), dbc.Col(id="weights-color-info", width=4)], justify='left')
                     ], className="weight-analysis-col")
                 )
             else:

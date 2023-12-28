@@ -186,7 +186,7 @@ body {
 
 .annotation_str{
     color: rgba(225, 225, 225, 255);
-    font-size: 19px;
+    font-size: 16px;
     border: 6px solid rgba(44,47,56,255);
     border-radius: 25px;
     background-color: rgba(44,47,56,255);
@@ -200,7 +200,6 @@ body {
 .annotation-title{
     color: white;
     background-color: rgba(44,47,56,255);
-    margin-left: 10px;
 }
 
 .custom-caption{

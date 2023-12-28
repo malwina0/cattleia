@@ -22,14 +22,16 @@ def update_output(value):
 
 
 @callback(
-    Output('ann_weights', 'style'),
+    Output('ann_weights_sliders', 'style'),
+    Output('ann_weights_ensemble', 'style'),
+    Output('ann_weights_metrics', 'style'),
     Input('my-toggle-switch', 'value'),
 )
 def update_output(value):
     if value:
-        return {}
+        return 3 * [{}]
     else:
-        return {"display": "none"}
+        return 3 * [{"display": "none"}]
 
 
 @callback(
