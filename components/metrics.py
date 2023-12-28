@@ -6,7 +6,7 @@ from sklearn.metrics import mean_absolute_percentage_error, mean_absolute_error,
     precision_score, recall_score, f1_score, r2_score
 from scipy.stats import chi2_contingency
 
-from utils.plots_layout import matrix_layout
+from utils.plots_layout import matrix_layout, ensemble_color
 
 
 def empty_fig():
@@ -45,19 +45,21 @@ def accuracy_plot(predictions, y):
     models_name = []
     color_map = []
     for model_name, prediction in predictions.items():
-        if model_name == 'Ensemble':
-            color_map.append('lightblue')
-        else:
-            color_map.append('rgba(0,114,239,255)')
+        color_map = ensemble_color(model_name, color_map)
         models_name.append(model_name)
         accuracy.append(accuracy_score(y, prediction))
 
     fig = empty_fig()
     for i in range(len(accuracy)):
-        fig.add_trace(go.Bar(x=[accuracy[i]], y=[models_name[i]], orientation='h', marker_color=color_map[i]))
+        fig.add_trace(go.Bar(
+            x=[accuracy[i]], y=[models_name[i]],
+            orientation='h', marker_color=color_map[i],
+            hovertemplate=f'accuracy: {accuracy[i]}',
+            name=models_name[i]
+        ))
 
     fig.update_layout(
-        title="Accuracy metrics values",
+        title="Accuracy values across models",
         showlegend=False
     )
 
@@ -83,19 +85,21 @@ def precision_plot(predictions, y):
     models_name = []
     color_map = []
     for model_name, prediction in predictions.items():
-        if model_name == 'Ensemble':
-            color_map.append('lightblue')
-        else:
-            color_map.append('rgba(0,114,239,255)')
+        color_map = ensemble_color(model_name, color_map)
         models_name.append(model_name)
         precision.append(precision_score(y, prediction, average='macro'))
 
     fig = empty_fig()
     for i in range(len(precision)):
-        fig.add_trace(go.Bar(x=[precision[i]], y=[models_name[i]], orientation='h', marker_color=color_map[i]))
+        fig.add_trace(go.Bar(
+            x=[precision[i]], y=[models_name[i]],
+            orientation='h', marker_color=color_map[i],
+            hovertemplate=f'precision: {precision[i]}',
+            name=models_name[i]
+        ))
 
     fig.update_layout(
-        title="Precision metrics values",
+        title="Precision values across models",
         showlegend=False
     )
 
@@ -121,19 +125,21 @@ def recall_plot(predictions, y):
     models_name = []
     color_map = []
     for model_name, prediction in predictions.items():
-        if model_name == 'Ensemble':
-            color_map.append('lightblue')
-        else:
-            color_map.append('rgba(0,114,239,255)')
+        color_map = ensemble_color(model_name, color_map)
         models_name.append(model_name)
         recall.append(recall_score(y, prediction, average='macro'))
 
     fig = empty_fig()
     for i in range(len(recall)):
-        fig.add_trace(go.Bar(x=[recall[i]], y=[models_name[i]], orientation='h', marker_color=color_map[i]))
+        fig.add_trace(go.Bar(
+            x=[recall[i]], y=[models_name[i]],
+            orientation='h', marker_color=color_map[i],
+            hovertemplate=f'recall: {recall[i]}',
+            name=models_name[i]
+        ))
 
     fig.update_layout(
-        title="Recall metrics values",
+        title="Recall values across models",
         showlegend=False
     )
 
@@ -159,19 +165,21 @@ def f1_score_plot(predictions, y):
     models_name = []
     color_map = []
     for model_name, prediction in predictions.items():
-        if model_name == 'Ensemble':
-            color_map.append('lightblue')
-        else:
-            color_map.append('rgba(0,114,239,255)')
+        color_map = ensemble_color(model_name, color_map)
         models_name.append(model_name)
         f1.append(f1_score(y, prediction, average='macro'))
 
     fig = empty_fig()
     for i in range(len(f1)):
-        fig.add_trace(go.Bar(x=[f1[i]], y=[models_name[i]], orientation='h', marker_color=color_map[i]))
+        fig.add_trace(go.Bar(
+            x=[f1[i]], y=[models_name[i]],
+            orientation='h', marker_color=color_map[i],
+            hovertemplate=f'F1-score: {f1[i]}',
+            name=models_name[i]
+        ))
 
     fig.update_layout(
-        title="F score metric values",
+        title="F1-score values across models",
         showlegend=False
     )
 
@@ -197,19 +205,21 @@ def mape_plot(predictions, y):
     models_name = []
     color_map = []
     for model_name, prediction in predictions.items():
-        if model_name == 'Ensemble':
-            color_map.append('lightblue')
-        else:
-            color_map.append('rgba(0,114,239,255)')
+        color_map = ensemble_color(model_name, color_map)
         models_name.append(model_name)
         mape.append(mean_absolute_percentage_error(y, prediction))
 
     fig = empty_fig()
     for i in range(len(mape)):
-        fig.add_trace(go.Bar(x=[mape[i]], y=[models_name[i]], orientation='h', marker_color=color_map[i]))
+        fig.add_trace(go.Bar(
+            x=[mape[i]], y=[models_name[i]],
+            orientation='h', marker_color=color_map[i],
+            hovertemplate=f'MAPE: {mape[i]}',
+            name=models_name[i]
+        ))
 
     fig.update_layout(
-        title="MAPE metric values",
+        title="MAPE values across models",
         showlegend=False
     )
 
@@ -235,19 +245,21 @@ def mae_plot(predictions, y):
     models_name = []
     color_map = []
     for model_name, prediction in predictions.items():
-        if model_name == 'Ensemble':
-            color_map.append('lightblue')
-        else:
-            color_map.append('rgba(0,114,239,255)')
+        color_map = ensemble_color(model_name, color_map)
         models_name.append(model_name)
         mae.append(mean_absolute_error(y, prediction))
 
     fig = empty_fig()
     for i in range(len(mae)):
-        fig.add_trace(go.Bar(x=[mae[i]], y=[models_name[i]], orientation='h', marker_color=color_map[i]))
+        fig.add_trace(go.Bar(
+            x=[mae[i]], y=[models_name[i]],
+            orientation='h', marker_color=color_map[i],
+            hovertemplate=f'MAE: {mae[i]}',
+            name=models_name[i]
+        ))
 
     fig.update_layout(
-        title="MAE metric values",
+        title="MAE values across models",
         showlegend=False
     )
 
@@ -273,19 +285,21 @@ def mse_plot(predictions, y):
     models_name = []
     color_map = []
     for model_name, prediction in predictions.items():
-        if model_name == 'Ensemble':
-            color_map.append('lightblue')
-        else:
-            color_map.append('rgba(0,114,239,255)')
+        color_map = ensemble_color(model_name, color_map)
         models_name.append(model_name)
         mse.append(mean_squared_error(y, prediction))
 
     fig = empty_fig()
     for i in range(len(mse)):
-        fig.add_trace(go.Bar(x=[mse[i]], y=[models_name[i]], orientation='h', marker_color=color_map[i]))
+        fig.add_trace(go.Bar(
+            x=[mse[i]], y=[models_name[i]],
+            orientation='h', marker_color=color_map[i],
+            hovertemplate=f'MSE: {mse[i]}',
+            name=models_name[i]
+        ))
 
     fig.update_layout(
-        title="MSE metric values",
+        title="MSE values across models",
         showlegend=False
     )
 
@@ -311,19 +325,23 @@ def rmse_plot(predictions, y):
     models_name = []
     color_map = []
     for model_name, prediction in predictions.items():
-        if model_name == 'Ensemble':
-            color_map.append('lightblue')
-        else:
-            color_map.append('rgba(0,114,239,255)')
+        color_map = ensemble_color(model_name, color_map)
         models_name.append(model_name)
         rmse.append(mean_squared_error(y, prediction, squared=False))
 
     fig = empty_fig()
     for i in range(len(rmse)):
-        fig.add_trace(go.Bar(x=[rmse[i]], y=[models_name[i]], orientation='h', marker_color=color_map[i]))
+        fig.add_trace(go.Bar(
+            x=[rmse[i]],
+            y=[models_name[i]],
+            orientation='h',
+            marker_color=color_map[i],
+            hovertemplate=f'RMSE: {rmse[i]}',
+            name=models_name[i]
+        ))
 
     fig.update_layout(
-        title="RMSE metric values",
+        title="RMSE values across models",
         showlegend=False
     )
 
@@ -349,19 +367,23 @@ def r_2_plot(predictions, y):
     models_name = []
     color_map = []
     for model_name, prediction in predictions.items():
-        if model_name == 'Ensemble':
-            color_map.append('lightblue')
-        else:
-            color_map.append('rgba(0,114,239,255)')
+        color_map = ensemble_color(model_name, color_map)
         models_name.append(model_name)
         r2.append(r2_score(y, prediction))
 
     fig = empty_fig()
     for i in range(len(r2)):
-        fig.add_trace(go.Bar(x=[r2[i]], y=[models_name[i]], orientation='h', marker_color=color_map[i]))
+        fig.add_trace(go.Bar(
+            x=[r2[i]],
+            y=[models_name[i]],
+            orientation='h',
+            marker_color=color_map[i],
+            hovertemplate=f'R-squared: {r2[i]}',
+            name=models_name[i]
+        ))
 
     fig.update_layout(
-        title="R^2 metric values",
+        title="R-squared values across models",
         showlegend=False
     )
 
@@ -419,7 +441,7 @@ def correlation_plot(predictions, task="regression", y=None):
                         color="Correlation")
         )
     fig.update_layout(matrix_layout,
-                      title="Predictions models correlation")
+                      title="Correlation of predictions across models")
     fig.update_xaxes(tickangle=30, tickfont_size=10,
                      title="Model 1")
     fig.update_yaxes(tickfont_size=10,
@@ -480,7 +502,7 @@ def prediction_compare_plot(predictions, y, task="regression"):
 
     fig = px.imshow(plot_value, text_auto=False, color_continuous_scale=discrete_nonuniform)
     fig.update_layout(
-        title="Models predictions compare",
+        title="Model prediction comparison",
         plot_bgcolor='rgba(44,47,56,255)',
         paper_bgcolor='rgba(44,47,56,255)',
         font_color="rgba(225, 225, 225, 255)",

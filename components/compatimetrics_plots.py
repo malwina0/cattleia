@@ -216,7 +216,7 @@ def msd_comparison(predictions, model_to_compare):
 
     fig.update_traces(marker=dict(color='rgba(0,114,239,255)'))
     fig.update_layout(
-        title="Mean Squared Difference <br> of " + model_to_compare + " model",
+        title="Mean Squared Difference <br>of " + model_to_compare + " model",
         font_size=17,
         title_font_size=20,
         showlegend=False
@@ -254,7 +254,7 @@ def rmsd_comparison(predictions, model_to_compare):
 
     fig.update_traces(marker=dict(color='rgba(0,114,239,255)'))
     fig.update_layout(
-        title={'text': "Root Mean Squared Difference <br> of " + model_to_compare + " model"},
+        title={'text': "Root Mean Squared Difference <br>of " + model_to_compare + " model"},
         font_size=17,
         title_font_size=20,
         showlegend=False
@@ -388,7 +388,7 @@ def difference_boxplot(predictions, y, model_to_compare):
     fig.add_hline(y=standard_deviation / 50, line_width=3, line_dash='dash', line_color='lightpink')
     fig.update_traces(marker=dict(color='rgba(0,114,239,255)'))
     fig.update_layout(general_layout,
-        title={'text': "Distribution of absolute difference between " + model_to_compare + " prediction <br> and " +
+        title={'text': "Distribution of absolute difference between " + model_to_compare + " prediction <br>and " +
                        "other models predictions with tresholds of agreement and strong disagreement"},
         autosize=True,
         height=600
@@ -613,7 +613,7 @@ def disagreement_ratio_plot(predictions, y, model_to_compare):
     df['class_name'] = df['class_name'].astype(str)
     fig = px.bar(df, x='model_name', y='ratio', color='class_name', barmode='group')
     fig.update_layout(general_layout,
-        title='Disagreement ratio in each class of ' + model_to_compare + " <br> model and other models",
+        title='Disagreement ratio in each class of ' + model_to_compare + " <br>model and other models",
         legend_title="Class name:"
     )
     fig.update_yaxes(
@@ -662,7 +662,7 @@ def conjunctive_metrics_plot(predictions, y, model_to_compare):
                       columns=['value', 'model_name', 'metric_name'])
     fig = px.bar(df, x='model_name', y='value', color='metric_name', barmode='group')
     fig.update_layout(general_layout,
-        title='Conjunctive metrics values of ' + model_to_compare + "<br> model and other models",
+        title='Conjunctive metrics values of ' + model_to_compare + "<br>model and other models",
         legend_title="Metric"
     )
     fig.update_yaxes(
@@ -807,7 +807,7 @@ def conjunctive_precision_multiclass_plot(predictions, y, model_to_compare):
                       columns=['value', 'model_name', 'metric_type'])
     fig = px.bar(df, x='model_name', y='value', color='metric_type', barmode='group')
     fig.update_layout(general_layout,
-        title='Conjunctive precision values of ' + model_to_compare + "<br> model and other models",
+        title='Conjunctive precision values of ' + model_to_compare + "<br>model and other models",
         legend_title="Metric type"
     )
     fig.update_yaxes(
@@ -856,7 +856,7 @@ def conjunctive_recall_multiclass_plot(predictions, y, model_to_compare):
                       columns=['value', 'model_name', 'metric_type'])
     fig = px.bar(df, x='model_name', y='value', color='metric_type', barmode='group')
     fig.update_layout(general_layout,
-        title='Conjunctive recall values of ' + model_to_compare + "<br> model and other models",
+        title='Conjunctive recall values of ' + model_to_compare + "<br>model and other models",
         legend_title="Metric type"
     )
     fig.update_yaxes(

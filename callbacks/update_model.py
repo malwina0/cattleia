@@ -111,7 +111,7 @@ def update_model(contents, filename, df, column, about_us):
                     plot indicates whether a given prediction is correct, while for regression tasks the percentage 
                     difference between the true and predicted value is shown.
                     """,
-                        className="annotation_str", id="ann_0"),
+                        className="annotation_str", id="ann_metrics_prediction_compare"),
                 dcc.Graph(figure=metrics.prediction_compare_plot(predictions, y, task=task),
                           className="plot")]
 
@@ -136,7 +136,7 @@ def update_model(contents, filename, df, column, about_us):
                         indicated: cells turn green for improved metrics and red if the changes result in inferior 
                         performance.
                         """]),
-                    className="annotation_str", id="ann_2")
+                    className="annotation_str", id="ann_weights")
                 )
                 weights_plots.append(html.Br())
                 weights_plots.append(
@@ -181,7 +181,7 @@ def update_model(contents, filename, df, column, about_us):
                     feature varies. When the number of observations is large, in order to speed up the generation of 
                     graphs, only a subset of the data is used for calculations.
                     """,
-                        className="annotation_str", id="ann_1")
+                        className="annotation_str", id="ann_xai_partial_dep")
             )
 
             if len(X) < 2000:

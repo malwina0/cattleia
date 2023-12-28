@@ -1,7 +1,7 @@
 from dash import Output, Input, callback
 
 @callback(
-    Output('ann_0', 'style'),
+    Output('ann_metrics_prediction_compare', 'style'),
     Input('my-toggle-switch', 'value'),
 )
 def update_output(value):
@@ -11,7 +11,7 @@ def update_output(value):
         return {"display": "none"}
 
 @callback(
-    Output('ann_1', 'style'),
+    Output('ann_xai_partial_dep', 'style'),
     Input('my-toggle-switch', 'value'),
 )
 def update_output(value):
@@ -22,7 +22,7 @@ def update_output(value):
 
 
 @callback(
-    Output('ann_2', 'style'),
+    Output('ann_weights', 'style'),
     Input('my-toggle-switch', 'value'),
 )
 def update_output(value):
