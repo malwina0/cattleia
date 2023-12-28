@@ -1,8 +1,8 @@
 [class*="primary"], input[type='radio'] {
     color: black;
     background-color: #ffaef4!important;
-    accent-color: #f5e9ab;
-    border-color: #fbd2d2 !important;
+    accent-color: #953e8a;
+    border-color: #953e8a !important;
     margin: 0.2rem;
 }
 

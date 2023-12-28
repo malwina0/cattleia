@@ -157,7 +157,8 @@ def update_model(contents, filename, df, column, about_us):
                         dbc.Row([
                             dbc.Col([tbl_metrics_adj_ensemble(predictions, proba_predictions, y, task, weights)],
                                     width=4)
-                        ], justify="center")
+                        ], justify="center"),
+                        dbc.Row(dbc.Col(id="weights-color-info", width=4), justify='center')
                     ], className="weight-analysis-col")
                 )
             else:

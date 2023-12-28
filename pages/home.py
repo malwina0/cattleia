@@ -48,6 +48,6 @@ layout = html.Div([
     ], id="side_menu_div"),
     # plots
     html.Div([
-        dcc.Loading(id="loading-1", type="default", children=html.Div(about_us, id="plots"), className="spin"),
+        dcc.Loading(id="loading-1", type="default", color='#ffaef4', children=html.Div(about_us, id="plots"), className="spin"),
     ], id="plots_div"),
 ])
