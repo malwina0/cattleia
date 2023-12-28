@@ -19,6 +19,14 @@ matrix_layout = {
     'coloraxis_colorbar_title_text':''
 }
 
+custom_scale_continuous = [
+    [0, 'rgb(248, 213, 240)'],
+    [0.25, 'rgb(255, 174, 244)'],
+    [0.5, 'rgb(234, 71, 201)'],
+    [0.75, 'rgb(120, 5, 97)'],
+    [1, 'rgb(81, 2, 65)']
+]
+
 def ensemble_color(model_name, color_map):
     if model_name == 'Ensemble':
         color_map.append('#f5e9ab')

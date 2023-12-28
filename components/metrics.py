@@ -6,7 +6,7 @@ from sklearn.metrics import mean_absolute_percentage_error, mean_absolute_error,
     precision_score, recall_score, f1_score, r2_score
 from scipy.stats import chi2_contingency
 
-from utils.plots_layout import matrix_layout, ensemble_color
+from utils.plots_layout import matrix_layout, ensemble_color, custom_scale_continuous
 
 
 def empty_fig():
@@ -412,7 +412,7 @@ def correlation_plot(predictions, task="regression", y=None):
     predict_data = pd.DataFrame(predictions)
     if task == "regression":
         corr_matrix = predict_data.corr().round(2)
-    if task == "classification" or task == "multiclass":
+    else:
         variables = predict_data.columns
         n_variables = len(variables)
         correlation_matrix = np.zeros((n_variables, n_variables))
@@ -428,14 +428,9 @@ def correlation_plot(predictions, task="regression", y=None):
                     correlation_matrix[i, j] = round(phi_c, 2)
         corr_matrix = pd.DataFrame(correlation_matrix, index=variables, columns=variables)
 
-    custom_colors = ['rgba(242,26,155,255)',
-                     'rgba(254,113,0,255)',
-                     'rgba(255,168,0,255)',
-                     'rgba(125,179,67,255)',
-                     'rgba(3,169,245,255)']
     fig = px.imshow(
             corr_matrix,
-            color_continuous_scale=[[0, 'lightblue'], [0.5, 'blue'], [1, 'purple']],
+            color_continuous_scale=custom_scale_continuous,
             labels=dict(x="Model 1",
                         y="Model 2",
                         color="Correlation")
@@ -483,26 +478,34 @@ def prediction_compare_plot(predictions, y, task="regression"):
     plot_value = pd.DataFrame(plot_value).T
 
     if task == "regression":
-        discrete_nonuniform = [[0, 'rgb(242,26,155)'],
-                               [0.25, 'rgb(242,26,155)'],
-                               [0.25, 'rgb(255,168,0)'],
-                               [0.45, 'rgb(255,168,0)'],
-                               [0.45, 'rgb(125,179,67)'],
-                               [0.55, 'rgb(125,179,67)'],
-                               [0.55, 'rgb(3,169,245)'],
-                               [0.75, 'rgb(3,169,245)'],
-                               [0.75, 'rgb(93,53,175)'],
-                               [1, 'rgb(93,53,175)']]
+        discrete_nonuniform = [[0, 'rgb(93,53,175)'],
+                               [0.25, 'rgb(93,53,175)'],
+                               [0.25, 'rgb(3,169,245)'],
+                               [0.45, 'rgb(3,169,245)'],
+                               [0.45, 'rgb(173, 227, 116)'],
+                               [0.55, 'rgb(173, 227, 116)'],
+                               [0.55, 'rgb(255,168,0)'],
+                               [0.75, 'rgb(255,168,0)'],
+                               [0.75, 'rgb(255,168,0)'],
+                               [0.75, 'rgb(161, 2, 2)'],
+                               [1, 'rgb(161, 2, 2)']
+                               ]
     if task == "classification" or task == "multiclass":
-        discrete_nonuniform = [[0, 'rgb(242,26,155)'],
-                               [0.5, 'rgb(242,26,155)'],
-                               [0.5, 'rgb(125,179,67)'],
-                               [1, 'rgb(125,179,67)'],
+        discrete_nonuniform = [[0, 'rgb(189, 30, 38)'],
+                               [0.5, 'rgb(189, 30, 38)'],
+                               [0.5, 'rgb(173, 227, 116)'],
+                               [1, 'rgb(173, 227, 116)'],
                                ]
 
-    fig = px.imshow(plot_value, text_auto=False, color_continuous_scale=discrete_nonuniform)
+    fig = px.imshow(
+        plot_value,
+        text_auto=False,
+        color_continuous_scale=discrete_nonuniform,
+        labels=dict(x="Observation",
+                    y="Model",
+                    color="Residual")
+    )
     fig.update_layout(
-        title="Model prediction comparison",
         plot_bgcolor='rgba(44,47,56,255)',
         paper_bgcolor='rgba(44,47,56,255)',
         font_color="rgba(225, 225, 225, 255)",
@@ -512,6 +515,8 @@ def prediction_compare_plot(predictions, y, task="regression"):
         xaxis_title_standoff=300,
         yaxis_ticklen=39,
     )
+    fig.update_xaxes(title="observation number")
+    fig.update_yaxes(title="Model")
     if task == "regression":
         fig.update_layout(coloraxis=dict(cmin=-100, cmax=100))
     if task == "classification" or task == "multiclass":
@@ -532,6 +537,6 @@ def prediction_compare_plot(predictions, y, task="regression"):
         fig.add_annotation(dict(x=1.05, y=0.9, xref='paper',
                                 yref='paper', showarrow=False,
                                 width=10, height=10,
-                                bgcolor='rgb(242,26,155)'))
+                                bgcolor='rgb(189, 30, 38)'))
 
     return fig

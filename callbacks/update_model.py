@@ -6,6 +6,7 @@ from components import metrics
 import shutil
 import pandas as pd
 
+from components.annotations import ann_metrics_prediction_compare
 from utils.utils import get_predictions_from_model, get_task_from_model, parse_model, get_ensemble_weights, \
     get_probability_pred_from_model
 from components.weights import slider_section, tbl_metrics, tbl_metrics_adj_ensemble
@@ -104,16 +105,13 @@ def update_model(contents, filename, df, column, about_us):
                               className="plot"),
                 ]
 
-            metrics_plots += [
-                html.H2("""
-                    Prediction compare plot shows the differences between model predictions and true values. 
-                    The x-axis shows observations and the y-axis shows models. For classification, the color on the 
-                    plot indicates whether a given prediction is correct, while for regression tasks the percentage 
-                    difference between the true and predicted value is shown.
-                    """,
-                        className="annotation_str", id="ann_metrics_prediction_compare"),
-                dcc.Graph(figure=metrics.prediction_compare_plot(predictions, y, task=task),
-                          className="plot")]
+            metrics_plots += [dbc.Row([
+                html.H3(['Prediction compare matrix'], className='annotation-title'),
+                ann_metrics_prediction_compare,
+                dcc.Graph(figure=metrics.prediction_compare_plot(predictions, y, task=task))
+                ], className="custom-caption")
+            ]
+
 
             metrics_plots.insert(0, navigation_row)
             metrics_plots.insert(1, html.Div([], className="navigation_placeholder"))

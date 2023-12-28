@@ -59,6 +59,9 @@ body {
 .sidepanel_text{
     color: rgba(225, 225, 225, 255);
     text-align: center;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .sidepanel{
@@ -72,7 +75,7 @@ body {
 }
 
 .plot{
-    margin-top: 20px;
+    margin-top: -10px;
     margin-bottom: 20px;
     margin-left: 5px;
     margin-right: 10px;
@@ -168,6 +171,19 @@ body {
     margin-left: 100px;
 }
 
+.row{
+    --bs-gutter-x: 0 !important;
+}
+
+.compatimetrics_title{
+    color: white
+}
+
+.page-text{
+    color: white;
+    background-color: rgba(44,47,56,255);
+}
+
 .annotation_str{
     color: rgba(225, 225, 225, 255);
     font-size: 19px;
@@ -180,15 +196,19 @@ body {
     margin-right: 10px;
 }
 
-.row{
-    --bs-gutter-x: 0 !important;
-}
 
-.compatimetrics_title{
-    color: white
-}
-
-.page-text{
+.annotation-title{
     color: white;
     background-color: rgba(44,47,56,255);
+    margin-left: 10px;
+}
+
+.custom-caption{
+    background-color: rgba(44,47,56,255);
+    margin-top: 20px;
+    margin-left: 5px;
+    margin-right: 10px;
+    border: 20px solid;
+    border-color: rgba(44,47,56,255);
+    border-radius: 25px;
 }
