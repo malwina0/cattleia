@@ -1,8 +1,13 @@
 from dash import html, dcc, Output, Input, callback, State
 import dash_bootstrap_components as dbc
 import sys
-from components import compatimetrics_plots
 import pandas as pd
+
+from components import compatimetrics_plots
+from components.annotations import ann_comp_uniformity, ann_comp_incompatibility, ann_comp_acs, ann_comp_conj_acc, \
+    ann_comp_dis_ratio, ann_comp_conj_metrics, ann_comp_conj_precision, ann_comp_conj_recall, ann_comp_pred_corr, \
+    ann_comp_collective
+
 sys.path.append("..")
 
 # callback to update compatimetric plots
@@ -21,85 +26,7 @@ def update_compatimetrics_plot(predictions, model_to_compare, task, df, column):
     y = df.iloc[:, df.columns == column["name"]]
     y = y.squeeze()
     if model_to_compare:
-        if task == 'classification':
-            children = [
-                html.H3("""
-                        Matrices below show how similar two classifiers are by calculating percentage of observations
-                        that two models predicted the same in case of uniformity, and differently in case of incompatibility
-                       """,
-                        className="annotation_str", id="ann_comp_6"),
-                dbc.Row([
-                    dbc.Col([dcc.Graph(figure=compatimetrics_plots.uniformity_matrix(predictions),
-                                       className="plot")],
-                            width=6),
-                    dbc.Col([dcc.Graph(figure=compatimetrics_plots.incompatibility_matrix(predictions),
-                                       className="plot")],
-                            width=6),
-                    html.H3("""
-                    Matrix below on the right shows value of Average Collective Score which is a metric that 
-                    sums number of doubly correct predictions and number of disagreements with coefficient 0.5 and
-                    then dividing it by number of observations. It measures joined performance with consideration
-                    of double correct prediction and disagreements.
-                   """,
-                            className="annotation_str", id="ann_comp_7"),
-                ]),
-                dbc.Row([
-                    dbc.Col([dcc.Graph(figure=compatimetrics_plots.acs_matrix(predictions, y),
-                                       className="plot")],
-                            width=6),
-                    dbc.Col([dcc.Graph(figure=compatimetrics_plots.conjuntive_accuracy_matrix(predictions, y),
-                                       className="plot")],
-                            width=6),
-                ]),
-                dbc.Row([dbc.Col([
-                    html.H3("""Disagreement ratio presented on plot below on the left is measuring how many 
-                        observations were predicted differently by two models regarding to the class of the record. 
-                        It can show which class was more difficult to predict when joining models.""",
-                        className="annotation_str", id="ann_comp_9"),], width=6),
-                    dbc.Col([html.H3("""Conjunctive metrics are analogous to standard evaluation metrics,
-                        but instead of comparing target variable with one prediction vector, we use two prediction vectors 
-                        at the same time. Simply we mark prediction as correct, if two models predicted it correctly. 
-                        Thus, conjunctive accuracy, presented on matrix above, precision and recall, showed together below, 
-                        are good indicators of joined model performance as they measure the same ratios as original
-                        metrics. Worth mentioning - conjunctive recall is generally lower and conjunctive precision 
-                        is generally higher, which is related to their definition.""",
-                        className="annotation_str", id="ann_comp_8"),
-                    ], width=6)
-                ]),
-                dbc.Row([
-                    dbc.Col([dcc.Graph(
-                        figure=compatimetrics_plots.disagreement_ratio_plot(predictions, y, model_to_compare),
-                        className="plot")],
-                        width=6),
-                    dbc.Col([dcc.Graph(
-                        figure=compatimetrics_plots.conjunctive_metrics_plot(predictions, y, model_to_compare),
-                        className="plot")],
-                        width=6),
-                ]),
-                html.H3("""
-                       Plot below is showing ratio of predictions on different level of correctness. Doubly correct
-                       prediction occurs when two models predicted observation right, disagreement when one of models
-                       is missing, and doubly incorrect when two models labeled wrong class.
-                       """,
-                        className="annotation_str", id="ann_comp_10"),
-                dbc.Row(
-                    [dcc.Graph(
-                        figure=compatimetrics_plots.prediction_correctness_plot(predictions, y, model_to_compare),
-                        className='plot')
-                     ]),
-                html.H3("""
-                        On the plot below one can observe the progess of incresing average collective score 
-                        through the whole data set. This plot can be helpful when searching for areas of data set
-                        where prediction was less effective. 
-                       """,
-                        className="annotation_str", id="ann_comp_11"),
-                dbc.Row(
-                    [dcc.Graph(
-                        figure=compatimetrics_plots.collective_cummulative_score_plot(predictions, y, model_to_compare),
-                        className='plot')
-                     ]),
-            ]
-        elif task == 'regression':
+        if task == 'regression':
             children = [dbc.Row([
                 html.H3("""
                                 Matrices below show the distance between two prediction vectros obtained from base models. 
@@ -168,70 +95,100 @@ def update_compatimetrics_plot(predictions, model_to_compare, task, df, column):
             ]
         else:
             children = [
-                html.H3("""
-                        Matrices below show how similar two classifiers are by calculating percentage of observations
-                        that two models predicted the same in case of uniformity, and differently in case of incompatibility
-                       """,
-                        className="annotation_str", id="ann_comp_12"),
                 dbc.Row([
-                    dbc.Col([dcc.Graph(figure=compatimetrics_plots.uniformity_matrix(predictions),
-                                       className="plot")],
-                            width=6),
-                    dbc.Col([dcc.Graph(figure=compatimetrics_plots.incompatibility_matrix(predictions),
-                                       className="plot")],
-                            width=6),
-                ]), dbc.Row([
-                    dbc.Col([dcc.Graph(figure=compatimetrics_plots.acs_matrix(predictions, y),
-                                       className="plot")],
-                            width=6),
-                    dbc.Col([dcc.Graph(figure=compatimetrics_plots.conjuntive_accuracy_matrix(predictions, y),
-                                       className="plot")],
-                            width=6),
-                ]),
-                html.H3("""
-                        Conjunctive metrics are analogous to standard evaluation metrics, but instead of comparing target
-                        variable with one prediction vector, we use two prediction vectors at the same time. Simply we
-                        mark prediction as correct, if two models predicted it correctly. In case of multiclass 
-                        classification we additionally distinguish weighted and macro versions of recall and precision.
-                        Thus, conjunctive accuracy, presented on matrix above on the right, precision and recall, showed 
-                        below, are good indicators of joined model performance as they measure the same ratios as original
-                        metrics. Worth mentioning - conjunctive recall is generally lower and conjunctive precision 
-                        is generally higher, which is related to their definition. 
-                                   """,
-                        className="annotation_str", id="ann_comp_14"),
+                    dbc.Col([
+                        dbc.Row([
+                            html.H3(['Uniformity'], className='annotation-title'),
+                            ann_comp_uniformity,
+                            dcc.Graph(figure=compatimetrics_plots.uniformity_matrix(predictions),
+                                      className="plot")
+                        ], className="custom-caption")
+                    ], width=6, className='plot-col'),
+                    dbc.Col([
+                        dbc.Row([
+                            html.H3(['Incompatibility'], className='annotation-title'),
+                            ann_comp_incompatibility,
+                            dcc.Graph(figure=compatimetrics_plots.incompatibility_matrix(predictions),
+                                      className="plot")
+                        ], className="custom-caption")
+                    ], width=6, className='plot-col')
+                ], style={'display': 'flex'}),
                 dbc.Row([
-                    dbc.Col([dcc.Graph(
-                        figure=compatimetrics_plots.conjunctive_precision_multiclass_plot(predictions, y,
-                                                                                          model_to_compare),
-                        className="plot")],
-                        width=6),
-                    dbc.Col([dcc.Graph(
-                        figure=compatimetrics_plots.conjunctive_recall_multiclass_plot(predictions, y,
-                                                                                       model_to_compare),
-                        className="plot")],
-                        width=6),
-                ]),
-                html.H3("""
-                     Plot below is showing ratio of predictions on different level of correctness. Doubly correct
-                     prediction occurs when two models predicted observation right, disagreement when one of models
-                     is missing, and doubly incorrect when two models labeled wrong class.
-                     """,
-                        className="annotation_str", id="ann_comp_15"),
-                dbc.Row(
-                    [dcc.Graph(
+                    dbc.Col([
+                        dbc.Row([
+                            html.H3(['Average Collective Score'], className='annotation-title'),
+                            ann_comp_acs,
+                            dcc.Graph(figure=compatimetrics_plots.acs_matrix(predictions, y),
+                                      className="plot")
+                        ], className="custom-caption")
+                    ], width=6, className='plot-col'),
+                    dbc.Col([
+                        dbc.Row([
+                            html.H3(['Conjunctive Accuracy'], className='annotation-title'),
+                            ann_comp_conj_acc,
+                            dcc.Graph(figure=compatimetrics_plots.conjuntive_accuracy_matrix(predictions, y),
+                                      className="plot")
+                        ], className="custom-caption")
+                    ], width=6, className='plot-col')
+                ], style={'display': 'flex'})
+            ]
+            if task == 'classification':
+                children.extend([
+                    dbc.Row([
+                        dbc.Col([
+                            dbc.Row([
+                                ann_comp_dis_ratio,
+                                dcc.Graph(
+                                    figure=compatimetrics_plots.disagreement_ratio_plot(predictions, y, model_to_compare),
+                                    className="plot")
+                            ], className="custom-caption")
+                        ], width=6, className='plot-col'),
+                        dbc.Col([
+                            dbc.Row([
+                                ann_comp_conj_metrics,
+                                dcc.Graph(
+                                    figure=compatimetrics_plots.conjunctive_metrics_plot(predictions, y,
+                                                                                         model_to_compare),
+                                    className="plot")
+                            ], className="custom-caption")
+                        ], width=6, className='plot-col'),
+                    ], style={'display': 'flex'})
+                ])
+            else:
+                children.extend([
+                    dbc.Row([
+                        dbc.Col([
+                            dbc.Row([
+                                ann_comp_conj_precision,
+                                dcc.Graph(
+                                    figure=compatimetrics_plots.conjunctive_precision_multiclass_plot(predictions, y, model_to_compare),
+                                    className="plot")
+                            ], className="custom-caption")
+                        ], width=6, className='plot-col'),
+                        dbc.Col([
+                            dbc.Row([
+                                ann_comp_conj_recall,
+                                dcc.Graph(
+                                    figure=compatimetrics_plots.conjunctive_recall_multiclass_plot(predictions, y,
+                                                                                                   model_to_compare),
+                                    className="plot")
+                            ], className="custom-caption")
+                        ], width=6, className='plot-col'),
+                    ])
+                ])
+
+            children.extend([
+                dbc.Row([
+                    ann_comp_pred_corr,
+                    dcc.Graph(
                         figure=compatimetrics_plots.prediction_correctness_plot(predictions, y, model_to_compare),
                         className='plot')
-                    ]),
-                html.H3("""
-                      On the plot below one can observe the progress of increasing average collective score 
-                      through the whole data set. This plot can be helpful when searching for areas of data set
-                      where prediction was less effective. 
-                     """,
-                        className="annotation_str", id="ann_comp_16"),
-                dbc.Row(
-                    [dcc.Graph(
+                ], className="custom-caption"),
+                dbc.Row([
+                    ann_comp_collective,
+                    dcc.Graph(
                         figure=compatimetrics_plots.collective_cummulative_score_plot(predictions, y, model_to_compare),
                         className='plot')
-                    ])
-            ]
+                ], className="custom-caption"),
+            ])
     return children

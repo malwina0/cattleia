@@ -21,7 +21,7 @@ body {
 #side_menu_div {
   position: fixed;
   left: 0;
-  top: 100px;
+  top: 90px;
   width: 250px;
   height: 100%;
   background-color: transparent;
@@ -75,8 +75,7 @@ body {
 }
 
 .plot{
-    margin-top: -10px;
-    margin-bottom: 20px;
+    margin-bottom: 10px;
     margin-left: 5px;
     margin-right: 10px;
     border: 20px solid;
@@ -90,6 +89,10 @@ body {
     border-radius:20px;
     background-color: #ffaef4;
     color: black !important;
+}
+
+#model_select{
+    padding-bottom: 20px;
 }
 
 .Select-placeholder{
@@ -175,9 +178,6 @@ body {
     --bs-gutter-x: 0 !important;
 }
 
-.compatimetrics_title{
-    color: white
-}
 
 .page-text{
     color: white;
@@ -204,10 +204,14 @@ body {
 
 .custom-caption{
     background-color: rgba(44,47,56,255);
-    margin-top: 20px;
     margin-left: 5px;
+    margin-bottom: 30px;
     margin-right: 10px;
     border: 20px solid;
     border-color: rgba(44,47,56,255);
     border-radius: 25px;
+}
+
+#latex-code{
+    font-size: 18px;
 }

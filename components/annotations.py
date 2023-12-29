@@ -1,4 +1,5 @@
-from dash import html
+from dash import html, dcc
+
 
 ann_metrics_prediction_compare = html.Div([
         "The matrix compares model predictions with actual values for each observation.",
@@ -41,7 +42,6 @@ ann_weights_ensemble = html.Div([
     html.A([" (set manually) are presented side by side."])
 ], className="annotation_str", id="ann_weights_ensemble")
 
-
 ann_xai_feature_importance = html.Div([
     "The feature importance plot illustrates the significance of different features in a model's predictions.",
     html.Ul([
@@ -57,4 +57,95 @@ ann_xai_partial_dep = html.Div([
         html.Li(["With a large number of observations, to expedite graph generation, calculations are performed using a subset of the data."])
     ])
     ], className="annotation_str", id="ann_xai_partial_dep")
+
+ann_comp_overview = html.Div([
+    html.H2(['Compatimetrics'], className='annotation-title'),
+    html.A("Compatimetrics are novel indicators of models compatibility and similarity."),
+    html.Ul([
+        html.Li([html.A("They show the "), html.Strong("distance between prediction vectors"), html.A(" from different base models.")]),
+        html.Li(["They are developed on the basis of simple heuristics and corresponding evaluation metrics."])
+    ])
+], className="annotation_str", id="ann_comp_overview")
+
+ann_comp_uniformity = html.Div([
+    html.A("Uniformity counts the "), html.Strong("percentage of observations that both models predicted the same. "),
+    html.A("It indicates how similar models are but does not reflect their quality.")
+], className="annotation_str", id="ann_comp_uniformity")
+
+ann_comp_incompatibility = html.Div([
+    html.A("Incompatibility is an "), html.Strong("opposite of uniformity"),
+    html.A(", as it counts the percentage of observations that were predicted differently by models.")
+], className="annotation_str", id="ann_comp_incompatibility")
+
+ann_comp_acs = html.Div([
+    html.A("Average Collective Score helps "), html.Strong("compare model pairs by considering their correctness"),
+    html.A("."), html.Br(),
+    html.A("It assigns weights to observations based on prediction correctness:"),
+    html.Ul([
+        html.Li([html.Strong("doubly correct "), html.A("predictions receive a weight of "), html.Strong("1"), html.A(",")]),
+        html.Li([html.Strong("disagreements "), html.A("are weighted at "), html.Strong("0.5"), html.A(",")]),
+        html.Li([html.A("and "), html.Strong("doubly incorrect "), html.A("predictions are weighted at "), html.Strong("0"), html.A(".")])
+    ]),
+    dcc.Markdown(r'$$\text{ACS} = \frac{\text{TT} + 0.5 \cdot (\text{TF + FT})}{n}$$', mathjax=True, id="latex-code"),
+    html.A("It gives a result between 0 and 1, where a larger value implies greater agreement and correctness.")
+], className="annotation_str", id="ann_comp_acs")
+
+ann_comp_conj_acc = html.Div([
+    html.A("Conjunctive Accuracy is an "), html.Strong("equivalent of standard accuracy"),
+    html.A(", with the following characteristics:"),
+    html.Ul([
+        html.Li([html.A("it deems double prediction as correct only when both "), html.Strong("models return the correct value"), html.A(",")]),
+        html.Li([html.A("calculates the "), html.Strong("percentage "), html.A("of observations where this dual correctness criterion is met.")])
+    ]),
+    # html.Br(), html.Br(), html.Br(), html.Br(), html.Br()
+], className="annotation_str", id="ann_comp_conj_acc")
+
+ann_comp_dis_ratio = html.Div([
+    html.H3(['Disagreement ratio'], className='annotation-title'),
+    html.A("Disagreement ratio is measuring how many observations were predicted "), html.Strong("differently "),
+    html.A("by two models, "), html.Strong("regarding to the record's class."), html.Br(),
+    html.A("It can show which class was more difficult to predict when joining models."), html.Br(), html.Br(), html.Br(), html.Br()
+], className="annotation_str", id="ann_comp_dis_ratio")
+
+ann_comp_conj_metrics = html.Div([
+    html.H3(['Conjunctive metrics'], className='annotation-title'),
+    html.A("Conjunctive metrics are similar to standard evaluation metrics, but they consider "),
+    html.Strong("two prediction vectors "),html.A("simultaneously."),
+    html.Ul([
+        html.Li([html.A("A prediction is marked as correct only if both models predict it accurately.")]),
+        html.Li([html.Strong("Worth noting: "), html.A("conjunctive recall is generally lower and conjunctive precision"
+        " is generally higher, which is related to their definition.")])
+    ])
+], className="annotation_str", id="ann_comp_conj_metrics")
+
+
+ann_comp_conj_precision = html.Div([
+    html.H3(['Conjunctive precision'], className='annotation-title'),
+    html.A("In case of multiclass classification we additionally distinguish weighted and macro versions of precision."),
+    html.Br(), html.Strong("Worth noting:"), html.A(" conjunctive precision is generally higher, which is related to "
+    "their definition."),
+], className="annotation_str", id="ann_comp_conj_precision")
+
+ann_comp_conj_recall = html.Div([
+    html.H3(['Conjunctive recall'], className='annotation-title'),
+    html.A("In case of multiclass classification we additionally distinguish weighted and macro versions of recall."),
+    html.Br(), html.Strong("Worth noting:"), html.A(" conjunctive recall is generally lower, which is related to "
+    "their definition."),
+], className="annotation_str", id="ann_comp_conj_recall")
+
+ann_comp_pred_corr = html.Div([
+    html.H3(['Prediction correctness'], className='annotation-title'),
+    html.A("The plot illustrates the breakdown of prediction correctness levels."),
+    html.Ul([
+        html.Li([html.Strong("Doubly correct "), html.A("predictions happen when both models predict the observation correctly.")]),
+        html.Li([html.Strong("Disagreement "), html.A("occurs when one of the models is missing in its prediction.")]),
+        html.Li([html.Strong("Doubly incorrect "), html.A("signifies when both models label the observation with the wrong class.")])
+    ])
+], className="annotation_str", id="ann_comp_pred_corr")
+
+ann_comp_collective = html.Div([
+    html.H3(['Cummulative Collective Score'], className='annotation-title'),
+    html.A("On the plot below one can observe the process of increasing average collective score through the whole data set."),
+    html.Br(), html.A(" This plot can be helpful when searching for areas of data set where prediction was less effective."),
+], className="annotation_str", id="ann_comp_collective")
 

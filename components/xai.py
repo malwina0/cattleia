@@ -137,8 +137,10 @@ def partial_dependence_line_plot(y_values, x_values, model_names, name):
         A Plotly figure representing the partial dependence line plot.
     """
     fig = empty_fig()
-    fig.update_layout(matrix_layout,
-        title=f"{name} variable partial dependence plot"
+    fig.update_layout(
+        matrix_layout,
+        title=f"{name} variable partial dependence plot",
+        legend_title=None
     )
 
     for line_value, model_name in zip(y_values, model_names):
@@ -146,6 +148,8 @@ def partial_dependence_line_plot(y_values, x_values, model_names, name):
             fig.add_trace(go.Scatter(x=x_values, y=line_value, mode='lines', name=model_name, line=dict(color='#ffaef4', width=5)))
         else:
             fig.add_trace(go.Scatter(x=x_values, y=line_value, mode='lines', name=model_name))
+    fig.update_xaxes(title=f"{name} value")
+    fig.update_yaxes(title="prediction value")
     return fig
 
 def update_partial_dependence_info(X, ensemble_model, values, model_name, columns):
@@ -751,4 +755,6 @@ def feature_importance_plot(df):
             visible=True if model == 'Ensemble' else 'legendonly'
         ))
     fig.update_traces(marker_color='#ffaef4', selector=dict(name='Ensemble'))
+    fig.update_xaxes(title="feature names")
+    fig.update_yaxes(title="feature importance")
     return fig

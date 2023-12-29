@@ -15,14 +15,16 @@ def empty_fig():
         plot_bgcolor='rgba(44,47,56,255)',
         paper_bgcolor='rgba(44,47,56,255)',
         font_color="rgba(225, 225, 225, 255)",
-        font_size=20,
+        font_size=16,
         title_font_color="rgba(225, 225, 225, 255)",
-        title_font_size=25,
+        title_font_size=28,
     )
     fig.update_yaxes(
         gridcolor='rgba(51,54,61,255)',
         gridwidth=3
     )
+    fig.update_xaxes(title_font=dict(size=5))
+    fig.update_yaxes(title_font=dict(size=5))
     return fig
 
 
@@ -62,6 +64,7 @@ def accuracy_plot(predictions, y):
         title="Accuracy values across models",
         showlegend=False
     )
+    fig.update_xaxes(title="accuracy")
 
     return fig
 
@@ -102,6 +105,7 @@ def precision_plot(predictions, y):
         title="Precision values across models",
         showlegend=False
     )
+    fig.update_xaxes(title="precision")
 
     return fig
 
@@ -142,6 +146,7 @@ def recall_plot(predictions, y):
         title="Recall values across models",
         showlegend=False
     )
+    fig.update_xaxes(title="recall")
 
     return fig
 
@@ -182,6 +187,7 @@ def f1_score_plot(predictions, y):
         title="F1-score values across models",
         showlegend=False
     )
+    fig.update_xaxes(title="F1-score")
 
     return fig
 
@@ -222,6 +228,7 @@ def mape_plot(predictions, y):
         title="MAPE values across models",
         showlegend=False
     )
+    fig.update_xaxes(title="MAPE")
 
     return fig
 
@@ -262,6 +269,7 @@ def mae_plot(predictions, y):
         title="MAE values across models",
         showlegend=False
     )
+    fig.update_xaxes(title="MAE")
 
     return fig
 
@@ -302,6 +310,7 @@ def mse_plot(predictions, y):
         title="MSE values across models",
         showlegend=False
     )
+    fig.update_xaxes(title="MSE")
 
     return fig
 
@@ -344,6 +353,7 @@ def rmse_plot(predictions, y):
         title="RMSE values across models",
         showlegend=False
     )
+    fig.update_xaxes(title="RMSE")
 
     return fig
 
@@ -386,6 +396,7 @@ def r_2_plot(predictions, y):
         title="R-squared values across models",
         showlegend=False
     )
+    fig.update_xaxes(title="R-squared")
 
     return fig
 
@@ -437,10 +448,8 @@ def correlation_plot(predictions, task="regression", y=None):
         )
     fig.update_layout(matrix_layout,
                       title="Correlation of predictions across models")
-    fig.update_xaxes(tickangle=30, tickfont_size=10,
-                     title="Model 1")
-    fig.update_yaxes(tickfont_size=10,
-                     title="Model 2")
+    fig.update_xaxes(tickangle=30, title="Model 1")
+    fig.update_yaxes(title="Model 2")
     fig.update_traces(textfont_size=13, textfont_color="rgba(255, 255, 255, 255)")
 
     return fig
@@ -478,17 +487,16 @@ def prediction_compare_plot(predictions, y, task="regression"):
     plot_value = pd.DataFrame(plot_value).T
 
     if task == "regression":
-        discrete_nonuniform = [[0, 'rgb(93,53,175)'],
-                               [0.25, 'rgb(93,53,175)'],
+        discrete_nonuniform = [[0, 'rgb(4, 69, 209)'],
+                               [0.25, 'rgb(4, 69, 209)'],
                                [0.25, 'rgb(3,169,245)'],
                                [0.45, 'rgb(3,169,245)'],
-                               [0.45, 'rgb(173, 227, 116)'],
-                               [0.55, 'rgb(173, 227, 116)'],
-                               [0.55, 'rgb(255,168,0)'],
-                               [0.75, 'rgb(255,168,0)'],
-                               [0.75, 'rgb(255,168,0)'],
-                               [0.75, 'rgb(161, 2, 2)'],
-                               [1, 'rgb(161, 2, 2)']
+                               [0.45, 'rgb(176, 255, 158)'],
+                               [0.55, 'rgb(176, 255, 158)'],
+                               [0.55, 'rgb(232, 190, 5)'],
+                               [0.75, 'rgb(232, 190, 5)'],
+                               [0.75, 'rgb(230, 101, 2)'],
+                               [1, 'rgb(230, 101, 2)']
                                ]
     if task == "classification" or task == "multiclass":
         discrete_nonuniform = [[0, 'rgb(189, 30, 38)'],
@@ -515,8 +523,8 @@ def prediction_compare_plot(predictions, y, task="regression"):
         xaxis_title_standoff=300,
         yaxis_ticklen=39,
     )
-    fig.update_xaxes(title="observation number")
-    fig.update_yaxes(title="Model")
+    fig.update_xaxes(title="observation number", tickfont_size=10)
+    fig.update_yaxes(title="")
     if task == "regression":
         fig.update_layout(coloraxis=dict(cmin=-100, cmax=100))
     if task == "classification" or task == "multiclass":

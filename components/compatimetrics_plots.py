@@ -9,7 +9,7 @@ from components.compatimetrics import mean_squared_difference, \
     conjunctive_accuracy, conjunctive_precission, conjunctive_recall, average_collective_score, \
     macro_conjunctive_precission, weighted_conjunctive_precission, macro_conjunctive_recall, \
     weighted_conjunctive_recall
-from utils.plots_layout import matrix_layout, general_layout
+from utils.plots_layout import matrix_layout, general_layout, custom_scale_continuous
 
 
 def msd_matrix(predictions):
@@ -36,7 +36,7 @@ def msd_matrix(predictions):
             else:
                 matrix[i, j] = round(mean_squared_difference(predictions[models[i]], predictions[models[j]]))
     matrix = pd.DataFrame(matrix, index=models, columns=models)
-    fig = px.imshow(matrix, color_continuous_scale=[[0, 'lightblue'], [0.5, 'blue'], [1, 'purple']],
+    fig = px.imshow(matrix, color_continuous_scale=custom_scale_continuous,
                     labels=dict(x="Model 1",
                                 y="Model 2",
                                 color="MSD")
@@ -77,7 +77,7 @@ def rmsd_matrix(predictions):
                 matrix[i, j] = round(root_mean_squared_difference(predictions[models[i]],
                                                                   predictions[models[j]]))
     matrix = pd.DataFrame(matrix, index=models, columns=models)
-    fig = px.imshow(matrix, color_continuous_scale=[[0, 'lightblue'], [0.5, 'blue'], [1, 'purple']],
+    fig = px.imshow(matrix, color_continuous_scale=custom_scale_continuous,
                     labels=dict(x="Model 1",
                                 y="Model 2",
                                 color="RMSD")
@@ -121,7 +121,7 @@ def sdr_matrix(predictions, y):
                 matrix[i, j] = round(strong_disagreement_ratio(predictions[models[i]],
                                                                predictions[models[j]], y), 2)
     matrix = pd.DataFrame(matrix, index=models, columns=models)
-    fig = px.imshow(matrix, text_auto=True, color_continuous_scale=[[0, 'lightblue'], [0.5, 'blue'], [1, 'purple']],
+    fig = px.imshow(matrix, text_auto=True, color_continuous_scale=custom_scale_continuous,
                     zmin=0,
                     zmax=1,
                     labels=dict(x="Model 1",
@@ -168,7 +168,7 @@ def ar_matrix(predictions, y):
                 matrix[i, j] = round(agreement_ratio(predictions[models[i]],
                                                      predictions[models[j]], y), 2)
     matrix = pd.DataFrame(matrix, index=models, columns=models)
-    fig = px.imshow(matrix, text_auto=True, color_continuous_scale=[[0, 'lightblue'], [0.5, 'blue'], [1, 'purple']],
+    fig = px.imshow(matrix, text_auto=True, color_continuous_scale=custom_scale_continuous,
                     zmin=0,
                     zmax=1,
                     labels=dict(x="Model 1",
@@ -425,15 +425,13 @@ def uniformity_matrix(predictions):
             else:
                 matrix[i, j] = round(uniformity(predictions[models[i]], predictions[models[j]]), 2)
     matrix = pd.DataFrame(matrix, index=models, columns=models)
-    fig = px.imshow(matrix, text_auto=True, color_continuous_scale=[[0, 'lightblue'], [0.5, 'blue'], [1, 'purple']],
+    fig = px.imshow(matrix, text_auto=True, color_continuous_scale=custom_scale_continuous,
                     zmin=0, zmax=1,
                     labels=dict(x="Model 1",
                                 y="Model 2",
                                 color="Uniformity")
                     )
-    fig.update_layout(matrix_layout,
-        title="Uniformity"
-    )
+    fig.update_layout(matrix_layout)
     fig.update_xaxes(tickangle=30,
                      title = "")
     fig.update_yaxes(tickfont_size=10,
@@ -467,15 +465,13 @@ def incompatibility_matrix(predictions):
             else:
                 matrix[i, j] = round(disagreement_ratio(predictions[models[i]], predictions[models[j]]), 2)
     matrix = pd.DataFrame(matrix, index=models, columns=models)
-    fig = px.imshow(matrix, text_auto=True, color_continuous_scale=[[0, 'lightblue'], [0.5, 'blue'], [1, 'purple']],
+    fig = px.imshow(matrix, text_auto=True, color_continuous_scale=custom_scale_continuous,
                     zmin=0, zmax=1,
                     labels=dict(x="Model 1",
                                 y="Model 2",
                                 color="Incompatibility")
                     )
-    fig.update_layout(matrix_layout,
-        title="Incompatibility"
-    )
+    fig.update_layout(matrix_layout)
     fig.update_xaxes(tickangle=30,
                      title="")
     fig.update_yaxes(tickfont_size=10,
@@ -512,15 +508,13 @@ def acs_matrix(predictions, y):
             else:
                 matrix[i, j] = round(average_collective_score(predictions[models[i]], predictions[models[j]], y)[0], 2)
     matrix = pd.DataFrame(matrix, index=models, columns=models)
-    fig = px.imshow(matrix, text_auto=True, color_continuous_scale=[[0, 'lightblue'], [0.5, 'blue'], [1, 'purple']],
+    fig = px.imshow(matrix, text_auto=True, color_continuous_scale=custom_scale_continuous,
                     zmin=0, zmax=1,
                     labels=dict(x="Model 1",
                                 y="Model 2",
                                 color="Average Collective Score")
                     )
-    fig.update_layout(matrix_layout,
-        title="Average Collective Score"
-    )
+    fig.update_layout(matrix_layout)
     fig.update_xaxes(tickangle=30,
                      title="")
     fig.update_yaxes(tickfont_size=10,
@@ -557,15 +551,13 @@ def conjuntive_accuracy_matrix(predictions, y):
             else:
                 matrix[i, j] = round(conjunctive_accuracy(predictions[models[i]], predictions[models[j]], y), 2)
     matrix = pd.DataFrame(matrix, index=models, columns=models)
-    fig = px.imshow(matrix, text_auto=True, color_continuous_scale=[[0, 'lightblue'], [0.5, 'blue'], [1, 'purple']],
+    fig = px.imshow(matrix, text_auto=True, color_continuous_scale=custom_scale_continuous,
                     zmin=0, zmax=1,
                     labels=dict(x="Model 1",
                                 y="Model 2",
                                 color="Conjunctive Accuracy")
                     )
-    fig.update_layout(matrix_layout,
-        title="Conjunctive Accuracy"
-    )
+    fig.update_layout(matrix_layout)
     fig.update_xaxes(tickangle=30,
                      title="")
     fig.update_yaxes(tickfont_size=10,
@@ -670,9 +662,9 @@ def conjunctive_metrics_plot(predictions, y, model_to_compare):
         gridwidth=3,
         title='Metric value'
     )
-    fig.data[0].marker.color = 'rgba(0,114,239,255)'
-    fig.data[1].marker.color = 'purple'
-    fig.data[2].marker.color = '#321e8a'
+    fig.data[0].marker.color = '#f5e9ab'
+    fig.data[1].marker.color = '#ffaef4'
+    fig.data[2].marker.color = '#ab9cf0'
     fig.update_xaxes(title='')
     return fig
 
@@ -721,9 +713,9 @@ def prediction_correctness_plot(predictions, y, model_to_compare):
         gridwidth=3,
         title='Percentage'
     )
-    fig.data[0].marker.color = '#168c65'
-    fig.data[1].marker.color = '#2d2d87'
-    fig.data[2].marker.color = '#a8324e'
+    fig.data[0].marker.color = '#b0ff9e'
+    fig.data[1].marker.color = '#fffd9e'
+    fig.data[2].marker.color = '#ff9e9e'
     fig.update_yaxes(title='')
     return fig
 
@@ -813,10 +805,10 @@ def conjunctive_precision_multiclass_plot(predictions, y, model_to_compare):
     fig.update_yaxes(
         gridcolor='rgba(51,54,61,255)',
         gridwidth=3,
-        title='Metric type'
+        title='conjunctive precision'
     )
-    fig.data[0].marker.color = 'rgba(0,114,239,255)'
-    fig.data[1].marker.color = 'purple'
+    fig.data[0].marker.color = '#f5e9ab'
+    fig.data[1].marker.color = '#ffaef4'
     fig.update_xaxes(title='')
     return fig
 
@@ -862,9 +854,9 @@ def conjunctive_recall_multiclass_plot(predictions, y, model_to_compare):
     fig.update_yaxes(
         gridcolor='rgba(51,54,61,255)',
         gridwidth=3,
-        title='Metric type'
+        title='conjunctive recall'
     )
-    fig.data[0].marker.color = 'rgba(0,114,239,255)'
-    fig.data[1].marker.color = 'purple'
+    fig.data[0].marker.color = '#f5e9ab'
+    fig.data[1].marker.color = '#ffaef4'
     fig.update_xaxes(title='')
     return fig

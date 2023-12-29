@@ -1,18 +1,17 @@
 from dash import html, dcc, Output, Input, callback, State
 import dash_bootstrap_components as dbc
-
-import components.xai
-from components import metrics
 import shutil
 import pandas as pd
 
 from components.annotations import ann_metrics_prediction_compare, ann_weights_sliders, ann_weights_metrics, \
     ann_weights_ensemble, ann_xai_feature_importance, ann_xai_partial_dep
+from components.metrics import mse_plot, mape_plot, rmse_plot, r_2_plot, mae_plot, correlation_plot, accuracy_plot, \
+    precision_plot, recall_plot, f1_score_plot, prediction_compare_plot
+from components.navigation import navigation_row
+from components.weights import slider_section, tbl_metrics, tbl_metrics_adj_ensemble
+from components.xai import prepare_feature_importance, feature_importance_plot, partial_dependence_plots
 from utils.utils import get_predictions_from_model, get_task_from_model, parse_model, get_ensemble_weights, \
     get_probability_pred_from_model
-from components.weights import slider_section, tbl_metrics, tbl_metrics_adj_ensemble
-from components.navigation import navigation_row
-from components.xai import prepare_feature_importance, feature_importance_plot
 
 # part responsible for adding model and showing plots
 @callback(
@@ -67,21 +66,21 @@ def update_model(contents, filename, df, column, about_us):
             if task == "regression":
                 metrics_plots = [
                     dbc.Row([
-                        dbc.Col([dcc.Graph(figure=metrics.mse_plot(predictions, y), className="plot")],
+                        dbc.Col([dcc.Graph(figure=mse_plot(predictions, y), className="plot")],
                                 width=6),
-                        dbc.Col([dcc.Graph(figure=metrics.mape_plot(predictions, y), className="plot")],
-                                width=6),
-                    ]),
-                    dbc.Row([
-                        dbc.Col([dcc.Graph(figure=metrics.rmse_plot(predictions, y), className="plot")],
-                                width=6),
-                        dbc.Col([dcc.Graph(figure=metrics.r_2_plot(predictions, y), className="plot")],
+                        dbc.Col([dcc.Graph(figure=mape_plot(predictions, y), className="plot")],
                                 width=6),
                     ]),
                     dbc.Row([
-                        dbc.Col([dcc.Graph(figure=metrics.mae_plot(predictions, y), className="plot")],
+                        dbc.Col([dcc.Graph(figure=rmse_plot(predictions, y), className="plot")],
                                 width=6),
-                        dbc.Col([dcc.Graph(figure=metrics.correlation_plot(predictions, task=task, y=y),
+                        dbc.Col([dcc.Graph(figure=r_2_plot(predictions, y), className="plot")],
+                                width=6),
+                    ]),
+                    dbc.Row([
+                        dbc.Col([dcc.Graph(figure=mae_plot(predictions, y), className="plot")],
+                                width=6),
+                        dbc.Col([dcc.Graph(figure=correlation_plot(predictions, task=task, y=y),
                                   className="plot")], width=6),
                     ])
                 ]
@@ -89,27 +88,27 @@ def update_model(contents, filename, df, column, about_us):
                 proba_predictions = get_probability_pred_from_model(model, X, library)
                 metrics_plots = [
                     dbc.Row([
-                        dbc.Col([dcc.Graph(figure=metrics.accuracy_plot(predictions, y),
+                        dbc.Col([dcc.Graph(figure=accuracy_plot(predictions, y),
                                            className="plot")], width=6),
-                        dbc.Col([dcc.Graph(figure=metrics.precision_plot(predictions, y),
+                        dbc.Col([dcc.Graph(figure=precision_plot(predictions, y),
                                            className="plot")], width=6),
                     ]),
                     dbc.Row([
                         dbc.Col(
-                            [dcc.Graph(figure=metrics.recall_plot(predictions, y), className="plot")],
+                            [dcc.Graph(figure=recall_plot(predictions, y), className="plot")],
                             width=6),
                         dbc.Col(
-                            [dcc.Graph(figure=metrics.f1_score_plot(predictions, y), className="plot")],
+                            [dcc.Graph(figure=f1_score_plot(predictions, y), className="plot")],
                             width=6),
                     ]),
-                    dcc.Graph(figure=metrics.correlation_plot(predictions, task=task, y=y),
+                    dcc.Graph(figure=correlation_plot(predictions, task=task, y=y),
                               className="plot"),
                 ]
 
             metrics_plots += [dbc.Row([
                 html.H3(['Prediction compare matrix'], className='annotation-title'),
                 ann_metrics_prediction_compare,
-                dcc.Graph(figure=metrics.prediction_compare_plot(predictions, y, task=task))
+                dcc.Graph(figure=prediction_compare_plot(predictions, y, task=task))
                 ], className="custom-caption")
             ]
 
@@ -171,9 +170,9 @@ def update_model(contents, filename, df, column, about_us):
             )
 
             if len(X) < 2000:
-                pd_plots_dict = components.xai.partial_dependence_plots(model, X, library=library, task=task)
+                pd_plots_dict = partial_dependence_plots(model, X, library=library, task=task)
             else:
-                pd_plots_dict = components.xai.partial_dependence_plots(model, X.sample(2000), library=library, task=task)
+                pd_plots_dict = partial_dependence_plots(model, X.sample(2000), library=library, task=task)
             pd_variables = list(pd_plots_dict.keys())
 
             if len(pd_variables) > 0:
