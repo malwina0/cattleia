@@ -6,7 +6,8 @@ import pandas as pd
 from components import compatimetrics_plots
 from components.annotations import ann_comp_uniformity, ann_comp_incompatibility, ann_comp_acs, ann_comp_conj_acc, \
     ann_comp_dis_ratio, ann_comp_conj_metrics, ann_comp_conj_precision, ann_comp_conj_recall, ann_comp_pred_corr, \
-    ann_comp_collective
+    ann_comp_collective, ann_comp_msd, ann_comp_rmsd, ann_comp_ar, ann_comp_sdr, ann_comp_conj_rmse, ann_comp_diff_dist, \
+    ann_comp_diff_boxplot
 
 sys.path.append("..")
 
@@ -27,71 +28,70 @@ def update_compatimetrics_plot(predictions, model_to_compare, task, df, column):
     y = y.squeeze()
     if model_to_compare:
         if task == 'regression':
-            children = [dbc.Row([
-                html.H3("""
-                                Matrices below show the distance between two prediction vectros obtained from base models. 
-                                MSE calculates mean of squared distance between vectors. RMSE is a root of MSE. The bigger the values,
-                                the less similar are two models.
-                                """,
-                        className="annotation_str", id="ann_comp_1"),
-                dbc.Col([dcc.Graph(figure=compatimetrics_plots.msd_matrix(predictions), className="plot")],
-                        width=6),
-                dbc.Col([dcc.Graph(figure=compatimetrics_plots.rmsd_matrix(predictions), className="plot")],
-                        width=6),
-                ]),
-                html.H3("""
-                    Matrices below show ratio of agreement and strong disagreement between two models. Agreement ratio 
-                    calculates the percentage of observations that two models predicted closer than fiftieth part of 
-                    standard deviation of target variable. On the other hand, disagreement ratio calculates the percantage
-                    of observations witch have prediction difference bigger than standard deviation of target variable
-                    """,
-                        className="annotation_str", id="ann_comp_2"),
-
+            children = [
                 dbc.Row([
-                    dbc.Col([dcc.Graph(figure=compatimetrics_plots.ar_matrix(predictions, y), className="plot")],
-                            width=6),
-                    dbc.Col([dcc.Graph(figure=compatimetrics_plots.sdr_matrix(predictions, y), className="plot"), ],
-                            width=6),
+                    dbc.Col([
+                        dbc.Row([
+                            html.H3(['Mean Squared Difference'], className='annotation-title'),
+                            ann_comp_msd,
+                            dcc.Graph(figure=compatimetrics_plots.msd_matrix(predictions), className="plot")
+                        ], className="custom-caption")
+                    ], width=6, className='plot-col'),
+                    dbc.Col([
+                        dbc.Row([
+                            html.H3(['Root Mean Squared Difference'], className='annotation-title'),
+                            ann_comp_rmsd,
+                            dcc.Graph(figure=compatimetrics_plots.rmsd_matrix(predictions), className="plot")
+                        ], className="custom-caption")
+                    ], width=6, className='plot-col'),
                 ]),
                 dbc.Row([
-                    dbc.Col([dcc.Graph(figure=compatimetrics_plots.msd_comparison(predictions, model_to_compare),
-                                       className="plot")],
-                            width=6),
-                    dbc.Col([dcc.Graph(figure=compatimetrics_plots.rmsd_comparison(predictions, model_to_compare),
-                                       className="plot")],
-                            width=6),
+                    dbc.Col([
+                        dbc.Row([
+                            html.H3(['Agreement Ratio'], className='annotation-title'),
+                            ann_comp_ar,
+                            dcc.Graph(figure=compatimetrics_plots.ar_matrix(predictions, y), className="plot")
+                        ], className="custom-caption")
+                    ], width=6, className='plot-col'),
+                    dbc.Col([
+                        dbc.Row([
+                            html.H3(['Strong Disagreement Ratio'], className='annotation-title'),
+                            ann_comp_sdr,
+                            dcc.Graph(figure=compatimetrics_plots.sdr_matrix(predictions, y), className="plot")
+                        ], className="custom-caption")
+                    ], width=6, className='plot-col')
                 ]),
-                html.H3("""
-                        Conjunctive RMSE is calculated based on mean of two prediction vectors. On this plot 
-                        score of RMSE of prediction of chosen model is compared to predictions joined with other models
-                        in ensemble. 
-                        """,
-                        className="annotation_str", id="ann_comp_3"),
-                dbc.Row(
-                    [dcc.Graph(
+                dbc.Row([
+                    dbc.Col([
+                        dbc.Row([
+                            html.H3(['Mean Squared Difference Comparison'], className='annotation-title'),
+                            dcc.Graph(figure=compatimetrics_plots.msd_comparison(predictions, model_to_compare), className="plot")
+                        ], className="custom-caption")
+                    ], width=6, className='plot-col'),
+                    dbc.Col([
+                        dbc.Row([
+                            html.H3(['Root Mean Squared Difference Comparison'], className='annotation-title'),
+                            dcc.Graph(figure=compatimetrics_plots.rmsd_comparison(predictions, model_to_compare),
+                                      className="plot")
+                        ], className="custom-caption")
+                    ], width=6, className='plot-col'),
+                ]),
+                dbc.Row([
+                    ann_comp_conj_rmse,
+                    dcc.Graph(
                         figure=compatimetrics_plots.conjunctive_rmse_plot(predictions, y, model_to_compare),
                         className='plot')
-                    ]),
-                html.H3("""
-                        Plot below shows actual difference of predictions between chosen model 
-                        and other models in ensemble through the whole data set.
-                        """,
-                        className="annotation_str", id="ann_comp_4"),
+                ], className="custom-caption"),
                 dbc.Row([
+                     ann_comp_diff_dist,
                     dcc.Graph(figure=compatimetrics_plots.difference_distribution(predictions, model_to_compare),
                               className="plot")
-                ]),
-                html.H3("""
-                            Plot below shows distribution of absolute prediction differences of chosen model and 
-                            other models in ensemble. Pink dashed lines outline thresholds of agreement (lower line)
-                            and strong disagreement (higher line), which help decide which models are closer
-                            prediction-wise. 
-                            """,
-                        className="annotation_str", id="ann_comp_5"),
+                ], className="custom-caption"),
                 dbc.Row([
+                    ann_comp_diff_boxplot,
                     dcc.Graph(figure=compatimetrics_plots.difference_boxplot(predictions, y, model_to_compare),
                               className="plot")
-                ])
+                ], className="custom-caption")
             ]
         else:
             children = [

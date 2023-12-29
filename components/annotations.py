@@ -149,3 +149,51 @@ ann_comp_collective = html.Div([
     html.Br(), html.A(" This plot can be helpful when searching for areas of data set where prediction was less effective."),
 ], className="annotation_str", id="ann_comp_collective")
 
+ann_comp_msd = html.Div([
+    html.A("MSD calculates the difference between two prediction vectors as a "),
+    html.Strong("mean of quadratic difference between all data samples"), html.A("."),
+], className="annotation_str", id="ann_comp_msd")
+
+ann_comp_rmsd = html.Div([
+    html.A("RMSD is a squared root of MSD.")
+], className="annotation_str", id="ann_comp_rmsd")
+
+
+ann_comp_ar = html.Div([
+    html.A("AR represents percentage of observations that were predicted very closely by two different models. "),
+    html.Ul([
+        html.Li([html.A("The "), html.Strong("bigger "), html.A("the value of AR, the "), html.Strong("more similar "),
+                 html.A("outputs of two models are.")]),
+        html.Li([html.Strong("Formula: "),
+                 dcc.Markdown(r'$$\mathrm{AR} = \frac{\sum^{n}_{i=1}A_{i}}{n}, \,\ \mathrm{where} \,\ A_i = '
+                 r'\begin{cases} 0, d_i > \frac{SD(y)}{100} \\ 1, d_i \leq \frac{SD(y)}{100} \end{cases}, \,\ d_i = '
+                 r'|\hat{y}_i - \hat{y}_j|.$$', mathjax=True, id="latex-code")]),
+        html.Li([html.A("AR "), html.Strong("does not indicate "), html.A("the accuracy of models.")])
+    ])
+], className="annotation_str", id="ann_comp_ar")
+
+ann_comp_sdr = html.Div([
+    html.A("RMSD is a squared root of MSD.")
+], className="annotation_str", id="ann_comp_sdr")
+
+ann_comp_conj_rmse = html.Div([
+    html.H3(['Conjunctive RMSE between chosen model and other models'], className='annotation-title'),
+    html.A("Conjunctive RMSE is calculated based on "), html.Strong("mean of two prediction vectors"), html.A("."),
+    html.Br(), html.A(" On this plot score of RMSE of prediction of chosen model is compared to predictions joined with "
+                      "other models in ensemble.")
+], className="annotation_str", id="ann_comp_conj_rmse")
+
+ann_comp_diff_dist = html.Div([
+    html.H3(['Prediction Difference Distribution'], className='annotation-title'),
+    html.A("Plot shows actual difference of predictions between chosen model and other models in ensemble through "
+           "the whole data set.")
+], className="annotation_str", id="ann_comp_diff_dist")
+
+ann_comp_diff_boxplot = html.Div([
+    html.H3(['Distribution of absolute difference'], className='annotation-title'),
+    html.A("Plot shows distribution of absolute prediction differences of chosen model and other models in ensemble."),
+    html.Br(), html.A("Yellow dashed lines outline thresholds of "), html.Strong("agreement (lower line) "),
+    html.A("and "), html.Strong("strong disagreement (higher line) "), html.A("which help decide which models are closer"
+    " prediction-wise.")
+], className="annotation_str", id="ann_comp_diff_boxplot")
+

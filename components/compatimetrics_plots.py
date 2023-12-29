@@ -214,7 +214,7 @@ def msd_comparison(predictions, model_to_compare):
     for i in range(len(MSD)):
         fig.add_trace(go.Bar(x=[MSD[i]], y=[models[i]], orientation='h'))
 
-    fig.update_traces(marker=dict(color='rgba(0,114,239,255)'))
+    fig.update_traces(marker=dict(color='#ffaef4'))
     fig.update_layout(
         title="Mean Squared Difference <br>of " + model_to_compare + " model",
         font_size=17,
@@ -252,7 +252,7 @@ def rmsd_comparison(predictions, model_to_compare):
     for i in range(len(RMSD)):
         fig.add_trace(go.Bar(x=[RMSD[i]], y=[models[i]], orientation='h'))
 
-    fig.update_traces(marker=dict(color='rgba(0,114,239,255)'))
+    fig.update_traces(marker=dict(color='#ffaef4'))
     fig.update_layout(
         title={'text': "Root Mean Squared Difference <br>of " + model_to_compare + " model"},
         font_size=17,
@@ -289,11 +289,11 @@ def conjunctive_rmse_plot(predictions, y, model_to_compare):
     color_map = {}
     RMSE = [root_mean_squared_difference(compare_prediction, y)]
     names = [model_to_compare]
-    color_map[model_to_compare] = 'purple'
+    color_map[model_to_compare] = '#f5e9ab'
     for model in models:
         RMSE.append(conjunctive_rmse(predictions[model], compare_prediction, y))
         names.append("with " + model)
-        color_map["with " + model] = 'rgba(0,114,239,255)'
+        color_map["with " + model] = '#ffaef4'
     fig = empty_fig()
     for i in range(len(RMSE)):
         fig.add_trace(go.Bar(x=[RMSE[i]], y=[names[i]], orientation='h', marker_color=color_map[names[i]]))
@@ -384,9 +384,9 @@ def difference_boxplot(predictions, y, model_to_compare):
                       columns=['difference', 'model_name'])
     fig = px.box(df, x="model_name", y="difference")
     standard_deviation = np.std(y)
-    fig.add_hline(y=standard_deviation, line_width=3, line_dash='dash', line_color='lightpink')
-    fig.add_hline(y=standard_deviation / 50, line_width=3, line_dash='dash', line_color='lightpink')
-    fig.update_traces(marker=dict(color='rgba(0,114,239,255)'))
+    fig.add_hline(y=standard_deviation, line_width=3, line_dash='dash', line_color='#f5e9ab')
+    fig.add_hline(y=standard_deviation / 50, line_width=3, line_dash='dash', line_color='#f5e9ab')
+    fig.update_traces(marker=dict(color='#ffaef4'))
     fig.update_layout(general_layout,
         title={'text': "Distribution of absolute difference between " + model_to_compare + " prediction <br>and " +
                        "other models predictions with tresholds of agreement and strong disagreement"},
