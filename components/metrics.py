@@ -4,7 +4,6 @@ import plotly.express as px
 import plotly.graph_objects as go
 from sklearn.metrics import mean_absolute_percentage_error, mean_absolute_error, mean_squared_error, accuracy_score, \
     precision_score, recall_score, f1_score, r2_score
-from sklearn.inspection import permutation_importance, partial_dependence
 from scipy.stats import chi2_contingency
 
 
@@ -26,7 +25,7 @@ def empty_fig():
 
 
 def accuracy_plot(predictions, y):
-    """Accuracy metrics plot of individual models from the ensemled model.
+    """Accuracy metrics plot of individual models from the ensemble model.
 
     Parameters
     ----------
@@ -64,7 +63,7 @@ def accuracy_plot(predictions, y):
 
 
 def precision_plot(predictions, y):
-    """Precision metrics plot of individual models from the ensemled model.
+    """Precision metrics plot of individual models from the ensemble model.
 
     Parameters
     ----------
@@ -102,7 +101,7 @@ def precision_plot(predictions, y):
 
 
 def recall_plot(predictions, y):
-    """Recall metrics plot of individual models from the ensemled model.
+    """Recall metrics plot of individual models from the ensemble model.
 
     Parameters
     ----------
@@ -140,7 +139,7 @@ def recall_plot(predictions, y):
 
 
 def f1_score_plot(predictions, y):
-    """F1 metrics plot of individual models from the ensemled model.
+    """F1 metrics plot of individual models from the ensemble model.
 
     Parameters
     ----------
@@ -178,7 +177,7 @@ def f1_score_plot(predictions, y):
 
 
 def mape_plot(predictions, y):
-    """MAPE metrics plot of individual models from the ensemled model.
+    """MAPE metrics plot of individual models from the ensemble model.
 
     Parameters
     ----------
@@ -216,7 +215,7 @@ def mape_plot(predictions, y):
 
 
 def mae_plot(predictions, y):
-    """MAE metrics plot of individual models from the ensemled model.
+    """MAE metrics plot of individual models from the ensemble model.
 
     Parameters
     ----------
@@ -254,7 +253,7 @@ def mae_plot(predictions, y):
 
 
 def mse_plot(predictions, y):
-    """MSE metrics plot of individual models from the ensemled model.
+    """MSE metrics plot of individual models from the ensemble model.
 
     Parameters
     ----------
@@ -292,7 +291,7 @@ def mse_plot(predictions, y):
 
 
 def rmse_plot(predictions, y):
-    """RMSE metrics plot of individual models from the ensemled model.
+    """RMSE metrics plot of individual models from the ensemble model.
 
     Parameters
     ----------
@@ -330,7 +329,7 @@ def rmse_plot(predictions, y):
 
 
 def r_2_plot(predictions, y):
-    """R^2 metrics plot of individual models from the ensemled model.
+    """R^2 metrics plot of individual models from the ensemble model.
 
     Parameters
     ----------
@@ -367,118 +366,8 @@ def r_2_plot(predictions, y):
     return fig
 
 
-def permutation_feature_importance_all(ensemble_model, X, y, library="Flaml", task="regression"):
-    """Permutation feature importance plots of individual models from the ensemled model.
-
-    Parameters
-    ----------
-    ensemble_model : Flaml, AutoGluon or AutoSklearn ensemble model.
-
-    X, y : dataframe
-
-    library : {'Flaml', 'AutoGluon', 'AutoSklearn'}
-            string that specifies the model library
-
-    task : {'regression', 'classification'}
-            string that specifies task type
-
-    Returns
-    -------
-    plots : list of plotly.graph_objs._figure.Figure object
-        plotly plot list
-    """
-    if library == "Flaml":
-        plots = [permutation_feature_importance(ensemble_model, X, y, 'Ensemble')]
-
-        ensemble_models = ensemble_model.model.estimators_
-        X_transform = ensemble_model._state.task.preprocess(X, ensemble_model._transformer)
-        for model in ensemble_models:
-            if task == "regression":
-                plots.append(permutation_feature_importance(model, X_transform, y, type(model).__name__))
-            if task == "classification" or task == 'multiclass':
-                plots.append(permutation_feature_importance(model,
-                                                            X_transform,
-                                                            ensemble_model._label_transformer.transform(y),
-                                                            type(model).__name__))
-    elif library == "AutoGluon":
-        if task == "regression":
-            autogluon_task = "regression"
-        else:
-            autogluon_task = "classification"
-        plots = [permutation_feature_importance(ensemble_model, X, y, 'Ensemble', autogluon_task)]
-
-        ensemble_models = ensemble_model.info()['model_info'][ensemble_model.get_model_best()]['stacker_info'][
-            'base_model_names']
-        final_model = ensemble_model.get_model_best()
-        for model_name in ensemble_models:
-            ensemble_model.set_model_best(model_name)
-            plots.append(permutation_feature_importance(ensemble_model, X, y, model_name, autogluon_task))
-        ensemble_model.set_model_best(final_model)
-    elif library == "AutoSklearn":
-        plots = [permutation_feature_importance(ensemble_model, X, y, 'Ensemble')]
-        if task == "classification" or "multiclass":
-            class_name = y.unique()
-            class_index = {name: idx for idx, name in enumerate(class_name)}
-            y_class_index = [class_index[y_elem] for y_elem in y]
-
-        for weight, model in ensemble_model.get_models_with_weights():
-            model_name = str(type(model._final_estimator.choice)).split('.')[-1][:-2]
-            if task == "classification" or task == "multiclass":
-                plots.append(permutation_feature_importance(model, X, y_class_index, model_name, task))
-            else:
-                plots.append(permutation_feature_importance(model, X, y, model_name, task))
-
-    return plots
-
-
-def permutation_feature_importance(model, X, y, name, task=False):
-    """Permutation feature importance plot of individual models from the ensemled model.
-
-    Parameters
-    ----------
-    model : Flaml, AutoGluon or AutoSklearn ensemble model.
-
-    X, y : dataframe
-
-    name : string that specifies the model name
-
-    task : {'regression', 'classification', False}
-            If library is not autogluon then it should be False. Otherwise it should be
-            "regression" or "classification" depends on the task.
-
-    Returns
-    -------
-    fig : plotly.graph_objs._figure.Figure
-        plotly plot
-    """
-    if task == False:
-        r = permutation_importance(model, X, y)
-    elif task == "regression":
-        r = permutation_importance(model, X, y, scoring='r2')
-    elif task == "classification" or task == "multiclass":
-        r = permutation_importance(model, X, y, scoring='accuracy')
-    importance = r.importances_mean
-
-    fig = empty_fig()
-    for i in range(len(importance)):
-        fig.add_trace(go.Bar(x=[i], y=[importance[i]], name=""))
-
-    fig.update_traces(marker=dict(color='rgba(0,114,239,255)'))
-    fig.update_layout(
-        title=name + " model feature importance",
-        xaxis=dict(
-            tickmode='array',
-            tickvals=list(range(len(importance))),
-            ticktext=X.columns
-        ),
-        yaxis_range=[0, 1],
-        showlegend=False
-    )
-    return fig
-
-
 def correlation_plot(predictions, task="regression", y=None):
-    """Prediction correlation plot of models from the ensemled model.
+    """Prediction correlation plot of models from the ensemble model.
 
     Parameters
     ----------
@@ -489,7 +378,7 @@ def correlation_plot(predictions, task="regression", y=None):
             string that specifies the model task
 
     y : dataframe
-        needed only for  AutoSklearn
+        needed only for  Auto-sklearn
 
     Returns
     -------
@@ -540,14 +429,14 @@ def correlation_plot(predictions, task="regression", y=None):
 
 
 def prediction_compare_plot(predictions, y, task="regression"):
-    """Prediction compare plot of models from the ensemled model.
+    """Prediction compare plot of models from the ensemble model.
         For classification plot show if prediction of model is correct or incorrect.
         For regression it shows the difference between the prediction and the true
         value expressed as a percentage.
 
     Parameters
     ----------
-   predictions: dictionary with predictions of ensemble component models
+    predictions: dictionary with predictions of ensemble component models
         of form {'model_name': 'prediction_vector'}
 
     y : target variable vector
@@ -623,652 +512,3 @@ def prediction_compare_plot(predictions, y, task="regression"):
                                 bgcolor='rgb(242,26,155)'))
 
     return fig
-
-
-def partial_dependence_plots(ensemble_model, X, library="Flaml", autogluon_task=False):
-    """Permutation feature importance plot of individual models from the ensemled model.
-
-    Parameters
-    ----------
-    ensemble_model : Flaml, AutoGluon or AutoSklearn ensemble model.
-
-    X : dataframe
-
-    library : {'Flaml', 'AutoGluon', 'AutoSklearn'}
-            string that specifies the model library
-
-    autogluon_task : {False, 'classification', 'regression'}
-            If library is not autogluon then it shoud be False. Otherwise it shoud be
-            "regression" or "classification" depends on the task  .
-
-    Returns
-    -------
-    fig : list of plotly.graph_objs._figure.Figure
-        list of plotly plot
-    """
-    if library == "Flaml":
-        ensemble_models = ensemble_model.model.estimators_
-        X_transform = ensemble_model._state.task.preprocess(X, ensemble_model._transformer)
-
-        model_name = {}
-        columns = []
-        values = {}
-
-        for i in range(X.shape[1]):
-            try:
-                values[X.columns[i]] = [partial_dependence(ensemble_model, X, [i])['average'][0]]
-                model_name[X.columns[i]] = ['Ensemble']
-                columns.append(X.columns[i])
-            except TypeError:
-                pass
-
-        for model in ensemble_models:
-            for i in range(X_transform.shape[1]):
-                try:
-                    values[X_transform.columns[i]].append(
-                        partial_dependence(model._model, model._preprocess(X_transform), [i])['average'][0])
-                    model_name[X_transform.columns[i]].append(type(model).__name__)
-                except Exception:
-                    pass
-    if library == "AutoGluon":
-        ensemble_models = ensemble_model.info()['model_info'][ensemble_model.get_model_best()]['stacker_info'][
-            'base_model_names']
-
-        model_name = {}
-        columns = []
-        values = {}
-
-        if autogluon_task == "classification":
-            ensemble_model._estimator_type = "classifier"
-        else:
-            ensemble_model._estimator_type = "regressor"
-        ensemble_model.classes_ = ["a"]
-
-        for i in range(X.shape[1]):
-            try:
-                values[X.columns[i]] = [partial_dependence(ensemble_model, X, [i])['average'][0]]
-                model_name[X.columns[i]] = ['Ensemble']
-                columns.append(X.columns[i])
-            except TypeError:
-                pass
-
-        final_model = ensemble_model.get_model_best()
-        for model in ensemble_models:
-            ensemble_model.set_model_best(model)
-            for i in range(X.shape[1]):
-                try:
-                    values[X.columns[i]].append(partial_dependence(ensemble_model, X, [i])['average'][0])
-                    model_name[X.columns[i]].append(model)
-                except Exception:
-                    pass
-        ensemble_model.set_model_best(final_model)
-    elif library == "AutoSklearn":
-        model_name = {}
-        columns = []
-        values = {}
-
-        for i in range(X.shape[1]):
-            try:
-                values[X.columns[i]] = [partial_dependence(ensemble_model, X, [i])['average'][0]]
-                model_name[X.columns[i]] = ['Ensemble']
-                columns.append(X.columns[i])
-            except TypeError:
-                pass
-
-        for weight, model in ensemble_model.get_models_with_weights():
-            for i in range(X.shape[1]):
-                try:
-                    if autogluon_task == "classification":
-                        values[X.columns[i]].append(partial_dependence_custom(model, X, [i])['average'][0])
-                    else:
-                        values[X.columns[i]].append(partial_dependence(model, X, [i])['average'][0])
-                    name = str(type(model._final_estimator.choice)).split('.')[-1][:-2]
-                    # ta czesc odpowada za to że nazwy modeli moga się powtarzać w autosklearnie
-                    if name in model_name[X.columns[i]]:
-                        number = 1
-                        new_name = f"{name}_{number}"
-                        while new_name in model_name[X.columns[i]]:
-                            number += 1
-                            new_name = f"{name}_{number}"
-
-                        model_name[X.columns[i]].append(new_name)
-                    else:
-                        model_name[X.columns[i]].append(name)
-                except Exception:
-                    pass
-
-    plots = []
-    for variable in columns:
-        plot_x_value = sorted(X[variable].unique())
-        plots.append(partial_dependence_line_plot(values[variable], plot_x_value, model_name[variable], variable))
-
-    return plots
-
-
-def partial_dependence_line_plot(y_values, x_values, model_names, name):
-    """partial dependence one plot
-
-    Parameters
-    ----------
-    y_values, x_values : dataframe
-        x data.
-
-    model_names : list
-        model names.
-
-    name: String
-        name of variable
-
-    Returns
-    -------
-    fig : plotly.graph_objs._figure.Figure
-        plotly plot
-    """
-    fig = empty_fig()
-    fig.update_layout(
-        title=f"{name} variable partial dependence plot",
-        plot_bgcolor='rgba(44,47,56,255)',
-        paper_bgcolor='rgba(44,47,56,255)',
-        font_color="rgba(225, 225, 225, 255)",
-        font_size=15,
-        title_font_color="rgba(225, 225, 225, 255)",
-        title_font_size=25,
-        xaxis_title_standoff=300,
-        yaxis_ticklen=39,
-    )
-
-    for line_value, model_name in zip(y_values, model_names):
-        if model_name == 'Ensemble':
-            fig.add_trace(go.Scatter(x=x_values, y=line_value, mode='lines', name=model_name, line=dict(width=5)))
-        else:
-            fig.add_trace(go.Scatter(x=x_values, y=line_value, mode='lines', name=model_name))
-    return fig
-
-
-# Code below is modified code from scikit-learn library to operate AutoSklearn partial dependence
-from collections.abc import Iterable
-from sklearn.base import is_classifier, is_regressor
-from sklearn.ensemble._gb import BaseGradientBoosting
-from sklearn.ensemble._hist_gradient_boosting.gradient_boosting import (
-    BaseHistGradientBoosting,)
-from sklearn.tree import DecisionTreeRegressor
-from sklearn.ensemble import RandomForestRegressor
-from sklearn.utils import Bunch
-from sklearn.utils import _safe_assign
-from sklearn.utils import check_array
-from sklearn.utils.extmath import cartesian
-from sklearn.utils import _safe_indexing
-from sklearn.utils import _determine_key_type
-from sklearn.utils import _get_column_indices
-from sklearn.inspection._pd_utils import _check_feature_names, _get_feature_index
-from sklearn.exceptions import NotFittedError
-from scipy.stats.mstats import mquantiles
-from scipy import sparse
-
-
-def _partial_dependence_brute(est, grid, features, X, response_method):
-
-    predictions = []
-    averaged_predictions = []
-
-    # define the prediction_method (predict, predict_proba, decision_function).
-    if is_regressor(est):
-        prediction_method = est.predict
-    else:
-        predict_proba = getattr(est, "predict_proba", None)
-        decision_function = getattr(est, "decision_function", None)
-        if response_method == "auto":
-            # try predict_proba, then decision_function if it doesn't exist
-            prediction_method = predict_proba or decision_function
-        else:
-            prediction_method = (
-                predict_proba
-                if response_method == "predict_proba"
-                else decision_function
-            )
-        if prediction_method is None:
-            if response_method == "auto":
-                raise ValueError(
-                    "The estimator has no predict_proba and no "
-                    "decision_function method."
-                )
-            elif response_method == "predict_proba":
-                raise ValueError("The estimator has no predict_proba method.")
-            else:
-                raise ValueError("The estimator has no decision_function method.")
-
-    X_eval = X.copy()
-    for new_values in grid:
-        for i, variable in enumerate(features):
-            _safe_assign(X_eval, new_values[i], column_indexer=variable)
-
-        try:
-            # Note: predictions is of shape
-            # (n_points,) for non-multioutput regressors
-            # (n_points, n_tasks) for multioutput regressors
-            # (n_points, 1) for the regressors in cross_decomposition (I think)
-            # (n_points, 2) for binary classification
-            # (n_points, n_classes) for multiclass classification
-            pred = prediction_method(X_eval)
-
-            predictions.append(pred)
-            # average over samples
-            averaged_predictions.append(np.mean(pred, axis=0))
-        except NotFittedError as e:
-            raise ValueError("'estimator' parameter must be a fitted estimator") from e
-
-    n_samples = X.shape[0]
-
-    # reshape to (n_targets, n_instances, n_points) where n_targets is:
-    # - 1 for non-multioutput regression and binary classification (shape is
-    #   already correct in those cases)
-    # - n_tasks for multi-output regression
-    # - n_classes for multiclass classification.
-    predictions = np.array(predictions).T
-    if is_regressor(est) and predictions.ndim == 2:
-        # non-multioutput regression, shape is (n_instances, n_points,)
-        predictions = predictions.reshape(n_samples, -1)
-    elif is_classifier(est) and predictions.shape[0] == 2:
-        # Binary classification, shape is (2, n_instances, n_points).
-        # we output the effect of **positive** class
-        predictions = predictions[1]
-        predictions = predictions.reshape(n_samples, -1)
-
-    # reshape averaged_predictions to (n_targets, n_points) where n_targets is:
-    # - 1 for non-multioutput regression and binary classification (shape is
-    #   already correct in those cases)
-    # - n_tasks for multi-output regression
-    # - n_classes for multiclass classification.
-    averaged_predictions = np.array(averaged_predictions).T
-    if is_regressor(est) and averaged_predictions.ndim == 1:
-        # non-multioutput regression, shape is (n_points,)
-        averaged_predictions = averaged_predictions.reshape(1, -1)
-    elif is_classifier(est) and averaged_predictions.shape[0] == 2:
-        # Binary classification, shape is (2, n_points).
-        # we output the effect of **positive** class
-        averaged_predictions = averaged_predictions[1]
-        averaged_predictions = averaged_predictions.reshape(1, -1)
-
-    return averaged_predictions, predictions
-
-
-def _grid_from_X(X, percentiles, is_categorical, grid_resolution):
-    """Generate a grid of points based on the percentiles of X.
-
-    The grid is a cartesian product between the columns of ``values``. The
-    ith column of ``values`` consists in ``grid_resolution`` equally-spaced
-    points between the percentiles of the jth column of X.
-
-    If ``grid_resolution`` is bigger than the number of unique values in the
-    j-th column of X or if the feature is a categorical feature (by inspecting
-    `is_categorical`) , then those unique values will be used instead.
-
-    Parameters
-    ----------
-    X : array-like of shape (n_samples, n_target_features)
-        The data.
-
-    percentiles : tuple of float
-        The percentiles which are used to construct the extreme values of
-        the grid. Must be in [0, 1].
-
-    is_categorical : list of bool
-        For each feature, tells whether it is categorical or not. If a feature
-        is categorical, then the values used will be the unique ones
-        (i.e. categories) instead of the percentiles.
-
-    grid_resolution : int
-        The number of equally spaced points to be placed on the grid for each
-        feature.
-
-    Returns
-    -------
-    grid : ndarray of shape (n_points, n_target_features)
-        A value for each feature at each point in the grid. ``n_points`` is
-        always ``<= grid_resolution ** X.shape[1]``.
-
-    values : list of 1d ndarrays
-        The values with which the grid has been created. The size of each
-        array ``values[j]`` is either ``grid_resolution``, or the number of
-        unique values in ``X[:, j]``, whichever is smaller.
-    """
-    if not isinstance(percentiles, Iterable) or len(percentiles) != 2:
-        raise ValueError("'percentiles' must be a sequence of 2 elements.")
-    if not all(0 <= x <= 1 for x in percentiles):
-        raise ValueError("'percentiles' values must be in [0, 1].")
-    if percentiles[0] >= percentiles[1]:
-        raise ValueError("percentiles[0] must be strictly less than percentiles[1].")
-
-    if grid_resolution <= 1:
-        raise ValueError("'grid_resolution' must be strictly greater than 1.")
-
-    values = []
-    # TODO: we should handle missing values (i.e. `np.nan`) specifically and store them
-    # in a different Bunch attribute.
-    for feature, is_cat in enumerate(is_categorical):
-        try:
-            uniques = np.unique(_safe_indexing(X, feature, axis=1))
-        except TypeError as exc:
-            # `np.unique` will fail in the presence of `np.nan` and `str` categories
-            # due to sorting. Temporary, we reraise an error explaining the problem.
-            raise ValueError(
-                f"The column #{feature} contains mixed data types. Finding unique "
-                "categories fail due to sorting. It usually means that the column "
-                "contains `np.nan` values together with `str` categories. Such use "
-                "case is not yet supported in scikit-learn."
-            ) from exc
-        if is_cat or uniques.shape[0] < grid_resolution:
-            # Use the unique values either because:
-            # - feature has low resolution use unique values
-            # - feature is categorical
-            axis = uniques
-        else:
-            # create axis based on percentiles and grid resolution
-            emp_percentiles = mquantiles(
-                _safe_indexing(X, feature, axis=1), prob=percentiles, axis=0
-            )
-            if np.allclose(emp_percentiles[0], emp_percentiles[1]):
-                raise ValueError(
-                    "percentiles are too close to each other, "
-                    "unable to build the grid. Please choose percentiles "
-                    "that are further apart."
-                )
-            axis = np.linspace(
-                emp_percentiles[0],
-                emp_percentiles[1],
-                num=grid_resolution,
-                endpoint=True,
-            )
-        values.append(axis)
-
-    return cartesian(values), values
-
-
-def _partial_dependence_recursion(est, grid, features):
-    averaged_predictions = est._compute_partial_dependence_recursion(grid, features)
-    if averaged_predictions.ndim == 1:
-        # reshape to (1, n_points) for consistency with
-        # _partial_dependence_brute
-        averaged_predictions = averaged_predictions.reshape(1, -1)
-
-    return averaged_predictions
-
-
-def partial_dependence_custom(
-    estimator,
-    X,
-    features,
-    *,
-    categorical_features=None,
-    feature_names=None,
-    response_method="auto",
-    percentiles=(0.05, 0.95),
-    grid_resolution=100,
-    method="auto",
-    kind="average",
-):
-    """Partial dependence of ``features``.
-
-    Partial dependence of a feature (or a set of features) corresponds to
-    the average response of an estimator for each possible value of the
-    feature.
-
-    Parameters
-    ----------
-    estimator : BaseEstimator
-        A fitted estimator object implementing :term:`predict`,
-        :term:`predict_proba`, or :term:`decision_function`.
-        Multioutput-multiclass classifiers are not supported.
-
-    X : {array-like or dataframe} of shape (n_samples, n_features)
-        ``X`` is used to generate a grid of values for the target
-        ``features`` (where the partial dependence will be evaluated), and
-        also to generate values for the complement features when the
-        `method` is 'brute'.
-
-    features : array-like of {int, str}
-        The feature (e.g. `[0]`) or pair of interacting features
-        (e.g. `[(0, 1)]`) for which the partial dependency should be computed.
-
-    categorical_features : array-like of shape (n_features,) or shape \
-            (n_categorical_features,), dtype={bool, int, str}, default=None
-        Indicates the categorical features.
-
-        - `None`: no feature will be considered categorical;
-        - boolean array-like: boolean mask of shape `(n_features,)`
-            indicating which features are categorical. Thus, this array has
-            the same shape has `X.shape[1]`;
-        - integer or string array-like: integer indices or strings
-            indicating categorical features.
-
-        .. versionadded:: 1.2
-
-    feature_names : array-like of shape (n_features,), dtype=str, default=None
-        Name of each feature; `feature_names[i]` holds the name of the feature
-        with index `i`.
-        By default, the name of the feature corresponds to their numerical
-        index for NumPy array and their column name for pandas dataframe.
-
-        .. versionadded:: 1.2
-
-    response_method : {'auto', 'predict_proba', 'decision_function'}, \
-            default='auto'
-        Specifies whether to use :term:`predict_proba` or
-        :term:`decision_function` as the target response. For regressors
-        this parameter is ignored and the response is always the output of
-        :term:`predict`. By default, :term:`predict_proba` is tried first
-        and we revert to :term:`decision_function` if it doesn't exist. If
-        ``method`` is 'recursion', the response is always the output of
-        :term:`decision_function`.
-
-    percentiles : tuple of float, default=(0.05, 0.95)
-        The lower and upper percentile used to create the extreme values
-        for the grid. Must be in [0, 1].
-
-    grid_resolution : int, default=100
-        The number of equally spaced points on the grid, for each target
-        feature.
-
-    method : {'auto', 'recursion', 'brute'}, default='auto'
-        The method used to calculate the averaged predictions:
-
-        - `'recursion'` is only supported for some tree-based estimators
-          (namely
-          :class:`~sklearn.ensemble.GradientBoostingClassifier`,
-          :class:`~sklearn.ensemble.GradientBoostingRegressor`,
-          :class:`~sklearn.ensemble.HistGradientBoostingClassifier`,
-          :class:`~sklearn.ensemble.HistGradientBoostingRegressor`,
-          :class:`~sklearn.tree.DecisionTreeRegressor`,
-          :class:`~sklearn.ensemble.RandomForestRegressor`,
-          ) when `kind='average'`.
-          This is more efficient in terms of speed.
-          With this method, the target response of a
-          classifier is always the decision function, not the predicted
-          probabilities. Since the `'recursion'` method implicitly computes
-          the average of the Individual Conditional Expectation (ICE) by
-          design, it is not compatible with ICE and thus `kind` must be
-          `'average'`.
-
-        - `'brute'` is supported for any estimator, but is more
-          computationally intensive.
-
-        - `'auto'`: the `'recursion'` is used for estimators that support it,
-          and `'brute'` is used otherwise.
-
-        Please see :ref:`this note <pdp_method_differences>` for
-        differences between the `'brute'` and `'recursion'` method.
-
-    kind : {'average', 'individual', 'both'}, default='average'
-        Whether to return the partial dependence averaged across all the
-        samples in the dataset or one value per sample or both.
-        See Returns below.
-
-        Note that the fast `method='recursion'` option is only available for
-        `kind='average'`. Computing individual dependencies requires using the
-        slower `method='brute'` option.
-
-    Returns
-    -------
-    predictions : :class:`~sklearn.utils.Bunch`
-        Dictionary-like object, with the following attributes.
-    """
-
-    # Use check_array only on lists and other non-array-likes / sparse. Do not
-    # convert DataFrame into a NumPy array.
-    if not (hasattr(X, "__array__") or sparse.issparse(X)):
-        X = check_array(X, force_all_finite="allow-nan", dtype=object)
-
-    accepted_responses = ("auto", "predict_proba", "decision_function")
-    if response_method not in accepted_responses:
-        raise ValueError(
-            "response_method {} is invalid. Accepted response_method names "
-            "are {}.".format(response_method, ", ".join(accepted_responses))
-        )
-
-    if is_regressor(estimator) and response_method != "auto":
-        raise ValueError(
-            "The response_method parameter is ignored for regressors and "
-            "must be 'auto'."
-        )
-
-    accepted_methods = ("brute", "recursion", "auto")
-    if method not in accepted_methods:
-        raise ValueError(
-            "method {} is invalid. Accepted method names are {}.".format(
-                method, ", ".join(accepted_methods)
-            )
-        )
-
-    if kind != "average":
-        if method == "recursion":
-            raise ValueError(
-                "The 'recursion' method only applies when 'kind' is set to 'average'"
-            )
-        method = "brute"
-
-    if method == "auto":
-        if isinstance(estimator, BaseGradientBoosting) and estimator.init is None:
-            method = "recursion"
-        elif isinstance(
-            estimator,
-            (BaseHistGradientBoosting, DecisionTreeRegressor, RandomForestRegressor),
-        ):
-            method = "recursion"
-        else:
-            method = "brute"
-
-    if method == "recursion":
-        if not isinstance(
-            estimator,
-            (
-                BaseGradientBoosting,
-                BaseHistGradientBoosting,
-                DecisionTreeRegressor,
-                RandomForestRegressor,
-            ),
-        ):
-            supported_classes_recursion = (
-                "GradientBoostingClassifier",
-                "GradientBoostingRegressor",
-                "HistGradientBoostingClassifier",
-                "HistGradientBoostingRegressor",
-                "HistGradientBoostingRegressor",
-                "DecisionTreeRegressor",
-                "RandomForestRegressor",
-            )
-            raise ValueError(
-                "Only the following estimators support the 'recursion' "
-                "method: {}. Try using method='brute'.".format(
-                    ", ".join(supported_classes_recursion)
-                )
-            )
-        if response_method == "auto":
-            response_method = "decision_function"
-
-        if response_method != "decision_function":
-            raise ValueError(
-                "With the 'recursion' method, the response_method must be "
-                "'decision_function'. Got {}.".format(response_method)
-            )
-
-    if _determine_key_type(features, accept_slice=False) == "int":
-        # _get_column_indices() supports negative indexing. Here, we limit
-        # the indexing to be positive. The upper bound will be checked
-        # by _get_column_indices()
-        if np.any(np.less(features, 0)):
-            raise ValueError("all features must be in [0, {}]".format(X.shape[1] - 1))
-
-    features_indices = np.asarray(
-        _get_column_indices(X, features), dtype=np.int32, order="C"
-    ).ravel()
-
-    feature_names = _check_feature_names(X, feature_names)
-
-    n_features = X.shape[1]
-    if categorical_features is None:
-        is_categorical = [False] * len(features_indices)
-    else:
-        categorical_features = np.array(categorical_features, copy=False)
-        if categorical_features.dtype.kind == "b":
-            # categorical features provided as a list of boolean
-            if categorical_features.size != n_features:
-                raise ValueError(
-                    "When `categorical_features` is a boolean array-like, "
-                    "the array should be of shape (n_features,). Got "
-                    f"{categorical_features.size} elements while `X` contains "
-                    f"{n_features} features."
-                )
-            is_categorical = [categorical_features[idx] for idx in features_indices]
-        elif categorical_features.dtype.kind in ("i", "O", "U"):
-            # categorical features provided as a list of indices or feature names
-            categorical_features_idx = [
-                _get_feature_index(cat, feature_names=feature_names)
-                for cat in categorical_features
-            ]
-            is_categorical = [
-                idx in categorical_features_idx for idx in features_indices
-            ]
-        else:
-            raise ValueError(
-                "Expected `categorical_features` to be an array-like of boolean,"
-                f" integer, or string. Got {categorical_features.dtype} instead."
-            )
-
-    grid, values = _grid_from_X(
-        _safe_indexing(X, features_indices, axis=1),
-        percentiles,
-        is_categorical,
-        grid_resolution,
-    )
-
-    if method == "brute":
-        averaged_predictions, predictions = _partial_dependence_brute(
-            estimator, grid, features_indices, X, response_method
-        )
-
-        # reshape predictions to
-        # (n_outputs, n_instances, n_values_feature_0, n_values_feature_1, ...)
-        predictions = predictions.reshape(
-            -1, X.shape[0], *[val.shape[0] for val in values]
-        )
-    else:
-        averaged_predictions = _partial_dependence_recursion(
-            estimator, grid, features_indices
-        )
-
-    # reshape averaged_predictions to
-    # (n_outputs, n_values_feature_0, n_values_feature_1, ...)
-    averaged_predictions = averaged_predictions.reshape(
-        -1, *[val.shape[0] for val in values]
-    )
-
-    if kind == "average":
-        return Bunch(average=averaged_predictions, values=values)
-    elif kind == "individual":
-        return Bunch(individual=predictions, values=values)
-    else:  # kind='both'
-        return Bunch(
-            average=averaged_predictions,
-            individual=predictions,
-            values=values,
-        )

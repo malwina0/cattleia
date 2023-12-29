@@ -1,14 +1,15 @@
 from dash import html, dcc, Output, Input, callback, State
-import sys
-sys.path.append("..")
+import dash_bootstrap_components as dbc
 from utils.utils import parse_data
 
 
 @callback(
-    [Output('csv_data', 'data'),
-     Output('select_y_label_column', 'children')],
-    [Input('upload_csv_data', 'contents'),
-     State('upload_csv_data', 'filename')]
+    Output('csv_data', 'data'),
+    Output('select_y_label_column', 'children'),
+    Output('plots', 'children', allow_duplicate=True),
+    Input('upload_csv_data', 'contents'),
+    State('upload_csv_data', 'filename'),
+    prevent_initial_call=True
 )
 def add_csv_file(contents, filename):
     data = []
@@ -36,4 +37,11 @@ def add_csv_file(contents, filename):
         else:
             children = html.Div(["Please provide the file in .csv format."], style={"color": "white"})
 
-    return data, children
+    info_row = dbc.Row([
+        html.Div(["""Please select the target column and upload the model."""],
+                 className='page-text'
+                 )],
+        className='plot'
+    )
+
+    return data, children, info_row

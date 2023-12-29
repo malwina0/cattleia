@@ -1,15 +1,24 @@
 from dash import Output, Input, callback
 
 @callback(
-    Output('ann_1', 'style'),
     Output('ann_0', 'style'),
     Input('my-toggle-switch', 'value'),
 )
 def update_output(value):
     if value:
-        return {}, {}
+        return {}
     else:
-        return {"display": "none"}, {"display": "none"}
+        return {"display": "none"}
+
+@callback(
+    Output('ann_1', 'style'),
+    Input('my-toggle-switch', 'value'),
+)
+def update_output(value):
+    if value:
+        return {}
+    else:
+        return {"display": "none"}
 
 
 @callback(

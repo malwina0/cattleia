@@ -8,3 +8,23 @@
     border-radius: 25px;
     background-color: rgba(44, 47, 56, 255);
 }
+
+.navigation_buttons{
+    display: block;
+    width: 100%;
+    position: fixed;
+    z-index: 9999;
+    padding-top: 10px;
+    padding-bottom: 10px;
+    top: 120px;
+    padding-right: 100px;
+}
+
+.navigation_placeholder{
+    height: 60px;
+}
+
+.button_1{
+    box-shadow: 0px 0px 10px 10px #1e1e1e;
+    width: 90%;
+}

@@ -9,7 +9,7 @@ sys.path.append("..")
      Output('switch_annotation', 'children')],
     Input('column_select', 'value')
 )
-def choose_target_column(value):
+def add_model(value):
     children = html.Div([
         html.H5("Upload model", className="sidepanel_text"),
         dcc.Upload(

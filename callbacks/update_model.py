@@ -1,22 +1,30 @@
 from dash import html, dcc, Output, Input, callback, State
 import dash_bootstrap_components as dbc
+
+import components.xai
 from components import metrics
 import shutil
 import pandas as pd
-from utils.utils import get_predictions_from_model, get_task_from_model, parse_model, get_ensemble_weights,\
+
+from utils.utils import get_predictions_from_model, get_task_from_model, parse_model, get_ensemble_weights, \
     get_probability_pred_from_model
 from components.weights import slider_section, tbl_metrics, tbl_metrics_adj_ensemble
+from components.navigation import navigation_row
+from components.xai import prepare_feature_importance, feature_importance_plot
 
 # part responsible for adding model and showing plots
 @callback(
     Output('plots', 'children'),
     Output('metrics_plots', 'data'),
     Output('weight_plots', 'data'),
+    Output('xai_plots', 'data'),
     Output('model_names', 'data'),
     Output('predictions', 'data'),
     Output('task', 'data'),
     Output('proba_predictions', 'data'),
     Output('weights_list', 'data'),
+    Output('pd_plots_dict', 'data'),
+    Output('selected_model_name', 'children'),
     Input('upload_model', 'contents'),
     State('upload_model', 'filename'),
     State('csv_data', 'data'),
@@ -24,8 +32,10 @@ from components.weights import slider_section, tbl_metrics, tbl_metrics_adj_ense
     State('plots', 'children'),
 )
 def update_model(contents, filename, df, column, about_us):
-    model_names, weights, task, predictions, proba_predictions, weights_plots = ([] for _ in range(6))
+    model_names, weights, task, predictions, proba_predictions, weights_plots, xai_plots = ([] for _ in range(7))
     children = about_us
+    pd_plots_dict = {}
+    filename_info = html.Div()
     if contents:
         contents = contents[0]
         filename = filename[0]
@@ -50,6 +60,8 @@ def update_model(contents, filename, df, column, about_us):
             predictions = get_predictions_from_model(model, X, y, library, task)
             model_names = list(predictions.keys())
             base_models = model_names[1:len(model_names)]
+
+            # metrics component
             if task == "regression":
                 metrics_plots = [
                     dbc.Row([
@@ -70,7 +82,6 @@ def update_model(contents, filename, df, column, about_us):
                         dbc.Col([dcc.Graph(figure=metrics.correlation_plot(predictions, task=task, y=y),
                                   className="plot")], width=6),
                     ])
-
                 ]
             else:
                 proba_predictions = get_probability_pred_from_model(model, X, library)
@@ -104,8 +115,12 @@ def update_model(contents, filename, df, column, about_us):
                 dcc.Graph(figure=metrics.prediction_compare_plot(predictions, y, task=task),
                           className="plot")]
 
+            metrics_plots.insert(0, navigation_row)
+            metrics_plots.insert(1, html.Div([], className="navigation_placeholder"))
+
+            # weights component
             weights_plots = []
-            if library != "Flaml":
+            if library != "FLAML":
                 weights_plots.append(
                     html.H2(
                         html.P(["""
@@ -145,11 +160,20 @@ def update_model(contents, filename, df, column, about_us):
                         ], justify="center")
                     ], className="weight-analysis-col")
                 )
+            else:
+                weights_plots.append(
+                    dbc.Row([
+                        html.Div(["""FLAML library does not incorporate the use of weights in its ensemble creation 
+                        process."""],
+                        className='page-text'
+                        )
+                    ],
+                    className='plot'
+                    )
+                )
 
-            for plot in metrics.permutation_feature_importance_all(model, X, y, library=library, task=task):
-                metrics_plots.append(dcc.Graph(figure=plot, className="plot"))
-
-            metrics_plots.append(
+            # XAI component
+            xai_plots.append(
                 html.H2("""
                     Partial Dependence isolate one specific feature's effect on the model's output while maintaining 
                     all other features at fixed values. It capturing how the model's output changes as the chosen 
@@ -160,12 +184,37 @@ def update_model(contents, filename, df, column, about_us):
             )
 
             if len(X) < 2000:
-                for plot in metrics.partial_dependence_plots(model, X, library=library, autogluon_task=task):
-                    metrics_plots.append(dcc.Graph(figure=plot, className="plot"))
+                pd_plots_dict = components.xai.partial_dependence_plots(model, X, library=library, task=task)
             else:
-                for plot in metrics.partial_dependence_plots(model, X.sample(2000), library=library,
-                                                             autogluon_task=task):
-                    metrics_plots.append(dcc.Graph(figure=plot, className="plot"))
+                pd_plots_dict = components.xai.partial_dependence_plots(model, X.sample(2000), library=library, task=task)
+            pd_variables = list(pd_plots_dict.keys())
+
+            if len(pd_variables) > 0:
+                dropdown = dcc.Dropdown(id='variable_select_dropdown', className="dropdown-class",
+                                        options=[{'label': x, 'value': x} for x in pd_variables],
+                                        value=pd_variables[0], clearable=False)
+                xai_plots.append(dropdown)
+                selected_variable_plot = pd_plots_dict.get(pd_variables[0])
+                xai_plots.append(
+                    dcc.Graph(
+                        figure=selected_variable_plot,
+                        className="plot",
+                        id='partial_dependence_plot'
+                    )
+                )
+            else:
+                xai_plots.append(
+                    dbc.Row([
+                        html.Div(["""It was not possible to make a partial dependence chart for any variable."""],
+                                 className='page-text'
+                                 )
+                    ],className='plot')
+                )
+
+            fi_df = prepare_feature_importance(model, X, y, library=library, task=task)
+            fi_plot = feature_importance_plot(fi_df)
+            xai_plots.append(dcc.Graph(figure=fi_plot, className="plot"))
+
 
             # It may be necessary to keep the model for the code with weights,
             # for now we remove the model after making charts
@@ -174,24 +223,12 @@ def update_model(contents, filename, df, column, about_us):
             except FileNotFoundError:
                 pass
 
-            metrics_plots.insert(0, html.Div([
-                dbc.Row([
-                    dbc.Col([html.Button('Weights', id="weights", className="button_1")], width=2),
-                    dbc.Col([html.Button('Metrics', id="metrics", className="button_1")], width=2),
-                    dbc.Col([html.Button('Compatimetrics', id="compatimetrics", className="button_1")], width=2),
-                ], justify="center"),
-            ], style={"display": "block", "position": "sticky"}))
-            weights_plots.insert(0, html.Div([
-                dbc.Row([
-                    dbc.Col([html.Button('Weights', id="weights", className="button_1")], width=2),
-                    dbc.Col([html.Button('Metrics', id="metrics", className="button_1")], width=2),
-                    dbc.Col([html.Button('Compatimetrics', id="compatimetrics", className="button_1")], width=2),
-                ], justify="center"),
-            ], style={"display": "block", "position": "sticky"}))
-
-            weights_plots = html.Div(weights_plots)
-            children = html.Div(metrics_plots)
+            children = html.Div(metrics_plots, style={"position":"relative", "overflow": "auto"})
         else:
             children = html.Div(["Please provide the file in .pkl or .zip format."], style={"color": "white"})
 
-    return children, children, weights_plots, model_names, predictions, task, proba_predictions, weights
+        filename_info = html.Div([f"Loaded file: {filename},", html.Br(),
+                                  f"library: {library}."], style={"color": "white"})
+
+    return children, children, weights_plots, xai_plots, model_names, predictions, task, proba_predictions, weights, \
+        pd_plots_dict, filename_info
