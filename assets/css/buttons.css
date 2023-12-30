@@ -6,7 +6,7 @@ button {
  z-index: 1;
  background: rgba(44, 47, 56, 255);
  position: relative;
- font-weight: 1000;
+ font-weight: bold;
  font-size: 17px;
  -webkit-box-shadow: 4px 8px 19px -3px rgba(0,0,0,0.27);
  box-shadow: 4px 8px 19px -3px rgba(0,0,0,0.27);
@@ -49,5 +49,5 @@ button:hover::before {
     width:100% !important;
     border: 2px solid black;
     border-radius:20px;
-    background-color:rgba(0,114,239,255);
+    background-color:  #ffaef4;
 }

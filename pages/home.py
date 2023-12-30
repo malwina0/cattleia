@@ -27,7 +27,7 @@ layout = html.Div([
     html.Div([
         dbc.Container([
             html.Br(),
-            dbc.Button("Instruction", id="instruction-button", className='page-button'),
+            dbc.Button("Instruction", id="instruction-button", className='page-button', color='primary'),
             dbc.Button('About us', id='about-us-button', className='page-button', style={'display': 'none'}),
             html.Hr(),
             html.H5("Upload csv data", className="sidepanel_text"),
@@ -48,6 +48,6 @@ layout = html.Div([
     ], id="side_menu_div"),
     # plots
     html.Div([
-        dcc.Loading(id="loading-1", type="default", children=html.Div(about_us, id="plots"), className="spin"),
+        dcc.Loading(id="loading-1", type="default", color='#ffaef4', children=html.Div(about_us, id="plots"), className="spin"),
     ], id="plots_div"),
 ])

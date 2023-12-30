@@ -62,7 +62,7 @@ def root_mean_sqaured_error_error_penalty(pred1, pred2, y):
     return np.sqrt(mse(pred1, pred2) + mse(pred1, y) / 2 + mse(pred2, y) / 2)
 
 def conjunctive_rmse(pred1, pred2, y):
-    """Calculates Root Mean Squared Error between real values and prediction
+    """Calculates Root Mean Squared Difference between real values and prediction
     being average of two model outputs.
 
     Parameters

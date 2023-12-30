@@ -60,7 +60,7 @@ def show_instruction(n_clicks):
             dbc.Row([html.Div("""For AutoGluon pack all the files into a zip archive.""",
                               className="instruction_str")]),
             dbc.Row([html.Img(src="assets/images/save_ag.png",
-                              className="instruction_str")
+                              className="instruction_img")
                      ]),
             html.Br(),
             dbc.Row([
