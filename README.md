@@ -35,7 +35,7 @@
 The motivation for the research is to understand the inner workings of ensemble models and to develop new insights and techniques that can be used to improve the performance of AutoML models in tabular data prediction. The *cattleia* aims to improve the trustworthiness and interpretability of AutoML. The goal is to make this tool intuitive to use, the same time providing valuable information and analysis. 
 
 ## App demo
-<img src="misc/cattleia_screen.png" align="middle"/>
+<img src="misc/cattleia-screen.png" align="middle"/>
 
 ## Authors
 This project is created as a Bachelor thesis by:
