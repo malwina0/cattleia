@@ -9,23 +9,8 @@ from components.compatimetrics import mean_squared_difference, \
     conjunctive_accuracy, conjunctive_precission, conjunctive_recall, average_collective_score, \
     macro_conjunctive_precission, weighted_conjunctive_precission, macro_conjunctive_recall, \
     weighted_conjunctive_recall
+from utils.plots_layout import matrix_layout, general_layout, custom_scale_continuous
 
-general_layout = {'plot_bgcolor':'rgba(44,47,56,255)',
-        'paper_bgcolor':'rgba(44,47,56,255)',
-        'font_color':"rgba(225, 225, 225, 255)",
-        'font_size':16,
-        'title_font_color':"rgba(225, 225, 225, 255)",
-        'title_font_size':18}
-
-matrix_layout = {'plot_bgcolor':'rgba(44,47,56,255)',
-        'paper_bgcolor':'rgba(44,47,56,255)',
-        'font_color':"rgba(225, 225, 225, 255)",
-        'font_size':16,
-        'title_font_color':"rgba(225, 225, 225, 255)",
-        'title_font_size':28,
-        'xaxis_title_standoff':300,
-        'yaxis_ticklen':39,
-        'coloraxis_colorbar_title_text':''}
 
 def msd_matrix(predictions):
     """Mean Squared Difference matrix of every pair of models from the ensemble model.
@@ -51,13 +36,13 @@ def msd_matrix(predictions):
             else:
                 matrix[i, j] = round(mean_squared_difference(predictions[models[i]], predictions[models[j]]))
     matrix = pd.DataFrame(matrix, index=models, columns=models)
-    fig = px.imshow(matrix, color_continuous_scale=[[0, 'lightblue'], [0.5, 'blue'], [1, 'purple']],
+    fig = px.imshow(matrix, color_continuous_scale=custom_scale_continuous,
                     labels=dict(x="Model 1",
                                 y="Model 2",
                                 color="MSD")
                     )
     fig.update_layout(matrix_layout,
-                      title='Mean Squared Error')
+                      title='Mean Squared Difference')
     fig.update_xaxes(tickangle=30, tickfont_size=10,
                      title="Model 1")
     fig.update_yaxes(tickfont_size=10,
@@ -92,13 +77,13 @@ def rmsd_matrix(predictions):
                 matrix[i, j] = round(root_mean_squared_difference(predictions[models[i]],
                                                                   predictions[models[j]]))
     matrix = pd.DataFrame(matrix, index=models, columns=models)
-    fig = px.imshow(matrix, color_continuous_scale=[[0, 'lightblue'], [0.5, 'blue'], [1, 'purple']],
+    fig = px.imshow(matrix, color_continuous_scale=custom_scale_continuous,
                     labels=dict(x="Model 1",
                                 y="Model 2",
                                 color="RMSD")
                     )
     fig.update_layout(matrix_layout,
-                      title="Root Mean Squared Error")
+                      title="Root Mean Squared Difference")
     fig.update_xaxes(tickangle=30, tickfont_size=10,
                      title="Model 1")
     fig.update_yaxes(tickfont_size=10,
@@ -136,7 +121,7 @@ def sdr_matrix(predictions, y):
                 matrix[i, j] = round(strong_disagreement_ratio(predictions[models[i]],
                                                                predictions[models[j]], y), 2)
     matrix = pd.DataFrame(matrix, index=models, columns=models)
-    fig = px.imshow(matrix, text_auto=True, color_continuous_scale=[[0, 'lightblue'], [0.5, 'blue'], [1, 'purple']],
+    fig = px.imshow(matrix, text_auto=True, color_continuous_scale=custom_scale_continuous,
                     zmin=0,
                     zmax=1,
                     labels=dict(x="Model 1",
@@ -183,7 +168,7 @@ def ar_matrix(predictions, y):
                 matrix[i, j] = round(agreement_ratio(predictions[models[i]],
                                                      predictions[models[j]], y), 2)
     matrix = pd.DataFrame(matrix, index=models, columns=models)
-    fig = px.imshow(matrix, text_auto=True, color_continuous_scale=[[0, 'lightblue'], [0.5, 'blue'], [1, 'purple']],
+    fig = px.imshow(matrix, text_auto=True, color_continuous_scale=custom_scale_continuous,
                     zmin=0,
                     zmax=1,
                     labels=dict(x="Model 1",
@@ -229,9 +214,9 @@ def msd_comparison(predictions, model_to_compare):
     for i in range(len(MSD)):
         fig.add_trace(go.Bar(x=[MSD[i]], y=[models[i]], orientation='h'))
 
-    fig.update_traces(marker=dict(color='rgba(0,114,239,255)'))
+    fig.update_traces(marker=dict(color='#ffaef4'))
     fig.update_layout(
-        title="Mean Squared Difference <br> of " + model_to_compare + " model",
+        title="Mean Squared Difference <br>of " + model_to_compare + " model",
         font_size=17,
         title_font_size=20,
         showlegend=False
@@ -267,9 +252,9 @@ def rmsd_comparison(predictions, model_to_compare):
     for i in range(len(RMSD)):
         fig.add_trace(go.Bar(x=[RMSD[i]], y=[models[i]], orientation='h'))
 
-    fig.update_traces(marker=dict(color='rgba(0,114,239,255)'))
+    fig.update_traces(marker=dict(color='#ffaef4'))
     fig.update_layout(
-        title={'text': "Root Mean Squared Difference <br> of " + model_to_compare + " model"},
+        title={'text': "Root Mean Squared Difference <br>of " + model_to_compare + " model"},
         font_size=17,
         title_font_size=20,
         showlegend=False
@@ -304,11 +289,11 @@ def conjunctive_rmse_plot(predictions, y, model_to_compare):
     color_map = {}
     RMSE = [root_mean_squared_difference(compare_prediction, y)]
     names = [model_to_compare]
-    color_map[model_to_compare] = 'purple'
+    color_map[model_to_compare] = '#f5e9ab'
     for model in models:
         RMSE.append(conjunctive_rmse(predictions[model], compare_prediction, y))
         names.append("with " + model)
-        color_map["with " + model] = 'rgba(0,114,239,255)'
+        color_map["with " + model] = '#ffaef4'
     fig = empty_fig()
     for i in range(len(RMSE)):
         fig.add_trace(go.Bar(x=[RMSE[i]], y=[names[i]], orientation='h', marker_color=color_map[names[i]]))
@@ -399,11 +384,11 @@ def difference_boxplot(predictions, y, model_to_compare):
                       columns=['difference', 'model_name'])
     fig = px.box(df, x="model_name", y="difference")
     standard_deviation = np.std(y)
-    fig.add_hline(y=standard_deviation, line_width=3, line_dash='dash', line_color='lightpink')
-    fig.add_hline(y=standard_deviation / 50, line_width=3, line_dash='dash', line_color='lightpink')
-    fig.update_traces(marker=dict(color='rgba(0,114,239,255)'))
+    fig.add_hline(y=standard_deviation, line_width=3, line_dash='dash', line_color='#f5e9ab')
+    fig.add_hline(y=standard_deviation / 50, line_width=3, line_dash='dash', line_color='#f5e9ab')
+    fig.update_traces(marker=dict(color='#ffaef4'))
     fig.update_layout(general_layout,
-        title={'text': "Distribution of absolute difference between " + model_to_compare + " prediction <br> and " +
+        title={'text': "Distribution of absolute difference between " + model_to_compare + " prediction <br>and " +
                        "other models predictions with tresholds of agreement and strong disagreement"},
         autosize=True,
         height=600
@@ -440,15 +425,13 @@ def uniformity_matrix(predictions):
             else:
                 matrix[i, j] = round(uniformity(predictions[models[i]], predictions[models[j]]), 2)
     matrix = pd.DataFrame(matrix, index=models, columns=models)
-    fig = px.imshow(matrix, text_auto=True, color_continuous_scale=[[0, 'lightblue'], [0.5, 'blue'], [1, 'purple']],
+    fig = px.imshow(matrix, text_auto=True, color_continuous_scale=custom_scale_continuous,
                     zmin=0, zmax=1,
                     labels=dict(x="Model 1",
                                 y="Model 2",
                                 color="Uniformity")
                     )
-    fig.update_layout(matrix_layout,
-        title="Uniformity"
-    )
+    fig.update_layout(matrix_layout)
     fig.update_xaxes(tickangle=30,
                      title = "")
     fig.update_yaxes(tickfont_size=10,
@@ -482,15 +465,13 @@ def incompatibility_matrix(predictions):
             else:
                 matrix[i, j] = round(disagreement_ratio(predictions[models[i]], predictions[models[j]]), 2)
     matrix = pd.DataFrame(matrix, index=models, columns=models)
-    fig = px.imshow(matrix, text_auto=True, color_continuous_scale=[[0, 'lightblue'], [0.5, 'blue'], [1, 'purple']],
+    fig = px.imshow(matrix, text_auto=True, color_continuous_scale=custom_scale_continuous,
                     zmin=0, zmax=1,
                     labels=dict(x="Model 1",
                                 y="Model 2",
                                 color="Incompatibility")
                     )
-    fig.update_layout(matrix_layout,
-        title="Incompatibility"
-    )
+    fig.update_layout(matrix_layout)
     fig.update_xaxes(tickangle=30,
                      title="")
     fig.update_yaxes(tickfont_size=10,
@@ -527,15 +508,13 @@ def acs_matrix(predictions, y):
             else:
                 matrix[i, j] = round(average_collective_score(predictions[models[i]], predictions[models[j]], y)[0], 2)
     matrix = pd.DataFrame(matrix, index=models, columns=models)
-    fig = px.imshow(matrix, text_auto=True, color_continuous_scale=[[0, 'lightblue'], [0.5, 'blue'], [1, 'purple']],
+    fig = px.imshow(matrix, text_auto=True, color_continuous_scale=custom_scale_continuous,
                     zmin=0, zmax=1,
                     labels=dict(x="Model 1",
                                 y="Model 2",
                                 color="Average Collective Score")
                     )
-    fig.update_layout(matrix_layout,
-        title="Average Collective Score"
-    )
+    fig.update_layout(matrix_layout)
     fig.update_xaxes(tickangle=30,
                      title="")
     fig.update_yaxes(tickfont_size=10,
@@ -572,15 +551,13 @@ def conjuntive_accuracy_matrix(predictions, y):
             else:
                 matrix[i, j] = round(conjunctive_accuracy(predictions[models[i]], predictions[models[j]], y), 2)
     matrix = pd.DataFrame(matrix, index=models, columns=models)
-    fig = px.imshow(matrix, text_auto=True, color_continuous_scale=[[0, 'lightblue'], [0.5, 'blue'], [1, 'purple']],
+    fig = px.imshow(matrix, text_auto=True, color_continuous_scale=custom_scale_continuous,
                     zmin=0, zmax=1,
                     labels=dict(x="Model 1",
                                 y="Model 2",
                                 color="Conjunctive Accuracy")
                     )
-    fig.update_layout(matrix_layout,
-        title="Conjunctive Accuracy"
-    )
+    fig.update_layout(matrix_layout)
     fig.update_xaxes(tickangle=30,
                      title="")
     fig.update_yaxes(tickfont_size=10,
@@ -628,7 +605,7 @@ def disagreement_ratio_plot(predictions, y, model_to_compare):
     df['class_name'] = df['class_name'].astype(str)
     fig = px.bar(df, x='model_name', y='ratio', color='class_name', barmode='group')
     fig.update_layout(general_layout,
-        title='Disagreement ratio in each class of ' + model_to_compare + " <br> model and other models",
+        title='Disagreement ratio in each class of ' + model_to_compare + " <br>model and other models",
         legend_title="Class name:"
     )
     fig.update_yaxes(
@@ -677,7 +654,7 @@ def conjunctive_metrics_plot(predictions, y, model_to_compare):
                       columns=['value', 'model_name', 'metric_name'])
     fig = px.bar(df, x='model_name', y='value', color='metric_name', barmode='group')
     fig.update_layout(general_layout,
-        title='Conjunctive metrics values of ' + model_to_compare + "<br> model and other models",
+        title='Conjunctive metrics values of ' + model_to_compare + "<br>model and other models",
         legend_title="Metric"
     )
     fig.update_yaxes(
@@ -685,9 +662,9 @@ def conjunctive_metrics_plot(predictions, y, model_to_compare):
         gridwidth=3,
         title='Metric value'
     )
-    fig.data[0].marker.color = 'rgba(0,114,239,255)'
-    fig.data[1].marker.color = 'purple'
-    fig.data[2].marker.color = '#321e8a'
+    fig.data[0].marker.color = '#f5e9ab'
+    fig.data[1].marker.color = '#ffaef4'
+    fig.data[2].marker.color = '#ab9cf0'
     fig.update_xaxes(title='')
     return fig
 
@@ -736,9 +713,9 @@ def prediction_correctness_plot(predictions, y, model_to_compare):
         gridwidth=3,
         title='Percentage'
     )
-    fig.data[0].marker.color = '#168c65'
-    fig.data[1].marker.color = '#2d2d87'
-    fig.data[2].marker.color = '#a8324e'
+    fig.data[0].marker.color = '#b0ff9e'
+    fig.data[1].marker.color = '#fffd9e'
+    fig.data[2].marker.color = '#ff9e9e'
     fig.update_yaxes(title='')
     return fig
 
@@ -822,16 +799,16 @@ def conjunctive_precision_multiclass_plot(predictions, y, model_to_compare):
                       columns=['value', 'model_name', 'metric_type'])
     fig = px.bar(df, x='model_name', y='value', color='metric_type', barmode='group')
     fig.update_layout(general_layout,
-        title='Conjunctive precision values of ' + model_to_compare + "<br> model and other models",
+        title='Conjunctive precision values of ' + model_to_compare + "<br>model and other models",
         legend_title="Metric type"
     )
     fig.update_yaxes(
         gridcolor='rgba(51,54,61,255)',
         gridwidth=3,
-        title='Metric type'
+        title='conjunctive precision'
     )
-    fig.data[0].marker.color = 'rgba(0,114,239,255)'
-    fig.data[1].marker.color = 'purple'
+    fig.data[0].marker.color = '#f5e9ab'
+    fig.data[1].marker.color = '#ffaef4'
     fig.update_xaxes(title='')
     return fig
 
@@ -871,15 +848,15 @@ def conjunctive_recall_multiclass_plot(predictions, y, model_to_compare):
                       columns=['value', 'model_name', 'metric_type'])
     fig = px.bar(df, x='model_name', y='value', color='metric_type', barmode='group')
     fig.update_layout(general_layout,
-        title='Conjunctive recall values of ' + model_to_compare + "<br> model and other models",
+        title='Conjunctive recall values of ' + model_to_compare + "<br>model and other models",
         legend_title="Metric type"
     )
     fig.update_yaxes(
         gridcolor='rgba(51,54,61,255)',
         gridwidth=3,
-        title='Metric type'
+        title='conjunctive recall'
     )
-    fig.data[0].marker.color = 'rgba(0,114,239,255)'
-    fig.data[1].marker.color = 'purple'
+    fig.data[0].marker.color = '#f5e9ab'
+    fig.data[1].marker.color = '#ffaef4'
     fig.update_xaxes(title='')
     return fig

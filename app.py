@@ -5,7 +5,7 @@ import dash_bootstrap_components as dbc
 app = Dash("CATTLEIA",
            use_pages=True,
            suppress_callback_exceptions=True,
-           external_stylesheets=[dbc.themes.BOOTSTRAP])
+           external_stylesheets=[dbc.themes.BOOTSTRAP, 'https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css'])
 
 navbar = dbc.Navbar(
     dbc.Container(
@@ -57,4 +57,4 @@ app.layout = html.Div([
 ])
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(debug=False)

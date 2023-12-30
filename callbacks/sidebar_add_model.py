@@ -9,7 +9,7 @@ sys.path.append("..")
      Output('switch_annotation', 'children')],
     Input('column_select', 'value')
 )
-def choose_target_column(value):
+def add_model(value):
     children = html.Div([
         html.H5("Upload model", className="sidepanel_text"),
         dcc.Upload(
@@ -28,7 +28,7 @@ def choose_target_column(value):
         daq.ToggleSwitch(
             id='my-toggle-switch',
             value=True,
-            color="#0072ef"
+            color="#ffaef4"
         )
     ])
 

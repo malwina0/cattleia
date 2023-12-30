@@ -1,7 +1,9 @@
 from dash import html, dcc, Output, Input, callback
 import dash_bootstrap_components as dbc
-import sys
-sys.path.append("..")
+
+from components.annotations import ann_comp_overview
+from components.navigation import navigation_row
+
 
 # callback display compatimetrics part
 @callback(
@@ -14,19 +16,17 @@ def update_model_selector(model_names):
         model_names.pop(0)
     children = []
     if model_names:
-        title = html.H4("Choose model for compatimetrics analysis:", className="compatimetrics_title",
-                        style={'color': 'white'})
-        dropdown = dcc.Dropdown(id='model_select', className="dropdown-class",
-                                options=[{'label': x, 'value': x} for x in model_names],
-                                value=model_names[0], clearable=False)
-        elements = [title, dropdown]
-        elements.insert(0, html.Div([
+        compatimetrics_elements = [
+            navigation_row,
+            html.Div([], className="navigation_placeholder"),
             dbc.Row([
-                dbc.Col([html.Button('Weights', id="weights", className="button_1")], width=2),
-                dbc.Col([html.Button('Metrics', id="metrics", className="button_1")], width=2),
-                dbc.Col([html.Button('Compatimetrics', id="compatimetrics", className="button_1")], width=2),
-            ], justify="center"),
-        ], style={"display": "block", "position": "sticky"}))
-        elements.append(html.Div(id='compatimetrics_container', children=html.Div(id='compatimetrics_plots')))
-        children = html.Div(elements)
+                ann_comp_overview,
+                html.H5("Choose a model for compatimetrics analysis:", className="annotation-title"),
+                dcc.Dropdown(id='model_select', className="dropdown-class",
+                    options=[{'label': x, 'value': x} for x in model_names],
+                    value=model_names[0], clearable=False)
+            ], className="custom-caption"),
+            html.Div(id='compatimetrics_container', children=html.Div(id='compatimetrics_plots'))
+        ]
+        children = html.Div(compatimetrics_elements)
     return children

@@ -77,9 +77,9 @@ def parse_model(contents, filename):
         if ".pkl" in filename:
             model = pd.read_pickle(io.BytesIO(decoded))
             if "<class 'flaml" in str(model.__class__).split("."):
-                library = "Flaml"
+                library = "FLAML"
             else:
-                library = "AutoSklearn"
+                library = "Auto-sklearn"
             return model, library
         elif ".zip" in filename:
             with zipfile.ZipFile(io.BytesIO(decoded), 'r') as zip_ref:
@@ -97,11 +97,11 @@ def get_task_from_model(ensemble_model, y, library):
 
     Parameters
     ----------
-    ensemble_model : Flaml, AutoGluon or AutoSklearn ensemble model.
+    ensemble_model : FLAML AutoGluon or Auto-sklearn ensemble model.
 
     y : target variable vector
 
-    library : {'Flaml', 'AutoGluon', 'AutoSklearn'}
+    library : {'Flaml', 'AutoGluon', 'Auto-sklearn'}
             string that specifies the model library
 
     Returns
@@ -114,14 +114,14 @@ def get_task_from_model(ensemble_model, y, library):
         if task == 'binary':
             return 'classification'
         return task
-    elif library == 'Flaml':
+    elif library == 'FLAML':
         if y.squeeze().nunique() > 10:
             return 'regression'
         elif y.squeeze().nunique() == 2:
             return 'classification'
         else:
             return 'multiclass'
-    elif library == 'AutoSklearn':
+    elif library == 'Auto-sklearn':
         task = ensemble_model.get_models_with_weights()[0][1].__dict__['dataset_properties']['target_type']
         if task == 'classification':
             if y.squeeze().nunique() > 2:
@@ -134,11 +134,11 @@ def get_predictions_from_model(ensemble_model, X, y, library, task):
 
     Parameters
     ----------
-    ensemble_model : Flaml, AutoGluon or AutoSklearn ensemble model.
+    ensemble_model : FLAML, AutoGluon or Auto-sklearn ensemble model.
 
     X, y : dataframe
 
-    library : {'Flaml', 'AutoGluon', 'AutoSklearn'}
+    library : {'FLAML', 'AutoGluon', 'Auto-sklearn'}
             string that specifies the model library
 
     task : {'regression', 'binary classification', 'multiclass classification'}
@@ -150,7 +150,7 @@ def get_predictions_from_model(ensemble_model, X, y, library, task):
         of form {'model_name' : 'prediction_vector'}
     """
     predictions = {}
-    if library == "Flaml":
+    if library == "FLAML":
         ensemble_models = ensemble_model.model.estimators_
         predictions['Ensemble'] = ensemble_model.predict(X)
         X_transform = ensemble_model._state.task.preprocess(X, ensemble_model._transformer)
@@ -172,7 +172,7 @@ def get_predictions_from_model(ensemble_model, X, y, library, task):
             predictions[model_name] = ensemble_model.predict(X)
         ensemble_model.set_model_best(final_model)
 
-    elif library == "AutoSklearn":
+    elif library == "Auto-sklearn":
         predictions['Ensemble'] = ensemble_model.predict(X)
         if task == 'regression':
             for weight, model in ensemble_model.get_models_with_weights():
@@ -212,11 +212,11 @@ def get_probability_pred_from_model(ensemble_model, X, library):
 
     Parameters
     ----------
-    ensemble_model : Flaml, AutoGluon or AutoSklearn ensemble model.
+    ensemble_model : Flaml, AutoGluon or Auto-sklearn ensemble model.
 
     X : dataframe without target variable
 
-    library : {'Flaml', 'AutoGluon', 'AutoSklearn'}
+    library : {'FLAML', 'AutoGluon', 'Auto-sklearn'}
             string that specifies the model library
 
     Returns
@@ -224,7 +224,7 @@ def get_probability_pred_from_model(ensemble_model, X, library):
     predictions: list containing vectors of probability of belonging to a class
     """
     proba_predictions = []
-    if library == "AutoSklearn":
+    if library == "Auto-sklearn":
         for weight, model in ensemble_model.get_models_with_weights():
             prediction = model.predict_proba(X)
             proba_predictions.append(prediction.tolist())
@@ -248,7 +248,7 @@ def get_ensemble_weights(ensemble_model, library):
 
     library : str
       The name of the library/framework used to create the ensemble model.
-      Supported values are "AutoSklearn" or "AutoGluon".
+      Supported values are "Auto-sklearn" or "AutoGluon".
 
     Returns
     -------
@@ -256,7 +256,7 @@ def get_ensemble_weights(ensemble_model, library):
     """
     weights = []
 
-    if library == "AutoSklearn":
+    if library == "Auto-sklearn":
         for weight, model in ensemble_model.get_models_with_weights():
             weights.append(weight)
     elif library == "AutoGluon":
