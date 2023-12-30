@@ -153,6 +153,12 @@ body {
     max-width: 70%;
 }
 
+.instruction_img{
+    max-width: 70%;
+    margin-left: 50px;
+    height: auto;
+}
+
 .instruction-icon{
     margin-left: 15px;
 }
