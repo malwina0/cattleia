@@ -166,14 +166,23 @@ ann_comp_ar = html.Div([
                  html.A("outputs of two models are.")]),
         html.Li([html.Strong("Formula: "),
                  dcc.Markdown(r'$$\mathrm{AR} = \frac{\sum^{n}_{i=1}A_{i}}{n}, \,\ \mathrm{where} \,\ A_i = '
-                 r'\begin{cases} 0, d_i > \frac{SD(y)}{100} \\ 1, d_i \leq \frac{SD(y)}{100} \end{cases}, \,\ d_i = '
+                 r'\begin{cases} 0, d_i > \frac{SD(y)}{50} \\ 1, d_i \leq \frac{SD(y)}{50} \end{cases}, \,\ d_i = '
                  r'|\hat{y}_i - \hat{y}_j|.$$', mathjax=True, id="latex-code")]),
         html.Li([html.A("AR "), html.Strong("does not indicate "), html.A("the accuracy of models.")])
     ])
 ], className="annotation_str", id="ann_comp_ar")
 
 ann_comp_sdr = html.Div([
-    html.A("RMSD is a squared root of MSD.")
+    html.A("SDR represents percentage of observations that were predicted very closely by two different models. "),
+    html.Ul([
+        html.Li([html.A("The "), html.Strong("bigger "), html.A("the value of SDR, the "), html.Strong("less similar "),
+                 html.A("outputs of two models are.")]),
+        html.Li([html.Strong("Formula: "),
+                 dcc.Markdown(r'$$\mathrm{SDR} = \frac{\sum^{n}_{i=1}A_{i}}{n}, \,\ \mathrm{where} \,\ A_i = '
+                              r'\begin{cases} 0, d_i > SD(y) \\ 1, d_i \leq SD(y) \end{cases}, \,\ d_i = '
+                              r'|\hat{y}_i - \hat{y}_j|.$$', mathjax=True, id="latex-code")]),
+        html.Li([html.A("SDR "), html.Strong("does not indicate "), html.A("the accuracy of models.")])
+    ])
 ], className="annotation_str", id="ann_comp_sdr")
 
 ann_comp_conj_rmse = html.Div([
