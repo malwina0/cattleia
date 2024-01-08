@@ -3,6 +3,7 @@ import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
 from components.metrics import empty_fig
+from sklearn.metrics import accuracy_score
 from components.compatimetrics import mean_squared_difference, \
     root_mean_squared_difference, strong_disagreement_ratio, agreement_ratio, conjunctive_rmse, \
     uniformity, disagreement_ratio, disagreement_postive_ratio, correctness_counter, \
@@ -163,7 +164,7 @@ def ar_matrix(predictions, y):
     for i in range(n_models):
         for j in range(n_models):
             if i == j:
-                matrix[i, j] = 0
+                matrix[i, j] = 1
             else:
                 matrix[i, j] = round(agreement_ratio(predictions[models[i]],
                                                      predictions[models[j]], y), 2)
@@ -504,7 +505,7 @@ def acs_matrix(predictions, y):
     for i in range(n_models):
         for j in range(n_models):
             if i == j:
-                matrix[i, j] = 0
+                matrix[i, j] = round(accuracy_score(predictions[models[i]], y), 2)
             else:
                 matrix[i, j] = round(average_collective_score(predictions[models[i]], predictions[models[j]], y)[0], 2)
     matrix = pd.DataFrame(matrix, index=models, columns=models)
@@ -547,7 +548,7 @@ def conjuntive_accuracy_matrix(predictions, y):
     for i in range(n_models):
         for j in range(n_models):
             if i == j:
-                matrix[i, j] = 0
+                matrix[i, j] = round(accuracy_score(predictions[models[i]], y), 2)
             else:
                 matrix[i, j] = round(conjunctive_accuracy(predictions[models[i]], predictions[models[j]], y), 2)
     matrix = pd.DataFrame(matrix, index=models, columns=models)
