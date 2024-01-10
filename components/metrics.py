@@ -64,7 +64,8 @@ def accuracy_plot(predictions, y):
         title="Accuracy values across models",
         showlegend=False
     )
-    fig.update_xaxes(title="accuracy")
+    fig.update_xaxes(title="accuracy",
+                     range=[0, 1.01])
 
     return fig
 
@@ -105,7 +106,8 @@ def precision_plot(predictions, y):
         title="Precision values across models",
         showlegend=False
     )
-    fig.update_xaxes(title="precision")
+    fig.update_xaxes(title="precision",
+                     range=[0, 1.01])
 
     return fig
 
@@ -146,7 +148,8 @@ def recall_plot(predictions, y):
         title="Recall values across models",
         showlegend=False
     )
-    fig.update_xaxes(title="recall")
+    fig.update_xaxes(title="recall",
+                     range=[0, 1.01])
 
     return fig
 
@@ -187,7 +190,8 @@ def f1_score_plot(predictions, y):
         title="F1-score values across models",
         showlegend=False
     )
-    fig.update_xaxes(title="F1-score")
+    fig.update_xaxes(title="F1-score",
+                     range=[0, 1.01])
 
     return fig
 
@@ -396,7 +400,8 @@ def r_2_plot(predictions, y):
         title="R-squared values across models",
         showlegend=False
     )
-    fig.update_xaxes(title="R-squared")
+    fig.update_xaxes(title="R-squared",
+                     range=[0, 1.01])
 
     return fig
 
