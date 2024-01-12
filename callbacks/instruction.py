@@ -23,7 +23,7 @@ def show_instruction(n_clicks):
                                         ```python
                                         # FLAML
                                         from flaml import AutoML
-                                        flaml_model - AutoML()
+                                        flaml_model = AutoML()
                                         flaml_model.fit(X_train, y_train, task="regression", ensemble=True)
 
                                         # Auto-sklearn
